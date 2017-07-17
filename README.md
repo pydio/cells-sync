@@ -6,6 +6,6 @@ Must be able to sync various data sources providing one or many of the following
 E.g: 
  - FS : ReadWrite, ObjectStore, Watchable
  - S3 : ReadWrite, ObjectStore, Watchable
- - Grpc Client => pydio Index DB : ReadWrite, IndexOnly (no actual data)
+ - Other endpoints implementing any of these interfaces...
  - etc...
  
