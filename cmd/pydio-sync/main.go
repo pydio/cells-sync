@@ -29,34 +29,12 @@ func targetsFromURLs(urls []*url.URL) ([]sync.Target, error) {
 	var err error
 
 	for i, u := range urls {
-		if targ[i], err = buildTarget(u); err != nil {
+		if targ[i], err = sync.TargetFromURL(u); err != nil {
 			log.Fatalf("could not build target %s (%s)", u, err)
 		}
 	}
 
 	return targ, nil
-}
-
-func buildTarget(u *url.URL) (t sync.Target, err error) {
-	var end sync.Endpoint
-	switch u.Scheme {
-	case "fs":
-		// end = fs.New(u)
-	case "db":
-		// end = db.New(u)
-		// case "s3", "s3mac":
-	case "s3":
-		// NOTE : needs to handle s3 & s3mac
-		// end.New(u)
-	default:
-		err = errors.Errorf("no endpoint for scheme `%s`", u.Scheme)
-	}
-
-	if err != nil {
-		t = sync.NewTarget(end)
-	}
-
-	return
 }
 
 func main() {

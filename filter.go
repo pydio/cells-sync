@@ -63,3 +63,7 @@ func (f filter) MoveNode(src string, dst string) error {
 	f.addToFilter(dst)
 	return f.Endpoint.MoveNode(src, dst)
 }
+
+func newTarget(end Endpoint) Target {
+	// XXX : NOT IMPLEMENTED
+}
