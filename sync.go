@@ -19,7 +19,7 @@ type Job interface {
 	ServeBackground()
 }
 
-type merger struct {
+type job struct {
 	*suture.Supervisor
 	MergeStrategy
 	t []Target
@@ -32,7 +32,7 @@ func New(s MergeStrategy, t ...Target) Job {
 		sup.Add(svc)
 	}
 
-	return &merger{
+	return &job{
 		Supervisor:    sup,
 		MergeStrategy: s,
 		t:             t,
