@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/SentimensRG/sigctx"
 	"github.com/pkg/errors"
 	"github.com/pydio/sync"
 	"github.com/pydio/sync/merge/twoway"
-	"github.com/thejerf/suture"
 )
 
 func parseURL(args []string) ([]*url.URL, error) {
@@ -42,9 +42,9 @@ func main() {
 	// 	panic("NOT IMPLEMENTED")
 	// }
 
-	app := suture.NewSimple("pydio-sync")
-	app.Add(sync.Merger{
-		MergeStrategy: twoway.New(),
-		T:             targ,
-	})
+	job := sync.New(twoway.New(), targ...)
+	job.ServeBackground()
+	defer job.Stop()
+
+	<-sigctx.New().Done() // block until SIGINT
 }
