@@ -24,6 +24,41 @@ func parseURL(args []string) ([]*url.URL, error) {
 	return urls, nil
 }
 
+func targetsFromURLs(urls []*url.URL) ([]sync.Target, error) {
+	var targ = make([]sync.Target, len(urls))
+	var err error
+
+	for i, u := range urls {
+		if targ[i], err = buildTarget(u); err != nil {
+			log.Fatalf("could not build target %s (%s)", u, err)
+		}
+	}
+
+	return targ, nil
+}
+
+func buildTarget(u *url.URL) (t sync.Target, err error) {
+	var end sync.Endpoint
+	switch u.Scheme {
+	case "fs":
+		// end = fs.New(u)
+	case "db":
+		// end = db.New(u)
+		// case "s3", "s3mac":
+	case "s3":
+		// NOTE : needs to handle s3 & s3mac
+		// end.New(u)
+	default:
+		err = errors.Errorf("no endpoint for scheme `%s`", u.Scheme)
+	}
+
+	if err != nil {
+		t = sync.NewTarget(end)
+	}
+
+	return
+}
+
 func main() {
 
 	args := os.Args[1:]
@@ -37,10 +72,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	targ := make([]sync.Target, len(urls))
-	// for i, u := range urls {
-	// 	panic("NOT IMPLEMENTED")
-	// }
+	targ, err := targetsFromURLs(urls)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	job := sync.New(twoway.New(), targ...)
 	job.ServeBackground()

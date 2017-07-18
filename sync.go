@@ -1,16 +1,41 @@
 package sync
 
-import "github.com/thejerf/suture"
+import (
+	"github.com/pydio/services/common/proto/tree"
+	"github.com/thejerf/suture"
+)
 
-type Event struct{}
+// Event ...
+type Event struct {
+	Path string
+}
 
+// Batch of Events
 type Batch []Event
 
+// Batcher takes individual events and batches them
+type Batcher interface {
+	NextBatch() Batch
+}
+
+// MergeStrategy implements a merge algorithm
 type MergeStrategy interface{}
 
+// Endpoint is a synchronizable storage backend
+type Endpoint interface {
+	CreateNode(*tree.Node) error
+	UpdateNode(*tree.Node) error
+
+	LoadNode(string, ...bool) (*tree.Node, error) // TODO : understand the `leaf` bools
+	DeleteNode(string) error
+	MoveNode(src string, dst string) error
+}
+
+// Target for synchronization
 type Target interface {
 	suture.Service // start & stop the filter
-	NextBatch() Batch
+	Batcher
+	Endpoint
 }
 
 // Job is a synchronization job that can be run in the foreground or background
