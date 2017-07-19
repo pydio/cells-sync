@@ -1,17 +1,13 @@
 package sync
 
 import (
+	"github.com/pydio/poc/sync/common"
 	"github.com/pydio/services/common/proto/tree"
 	"github.com/thejerf/suture"
 )
 
-// Event ...
-type Event struct {
-	Path string
-}
-
 // Batch of Events
-type Batch []Event
+type Batch []common.EventInfo
 
 // Batcher takes individual events and batches them
 type Batcher interface {
@@ -23,6 +19,12 @@ type MergeStrategy interface{}
 
 // Endpoint is a synchronizable storage backend
 type Endpoint interface {
+
+	// TODO : move common.WatchObject into sync repo.  This will be a good time
+	// to refactor watch behavior at the client level and implement a sensible
+	// [structured] logging strategy.
+	Watch(string) (*common.WatchObject, error)
+
 	CreateNode(*tree.Node) error
 	UpdateNode(*tree.Node) error
 

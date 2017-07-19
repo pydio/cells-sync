@@ -1,6 +1,10 @@
 package sync
 
-import "time"
+import (
+	"time"
+
+	"github.com/pydio/poc/sync/common"
+)
 
 const (
 	maxBatchSize = 1024
@@ -10,7 +14,7 @@ const (
 type batcher struct {
 	chHalt chan struct{}
 
-	chEvIn      chan Event
+	chEvIn      chan common.EventInfo
 	chBtchOut   chan Batch
 	chBtchReady chan Batch
 
@@ -21,20 +25,20 @@ func (b batcher) NextBatch() Batch {
 	return <-b.chBtchOut
 }
 
-func (b batcher) RecvEvent(ev Event) {
+func (b batcher) RecvEvent(ev common.EventInfo) {
 	b.chEvIn <- ev
 }
 
 func (b *batcher) init() {
 	b.chHalt = make(chan struct{})
-	b.chEvIn = make(chan Event)
+	b.chEvIn = make(chan common.EventInfo)
 	b.chBtchReady = make(chan Batch)
 	b.initBatch()
 }
 
-func (b *batcher) initBatch() { b.nextBatch = make([]Event, 0) }
+func (b *batcher) initBatch() { b.nextBatch = make([]common.EventInfo, 0) }
 
-func (b *batcher) enqueueEvent(ev Event) {
+func (b *batcher) enqueueEvent(ev common.EventInfo) {
 	if b.nextBatch = append(b.nextBatch, ev); len(b.nextBatch) == maxBatchSize {
 		b.chBtchReady <- b.commitBatch()
 	}

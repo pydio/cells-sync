@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"log"
 	"time"
 
 	"github.com/deckarep/golang-set"
@@ -12,16 +13,19 @@ const filtDuration = time.Second * 1
 
 // implements Target
 type filter struct {
+	chHalt chan struct{}
+
 	*suture.Supervisor
 	filt mapset.Set
 
 	Endpoint
-	*batcher
+	w *watcher
+	b *batcher
 }
 
 // NextBatch applies a filter to the underlying batcher's NextBatch method
 func (f filter) NextBatch() (b Batch) {
-	for _, ev := range f.batcher.NextBatch() {
+	for _, ev := range f.b.NextBatch() {
 		if f.filt.Contains(ev.Path) {
 			continue // Ignore the event
 		}
@@ -66,18 +70,52 @@ func (f filter) MoveNode(src string, dst string) error {
 	return f.Endpoint.MoveNode(src, dst)
 }
 
-func (f filter) Serve() { f.Supervisor.Serve() }
-func (f filter) Stop()  { f.Supervisor.Stop() }
+func (f *filter) Serve() {
+	f.chHalt = make(chan struct{})
 
-func newTarget(end Endpoint) Target {
+	go func() {
+		for {
+			select {
+			case ev := <-f.w.Events():
+				f.b.RecvEvent(ev)
+			case <-f.chHalt:
+				return
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
+			case err := <-f.w.Errors():
+				log.Fatal(err) // TODO : tie this into a sensible error propagation scheme
+			case <-f.chHalt:
+				return
+			}
+		}
+	}()
+
+	f.Supervisor.Serve()
+}
+
+func (f filter) Stop() {
+	close(f.chHalt)
+	f.Supervisor.Stop()
+}
+
+func newTarget(end Endpoint, path string) Target {
+	w := &watcher{watchable: end, path: path}
 	b := &batcher{}
+
 	sup := suture.NewSimple("")
-	sup.Add(end)
+	sup.Add(w)
 	sup.Add(b)
+
 	return &filter{
 		Supervisor: sup,
 		filt:       mapset.NewSet(),
 		Endpoint:   end,
-		batcher:    b,
+		w:          w,
+		b:          b,
 	}
 }
