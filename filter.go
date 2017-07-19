@@ -5,21 +5,23 @@ import (
 
 	"github.com/deckarep/golang-set"
 	"github.com/pydio/services/common/proto/tree"
+	"github.com/thejerf/suture"
 )
 
 const filtDuration = time.Second * 1
 
 // implements Target
 type filter struct {
+	*suture.Supervisor
 	filt mapset.Set
 
 	Endpoint
-	Batcher
+	*batcher
 }
 
-// NextBatch applies a filter to the underlying Batcher's NextBatch method
+// NextBatch applies a filter to the underlying batcher's NextBatch method
 func (f filter) NextBatch() (b Batch) {
-	for _, ev := range f.Batcher.NextBatch() {
+	for _, ev := range f.batcher.NextBatch() {
 		if f.filt.Contains(ev.Path) {
 			continue // Ignore the event
 		}
@@ -64,6 +66,18 @@ func (f filter) MoveNode(src string, dst string) error {
 	return f.Endpoint.MoveNode(src, dst)
 }
 
+func (f filter) Serve() { f.Supervisor.Serve() }
+func (f filter) Stop()  { f.Supervisor.Stop() }
+
 func newTarget(end Endpoint) Target {
-	// XXX : NOT IMPLEMENTED
+	b := &batcher{}
+	sup := suture.NewSimple("")
+	sup.Add(end)
+	sup.Add(b)
+	return &filter{
+		Supervisor: sup,
+		filt:       mapset.NewSet(),
+		Endpoint:   end,
+		batcher:    b,
+	}
 }
