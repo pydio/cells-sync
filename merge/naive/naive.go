@@ -31,19 +31,21 @@ func (t *twoWay) applyBatch(e sync.Endpoint, b sync.Batch) {
 		switch ev.Type {
 		case common.EventCreate:
 			log.Printf("[ CREATE ] %s", ev.Path)
-		case common.EventAccessed:
-			log.Printf("[ ACCESS ] %s", ev.Path)
-		case common.EventAccessedRead:
-			log.Printf("[ READ ] %s", ev.Path)
-		case common.EventAccessedStat:
-			log.Printf("[ STAT ] %s", ev.Path)
-		case common.EventOther:
-			log.Printf("[ OTHER ] %s", ev.Path)
+			if err = e.CreateNode(ev.ScanSourceNode); err != nil {
+				err = errors.Wrapf(err, "error creating node %s", ev.Path)
+			}
 		case common.EventRemove:
 			log.Printf("[ DELETE ] %s", ev.Path)
+			if err = e.DeleteNode(ev.Path); err != nil {
+				err = errors.Wrapf(err, "error deleting node %s", ev.Path)
+			}
 		case common.EventRename:
 			log.Printf("[ RENAME ] %s", ev.Path)
+			if err = e.UpdateNode(ev.ScanSourceNode); err != nil {
+				err = errors.Wrapf(err, "error updating node %s", ev.Path)
+			}
 		default:
+			err = errors.Errorf("invalid event type %s", ev.Type)
 		}
 
 		if err != nil {
