@@ -23,14 +23,28 @@ type filter struct {
 	b *batcher
 }
 
-// NextBatch applies a filter to the underlying batcher's NextBatch method
-func (f filter) NextBatch() (b Batch) {
-	for _, ev := range f.b.NextBatch() {
+// Batches applies a filter to the underlying batcher's NextBatch method
+func (f filter) Batches() <-chan Batch {
+	ch := make(chan Batch)
+
+	go func() {
+		for b := range f.b.Batches() {
+			if b = f.applyFilter(b); len(b) > 0 {
+				ch <- b
+			}
+		}
+	}()
+
+	return ch
+}
+
+func (f filter) applyFilter(b Batch) (filtered Batch) {
+	for _, ev := range b {
 		if f.filt.Contains(ev.Path) {
 			continue // Ignore the event
 		}
 
-		b = append(b, ev)
+		filtered = append(filtered, ev)
 	}
 
 	return

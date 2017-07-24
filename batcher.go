@@ -21,8 +21,8 @@ type batcher struct {
 	nextBatch Batch
 }
 
-func (b batcher) NextBatch() Batch {
-	return <-b.chBtchOut
+func (b batcher) Batches() <-chan Batch {
+	return b.chBtchOut
 }
 
 func (b batcher) RecvEvent(ev common.EventInfo) {

@@ -8,7 +8,7 @@ import (
 	"github.com/SentimensRG/sigctx"
 	"github.com/pkg/errors"
 	"github.com/pydio/sync"
-	"github.com/pydio/sync/merge/twoway"
+	"github.com/pydio/sync/merge/naive"
 )
 
 func parseURL(args []string) ([]*url.URL, error) {
@@ -55,7 +55,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	merger := twoway.New()
+	merger := naive.New()
 	for _, target := range targ {
 		merger.Merge(target)
 	}

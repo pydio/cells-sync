@@ -11,7 +11,7 @@ type Batch []common.EventInfo
 
 // Batcher takes individual events and batches them
 type Batcher interface {
-	NextBatch() Batch
+	Batches() <-chan Batch
 }
 
 // MergeStrategy implements a merge algorithm
