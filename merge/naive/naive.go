@@ -77,7 +77,7 @@ func (t *twoWay) Stop() {
 }
 
 func (t *twoWay) Merge(targ sync.Target) {
-	if len(t.targ) >= 2 {
+	if len(t.targ) > 2 {
 		panic(errors.New("too many targets"))
 	}
 	t.targ = append(t.targ, targ)
@@ -87,7 +87,7 @@ func (t *twoWay) Merge(targ sync.Target) {
 func New() sync.MergeStrategy {
 	return &twoWay{
 		Supervisor: suture.NewSimple(""),
-		targ:       make([]sync.Target, 2),
+		targ:       make([]sync.Target, 0),
 		chHalt:     make(chan struct{}),
 	}
 }
