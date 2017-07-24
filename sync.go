@@ -15,7 +15,10 @@ type Batcher interface {
 }
 
 // MergeStrategy implements a merge algorithm
-type MergeStrategy interface{}
+type MergeStrategy interface {
+	suture.Service
+	Merge(Target)
+}
 
 // Endpoint is a synchronizable storage backend
 type Endpoint interface {
@@ -38,30 +41,4 @@ type Target interface {
 	suture.Service // start & stop the filter
 	Batcher
 	Endpoint
-}
-
-// Job is a synchronization job that can be run in the foreground or background
-type Job interface {
-	suture.Service
-	ServeBackground()
-}
-
-type job struct {
-	*suture.Supervisor
-	MergeStrategy
-	t []Target
-}
-
-// New sync job
-func New(s MergeStrategy, t ...Target) Job {
-	sup := suture.NewSimple("")
-	for _, svc := range t {
-		sup.Add(svc)
-	}
-
-	return &job{
-		Supervisor:    sup,
-		MergeStrategy: s,
-		t:             t,
-	}
 }

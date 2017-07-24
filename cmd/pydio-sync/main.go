@@ -55,9 +55,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	job := sync.New(twoway.New(), targ...)
-	job.ServeBackground()
-	defer job.Stop()
+	merger := twoway.New()
+	for _, target := range targ {
+		merger.Merge(target)
+	}
 
-	<-sigctx.New().Done() // block until SIGINT
+	go func() {
+		<-sigctx.New().Done() // block until SIGINT
+		merger.Stop()
+	}()
+	merger.Serve()
 }
