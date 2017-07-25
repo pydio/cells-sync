@@ -61,5 +61,7 @@ func main() {
 		<-sigctx.New().Done() // block until SIGINT
 		merger.Stop()
 	}()
+
+	log.Println("synchronizing...")
 	merger.Serve()
 }
