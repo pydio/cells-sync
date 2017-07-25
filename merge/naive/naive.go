@@ -4,25 +4,31 @@ import (
 	"log"
 
 	"github.com/pkg/errors"
+	"github.com/thejerf/suture"
+
 	"github.com/pydio/poc/sync/common"
 	"github.com/pydio/sync"
-	"github.com/thejerf/suture"
+	"github.com/pydio/sync/merge"
 )
 
-type twoWay struct {
+// naive merge strategy does not attempt to resolve conflicts and exhibits *NO*
+// safety.  DO NOT USE IN PRODUCTION.
+// Implements merger.TwoWay
+type naive struct {
 	*suture.Supervisor
 	chHalt chan struct{}
 	targ   []sync.Target
 }
 
-func (t twoWay) left() sync.Target  { return t.targ[0] }
-func (t twoWay) right() sync.Target { return t.targ[1] }
+// implement merger.TwoWay
+func (n naive) Left() sync.Target  { return n.targ[0] }
+func (n naive) Right() sync.Target { return n.targ[1] }
 
-func (t *twoWay) init() {
-	t.chHalt = make(chan struct{})
+func (n *naive) init() {
+	n.chHalt = make(chan struct{})
 }
 
-func (t *twoWay) applyBatch(e sync.Endpoint, b sync.Batch) {
+func (n *naive) applyBatch(e sync.Endpoint, b sync.Batch) {
 	for _, ev := range b {
 		var err error
 
@@ -31,7 +37,7 @@ func (t *twoWay) applyBatch(e sync.Endpoint, b sync.Batch) {
 		switch ev.Type {
 		case common.EventCreate:
 			log.Printf("[ CREATE ] %s", ev.Path)
-			if err = e.CreateNode(ev.ScanSourceNode); err != nil {
+			if err = e.CreateNode(ev.ScanSourceNode, false); err != nil {
 				err = errors.Wrapf(err, "error creating node %s", ev.Path)
 			}
 		case common.EventRemove:
@@ -55,37 +61,37 @@ func (t *twoWay) applyBatch(e sync.Endpoint, b sync.Batch) {
 	}
 }
 
-func (t *twoWay) Serve() {
-	t.init()
-	t.Supervisor.ServeBackground()
+func (n *naive) Serve() {
+	n.init()
+	n.Supervisor.ServeBackground()
 
 	for {
 		select {
-		case b := <-t.left().Batches():
-			t.applyBatch(t.right(), b)
-		case b := <-t.right().Batches():
-			t.applyBatch(t.left(), b)
-		case <-t.chHalt:
+		case b := <-n.Left().Batches():
+			n.applyBatch(n.Right(), b)
+		case b := <-n.Right().Batches():
+			n.applyBatch(n.Left(), b)
+		case <-n.chHalt:
 			return
 		}
 	}
 }
 
-func (t *twoWay) Stop() {
-	defer close(t.chHalt)
-	t.Supervisor.Stop()
+func (n *naive) Stop() {
+	defer close(n.chHalt)
+	n.Supervisor.Stop()
 }
 
-func (t *twoWay) Merge(targ sync.Target) {
-	if len(t.targ) > 2 {
+func (n *naive) Merge(targ sync.Target) {
+	if len(n.targ) > 2 {
 		panic(errors.New("too many targets"))
 	}
-	t.targ = append(t.targ, targ)
+	n.targ = append(n.targ, targ)
 }
 
 // New two-way merge strategy
-func New() sync.MergeStrategy {
-	return &twoWay{
+func New() merge.TwoWay {
+	return &naive{
 		Supervisor: suture.NewSimple(""),
 		targ:       make([]sync.Target, 0),
 		chHalt:     make(chan struct{}),

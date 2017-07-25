@@ -58,9 +58,9 @@ func (f filter) addToFilter(p string) {
 	}()
 }
 
-func (f filter) CreateNode(n *tree.Node) error {
+func (f filter) CreateNode(n *tree.Node, updateIfExist bool) error {
 	f.addToFilter(n.GetPath())
-	return f.Endpoint.CreateNode(n)
+	return f.Endpoint.CreateNode(n, updateIfExist)
 }
 
 func (f filter) UpdateNode(n *tree.Node) error {

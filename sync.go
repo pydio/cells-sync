@@ -28,7 +28,7 @@ type Endpoint interface {
 	// [structured] logging strategy.
 	Watch(string) (*common.WatchObject, error)
 
-	CreateNode(*tree.Node) error
+	CreateNode(*tree.Node, bool) error
 	UpdateNode(*tree.Node) error
 
 	LoadNode(string, ...bool) (*tree.Node, error) // TODO : understand the `leaf` bools
