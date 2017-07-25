@@ -27,7 +27,7 @@ func TargetFromURL(u *url.URL) (t Target, err error) {
 	}
 
 	if err == nil {
-		t = newTarget(end, u.Path)
+		t = NewTarget(end, u.Path)
 	}
 
 	return

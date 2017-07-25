@@ -104,20 +104,3 @@ func (f filter) Stop() {
 	log.Printf("[ WARN ] stopping filter on %s", f.w.path)
 	f.Supervisor.Stop()
 }
-
-func newTarget(end Endpoint, path string) Target {
-	w := newWatcher(end, path)
-	b := &batcher{}
-
-	sup := suture.NewSimple("")
-	sup.Add(w)
-	sup.Add(b)
-
-	return &filter{
-		Supervisor: sup,
-		filt:       mapset.NewSet(),
-		Endpoint:   end,
-		w:          w,
-		b:          b,
-	}
-}

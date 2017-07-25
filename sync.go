@@ -1,9 +1,11 @@
 package sync
 
 import (
+	"github.com/deckarep/golang-set"
+	"github.com/thejerf/suture"
+
 	"github.com/pydio/poc/sync/common"
 	"github.com/pydio/services/common/proto/tree"
-	"github.com/thejerf/suture"
 )
 
 // Batch of Events
@@ -41,4 +43,22 @@ type Target interface {
 	suture.Service // start & stop the filter
 	Batcher
 	Endpoint
+}
+
+// NewTarget creates a target from an endpoint and a path
+func NewTarget(end Endpoint, path string) Target {
+	w := newWatcher(end, path)
+	b := &batcher{}
+
+	sup := suture.NewSimple("")
+	sup.Add(w)
+	sup.Add(b)
+
+	return &filter{
+		Supervisor: sup,
+		filt:       mapset.NewSet(),
+		Endpoint:   end,
+		w:          w,
+		b:          b,
+	}
 }
