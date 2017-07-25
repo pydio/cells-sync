@@ -76,6 +76,6 @@ func (b *batcher) Serve() {
 	<-b.chHalt
 }
 func (b batcher) Stop() {
-	log.Println("[ DEBUG ] stopping batcher")
+	log.Println("[ WARN ] stopping batcher")
 	close(b.chHalt)
 }
