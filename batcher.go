@@ -52,7 +52,7 @@ func (b *batcher) commitBatch() (bOut Batch) {
 }
 
 func (b *batcher) Serve() {
-	b.initBatch()
+	b.init()
 	defer close(b.chBtchOut)
 	defer close(b.chBtchReady)
 	defer close(b.chEvIn)
