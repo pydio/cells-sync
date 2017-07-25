@@ -486,7 +486,9 @@ func (c *FSClient) getFileHash(path string) (hash string, e error) {
 
 }
 
-// Watches for all fs events on an input path.
+// Watch for all fs events on an input path.
+// If recursivePath is a non-empty string, it will be concatenated to the
+// root path set in FSClient.
 func (c *FSClient) Watch(recursivePath string) (*common.WatchObject, error) {
 
 	eventChan := make(chan common.EventInfo)
@@ -511,7 +513,8 @@ func (c *FSClient) Watch(recursivePath string) (*common.WatchObject, error) {
 		}, nil
 	}
 
-	if e := notify.Watch(filepath.Join(c.RootPath, recursivePath)+"...", in, fsEvents...); e != nil {
+	watchPath := filepath.Join(c.RootPath, recursivePath) + "..."
+	if e := notify.Watch(watchPath, in, fsEvents...); e != nil {
 		return nil, e
 	}
 

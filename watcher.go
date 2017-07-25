@@ -67,7 +67,7 @@ func (w *watcher) init() {
 func (w *watcher) Serve() {
 	w.init()
 
-	wo, err := w.Watch(normalize(w.path))
+	wo, err := w.Watch("") // Watch root path set by afero (see fs.go)
 	if err != nil {
 		panic(errors.Wrapf(err, "could not watch %s", normalize(w.path)))
 	}
