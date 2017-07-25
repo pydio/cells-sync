@@ -13,8 +13,6 @@ const filtDuration = time.Second * 1
 
 // implements Target
 type filter struct {
-	chHalt chan struct{}
-
 	*suture.Supervisor
 	filt mapset.Set
 
@@ -85,42 +83,30 @@ func (f filter) MoveNode(src string, dst string) error {
 }
 
 func (f *filter) Serve() {
-	f.chHalt = make(chan struct{})
-
-	go func() {
-		for {
-			select {
-			case ev := <-f.w.Events():
-				f.b.RecvEvent(ev)
-			case <-f.chHalt:
-				return
-			}
-		}
-	}()
-
-	go func() {
-		for {
-			select {
-			case err := <-f.w.Errors():
-				log.Printf("[ ERROR ] %s", err) // TODO : integrate into structured logging
-			case <-f.chHalt:
-				return
-			}
-		}
-	}()
-
 	log.Printf("[ DEBUG ] starting filter on %s", f.w.path)
+
+	go func() {
+		for ev := range f.w.Events() {
+			f.b.RecvEvent(ev)
+		}
+	}()
+
+	go func() {
+		for err := range f.w.Errors() {
+			log.Printf("[ ERROR ] %s", err) // TODO : integrate into structured logging
+		}
+	}()
+
 	f.Supervisor.Serve()
 }
 
 func (f filter) Stop() {
 	log.Printf("[ WARN ] stopping filter on %s", f.w.path)
-	close(f.chHalt)
 	f.Supervisor.Stop()
 }
 
 func newTarget(end Endpoint, path string) Target {
-	w := &watcher{watchable: end, path: path}
+	w := newWatcher(end, path)
 	b := &batcher{}
 
 	sup := suture.NewSimple("")

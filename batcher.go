@@ -27,6 +27,7 @@ func (b batcher) Batches() <-chan Batch {
 }
 
 func (b batcher) RecvEvent(ev common.EventInfo) {
+	log.Printf("[ DEBUG ] received %s", ev.Type)
 	b.chEvIn <- ev
 }
 

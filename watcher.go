@@ -12,6 +12,8 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+const root string = ""
+
 var normalize func(string) string
 
 func init() {
@@ -51,29 +53,27 @@ type watcher struct {
 	chWo   chan *common.WatchObject
 }
 
+func (w watcher) wObject() *common.WatchObject { return <-w.chWo }
+
 func (w watcher) Events() <-chan common.EventInfo {
-	return (<-w.chWo).Events()
+	return w.wObject().Events()
 }
 
 func (w watcher) Errors() <-chan error {
-	return (<-w.chWo).Errors()
-}
-
-func (w *watcher) init() {
-	w.chHalt = make(chan struct{})
-	w.chWo = make(chan *common.WatchObject)
+	return w.wObject().Errors()
 }
 
 func (w *watcher) Serve() {
-	w.init()
+	w.chHalt = make(chan struct{})
 
-	wo, err := w.Watch("") // Watch root path set by afero (see fs.go)
+	wo, err := w.Watch(root)
 	if err != nil {
 		panic(errors.Wrapf(err, "could not watch %s", normalize(w.path)))
 	}
 	defer wo.Close()
 
 	go func() {
+		defer close(w.chWo)
 		for {
 			select {
 			case w.chWo <- wo:
@@ -85,9 +85,15 @@ func (w *watcher) Serve() {
 
 	log.Printf("[ DEBUG ] starting watch on %s", w.path)
 	<-w.chHalt
+
+	w.chWo = make(chan *common.WatchObject)
 }
 
 func (w watcher) Stop() {
 	log.Printf("[ WARN ] stopping watch on %s", w.path)
 	close(w.chHalt)
+}
+
+func newWatcher(w watchable, p string) *watcher {
+	return &watcher{watchable: w, path: p, chWo: make(chan *common.WatchObject)}
 }
