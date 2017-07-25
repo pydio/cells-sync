@@ -82,11 +82,13 @@ func (n *naive) Stop() {
 	n.Supervisor.Stop()
 }
 
-func (n *naive) Merge(targ sync.Target) {
-	if len(n.targ) > 2 {
-		panic(errors.New("too many targets"))
+func (n *naive) Merge(targ ...sync.Target) {
+	for _, t := range targ {
+		if len(n.targ) > 2 {
+			panic(errors.New("too many targets"))
+		}
+		n.targ = append(n.targ, t)
 	}
-	n.targ = append(n.targ, targ)
 }
 
 // New two-way merge strategy

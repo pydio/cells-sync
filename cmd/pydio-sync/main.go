@@ -56,10 +56,7 @@ func main() {
 	}
 
 	merger := naive.New()
-	for _, target := range targ {
-		merger.Merge(target)
-	}
-
+	merger.Merge(targ...)
 	go func() {
 		<-sigctx.New().Done() // block until SIGINT
 		merger.Stop()

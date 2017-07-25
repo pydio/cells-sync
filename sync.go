@@ -17,7 +17,7 @@ type Batcher interface {
 // MergeStrategy implements a merge algorithm
 type MergeStrategy interface {
 	suture.Service
-	Merge(Target)
+	Merge(...Target)
 }
 
 // Endpoint is a synchronizable storage backend
