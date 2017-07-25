@@ -26,7 +26,7 @@ func TargetFromURL(u *url.URL) (t Target, err error) {
 		err = errors.Errorf("no endpoint for scheme `%s`", u.Scheme)
 	}
 
-	if err != nil {
+	if err == nil {
 		t = newTarget(end, u.Path)
 	}
 
