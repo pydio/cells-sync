@@ -27,13 +27,13 @@ func (b batcher) Batches() <-chan Batch {
 }
 
 func (b batcher) RecvEvent(ev common.EventInfo) {
-	log.Printf("[ DEBUG ] received %s", ev.Type)
 	b.chEvIn <- ev
 }
 
 func (b *batcher) init() {
 	b.chHalt = make(chan struct{})
 	b.chEvIn = make(chan common.EventInfo)
+	b.chBtchOut = make(chan Batch)
 	b.chBtchReady = make(chan Batch)
 	b.initBatch()
 }
@@ -53,7 +53,6 @@ func (b *batcher) commitBatch() (bOut Batch) {
 }
 
 func (b *batcher) Serve() {
-	b.init()
 	defer close(b.chBtchOut)
 	defer close(b.chBtchReady)
 	defer close(b.chEvIn)
@@ -62,6 +61,7 @@ func (b *batcher) Serve() {
 		for {
 			select {
 			case ev := <-b.chEvIn:
+				log.Printf("[ DEBUG ][ BATCHER ] got %s", ev.Type)
 				b.enqueueEvent(ev)
 			case btch := <-b.chBtchReady:
 				b.chBtchOut <- btch
@@ -75,8 +75,16 @@ func (b *batcher) Serve() {
 
 	log.Println("[ DEBUG ] starting batcher")
 	<-b.chHalt
+
+	b.init()
 }
 func (b batcher) Stop() {
 	log.Println("[ WARN ] stopping batcher")
 	close(b.chHalt)
+}
+
+func newBatcher() (b *batcher) {
+	b = new(batcher)
+	b.init()
+	return
 }

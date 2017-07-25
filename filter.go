@@ -87,6 +87,7 @@ func (f *filter) Serve() {
 
 	go func() {
 		for ev := range f.w.Events() {
+			log.Printf("[ DEBUG ][ FILTER ] got %s", ev.Type)
 			f.b.RecvEvent(ev)
 		}
 	}()

@@ -48,7 +48,7 @@ type Target interface {
 // NewTarget creates a target from an endpoint and a path
 func NewTarget(end Endpoint, path string) Target {
 	w := newWatcher(end, path)
-	b := &batcher{}
+	b := newBatcher()
 
 	sup := suture.NewSimple("")
 	sup.Add(w)
