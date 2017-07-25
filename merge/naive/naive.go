@@ -63,22 +63,27 @@ func (n *naive) applyBatch(e sync.Endpoint, b sync.Batch) {
 
 func (n *naive) Serve() {
 	n.init()
-	n.Supervisor.ServeBackground()
 
-	for {
-		select {
-		case b := <-n.Left().Batches():
-			n.applyBatch(n.Right(), b)
-		case b := <-n.Right().Batches():
-			n.applyBatch(n.Left(), b)
-		case <-n.chHalt:
-			return
+	go func() {
+		for {
+			select {
+			case b := <-n.Left().Batches():
+				n.applyBatch(n.Right(), b)
+			case b := <-n.Right().Batches():
+				n.applyBatch(n.Left(), b)
+			case <-n.chHalt:
+				return
+			}
 		}
-	}
+	}()
+
+	log.Println("[ DEBUG ] starting naive merge strategy")
+	n.Supervisor.Serve()
 }
 
 func (n *naive) Stop() {
 	defer close(n.chHalt)
+	log.Println("[ WARN ] stopping naive merge strategy")
 	n.Supervisor.Stop()
 }
 
@@ -88,6 +93,7 @@ func (n *naive) Merge(targ ...sync.Target) {
 			panic(errors.New("too many targets"))
 		}
 		n.targ = append(n.targ, t)
+		n.Add(t)
 	}
 }
 

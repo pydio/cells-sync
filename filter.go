@@ -102,17 +102,19 @@ func (f *filter) Serve() {
 		for {
 			select {
 			case err := <-f.w.Errors():
-				log.Fatal(err) // TODO : tie this into a sensible error propagation scheme
+				log.Printf("[ ERROR ] %s", err) // TODO : integrate into structured logging
 			case <-f.chHalt:
 				return
 			}
 		}
 	}()
 
+	log.Printf("[ DEBUG ] starting filter on %s", f.w.path)
 	f.Supervisor.Serve()
 }
 
 func (f filter) Stop() {
+	log.Printf("[ WARN ] stopping filter on %s", f.w.path)
 	close(f.chHalt)
 	f.Supervisor.Stop()
 }

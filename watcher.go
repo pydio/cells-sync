@@ -2,6 +2,7 @@ package sync
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -45,26 +46,48 @@ type watchable interface {
 type watcher struct {
 	path string
 	watchable
-	*common.WatchObject
+
+	chHalt chan struct{}
+	chWo   chan *common.WatchObject
 }
 
-func (w watcher) NextEvent() common.EventInfo {
-	return w.WatchObject.NextEvent() // XXX : need to decide on event specification
+func (w watcher) Events() <-chan common.EventInfo {
+	return (<-w.chWo).Events()
 }
 
-func (w watcher) NextError() error {
-	return w.WatchObject.NextError()
+func (w watcher) Errors() <-chan error {
+	return (<-w.chWo).Errors()
+}
+
+func (w *watcher) init() {
+	w.chHalt = make(chan struct{})
+	w.chWo = make(chan *common.WatchObject)
 }
 
 func (w *watcher) Serve() {
-	var err error
-	if w.WatchObject, err = w.Watch(normalize(w.path)); err != nil {
+	w.init()
+
+	wo, err := w.Watch(normalize(w.path))
+	if err != nil {
 		panic(errors.Wrapf(err, "could not watch %s", normalize(w.path)))
 	}
+	defer wo.Close()
 
-	<-w.Done()
+	go func() {
+		for {
+			select {
+			case w.chWo <- wo:
+			case <-w.chHalt:
+				return
+			}
+		}
+	}()
+
+	log.Printf("[ DEBUG ] starting watch on %s", w.path)
+	<-w.chHalt
 }
 
 func (w watcher) Stop() {
-	w.Close()
+	log.Printf("[ WARN ] stopping watch on %s", w.path)
+	close(w.chHalt)
 }

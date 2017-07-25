@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"log"
 	"time"
 
 	"github.com/pydio/poc/sync/common"
@@ -56,17 +57,25 @@ func (b *batcher) Serve() {
 	defer close(b.chBtchReady)
 	defer close(b.chEvIn)
 
-	for {
-		select {
-		case ev := <-b.chEvIn:
-			b.enqueueEvent(ev)
-		case btch := <-b.chBtchReady:
-			b.chBtchOut <- btch
-		case <-time.After(maxBatchWait):
-			b.chBtchOut <- b.commitBatch()
-		case <-b.chHalt:
-			return
+	go func() {
+		for {
+			select {
+			case ev := <-b.chEvIn:
+				b.enqueueEvent(ev)
+			case btch := <-b.chBtchReady:
+				b.chBtchOut <- btch
+			case <-time.After(maxBatchWait):
+				b.chBtchOut <- b.commitBatch()
+			case <-b.chHalt:
+				return
+			}
 		}
-	}
+	}()
+
+	log.Println("[ DEBUG ] starting batcher")
+	<-b.chHalt
 }
-func (b batcher) Stop() { close(b.chHalt) }
+func (b batcher) Stop() {
+	log.Println("[ DEBUG ] stopping batcher")
+	close(b.chHalt)
+}
