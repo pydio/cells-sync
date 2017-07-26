@@ -36,17 +36,17 @@ func (n *naive) applyBatch(e sync.Endpoint, b sync.Batch) {
 
 		switch ev.Type {
 		case common.EventCreate:
-			log.Printf("[ CREATE ] %s", ev.Path)
+			log.Printf("[ NAIVE ][ CREATE ] %s", ev.Path)
 			if err = e.CreateNode(ev.ScanSourceNode, false); err != nil {
 				err = errors.Wrapf(err, "error creating node %s", ev.Path)
 			}
 		case common.EventRemove:
-			log.Printf("[ DELETE ] %s", ev.Path)
+			log.Printf("[ NAIVE ][ DELETE ] %s", ev.Path)
 			if err = e.DeleteNode(ev.Path); err != nil {
 				err = errors.Wrapf(err, "error deleting node %s", ev.Path)
 			}
 		case common.EventRename:
-			log.Printf("[ RENAME ] %s", ev.Path)
+			log.Printf("[ NAIVE ][ RENAME ] %s", ev.Path)
 			if err = e.UpdateNode(ev.ScanSourceNode); err != nil {
 				err = errors.Wrapf(err, "error updating node %s", ev.Path)
 			}

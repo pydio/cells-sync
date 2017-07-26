@@ -1,9 +1,11 @@
 package sync
 
 import (
+	"encoding/json"
 	"log"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/deckarep/golang-set"
 	"github.com/pydio/services/common/proto/tree"
 	"github.com/thejerf/suture"
@@ -38,7 +40,10 @@ func (f filter) Batches() <-chan Batch {
 
 func (f filter) applyFilter(b Batch) (filtered Batch) {
 	for _, ev := range b {
+		e, _ := json.Marshal(ev)
+		log.Printf("%s", e)
 		if f.filt.Contains(ev.Path) {
+			log.Printf("[ DEBUG ][ FILTER ] ignoring %s %s", ev.Type, ev.Path)
 			continue // Ignore the event
 		}
 
@@ -58,6 +63,7 @@ func (f filter) addToFilter(p string) {
 
 func (f filter) CreateNode(n *tree.Node, updateIfExist bool) error {
 	f.addToFilter(n.GetPath())
+	spew.Dump(n)
 	return f.Endpoint.CreateNode(n, updateIfExist)
 }
 
