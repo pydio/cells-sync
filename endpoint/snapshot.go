@@ -24,11 +24,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/golang/protobuf/jsonpb"
 
+	"github.com/pydio/cells/common/config"
 	"github.com/pydio/cells/common/proto/tree"
 	"github.com/pydio/cells/common/sync/model"
 )
@@ -38,7 +41,9 @@ var (
 )
 
 type Snaphsot struct {
-	db *bolt.DB
+	db    *bolt.DB
+	name  string
+	empty bool
 }
 
 func (s *Snaphsot) CreateNode(ctx context.Context, node *tree.Node, updateIfExists bool) (err error) {
@@ -58,10 +63,17 @@ func (s *Snaphsot) MoveNode(ctx context.Context, oldPath string, newPath string)
 }
 
 func NewSnapshot(name string) (*Snaphsot, error) {
-	s := &Snaphsot{}
+	s := &Snaphsot{name: name}
 	options := bolt.DefaultOptions
 	options.Timeout = 5 * time.Second
-	db, err := bolt.Open("/Users/charles/tmp/snapshot-"+name, 0644, options)
+	appDir := config.ApplicationDataDir()
+	f := filepath.Join(appDir, "sync")
+	os.MkdirAll(f, 0755)
+	p := filepath.Join(f, "snapshot-"+name)
+	if _, err := os.Stat(p); err != nil {
+		s.empty = true
+	}
+	db, err := bolt.Open(p, 0644, options)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +81,11 @@ func NewSnapshot(name string) (*Snaphsot, error) {
 	return s, nil
 }
 
-func (s *Snaphsot) Capture(source model.PathSyncSource) error {
+func (s *Snaphsot) IsEmpty() bool {
+	return s.empty
+}
+
+func (s *Snaphsot) Capture(ctx context.Context, source model.PathSyncSource) error {
 	if e := s.db.Update(func(tx *bolt.Tx) error {
 		if b := tx.Bucket(bucketName); b != nil {
 			return tx.DeleteBucket(bucketName)
@@ -93,6 +109,9 @@ func (s *Snaphsot) Capture(source model.PathSyncSource) error {
 			b.Put(k, value.Bytes())
 		})
 	})
+	if e == nil {
+		s.empty = false
+	}
 	return e
 }
 
@@ -111,6 +130,7 @@ func (s *Snaphsot) LoadNode(ctx context.Context, path string, leaf ...bool) (nod
 
 func (s *Snaphsot) GetEndpointInfo() model.EndpointInfo {
 	return model.EndpointInfo{
+		URI: "snapshot://" + s.name,
 		RequiresNormalization: false,
 		RequiresFoldersRescan: false,
 	}

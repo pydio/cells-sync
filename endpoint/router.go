@@ -78,6 +78,7 @@ func (r *RouterEndpoint) LoadNode(ctx context.Context, path string, leaf ...bool
 
 func (r *RouterEndpoint) GetEndpointInfo() model.EndpointInfo {
 	return model.EndpointInfo{
+		URI: "router://" + r.root,
 		RequiresNormalization: false,
 		RequiresFoldersRescan: false,
 	}
@@ -104,6 +105,9 @@ func (r *RouterEndpoint) Walk(walknFc model.WalkNodesFunc, pathes ...string) (er
 		}
 		n := resp.Node
 		n.Path = r.unrooted(resp.Node.Path)
+		if !n.IsLeaf() {
+			n.Etag = "-1" // Force recomputing Etags for Folders
+		}
 		walknFc(n.Path, n, nil)
 	}
 	return
@@ -138,10 +142,15 @@ func (r *RouterEndpoint) DeleteNode(ctx context.Context, path string) (err error
 }
 
 func (r *RouterEndpoint) MoveNode(ctx context.Context, oldPath string, newPath string) (err error) {
-	from := &tree.Node{Path: r.rooted(oldPath)}
-	to := &tree.Node{Path: r.rooted(newPath)}
-	_, e := r.getRouter().UpdateNode(r.getContext(ctx), &tree.UpdateNodeRequest{From: from, To: to})
-	return e
+	if from, err := r.LoadNode(ctx, oldPath); err == nil {
+		to := from.Clone()
+		to.Path = r.rooted(newPath)
+		from.Path = r.rooted(from.Path)
+		_, e := r.getRouter().UpdateNode(r.getContext(ctx), &tree.UpdateNodeRequest{From: from, To: to})
+		return e
+	} else {
+		return err
+	}
 }
 
 func (r *RouterEndpoint) GetWriterOn(p string, targetSize int64) (out io.WriteCloser, err error) {

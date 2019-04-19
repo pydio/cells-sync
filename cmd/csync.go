@@ -139,13 +139,12 @@ func main() {
 	dbEvents := make(chan endpoints.DBEvent)
 	processorEvents := make(chan model.ProcessorEvent)
 
-	leftSnapshot, _ := endpoint.NewSnapshot("left")
-
-	syncTask := task.NewSync(ctx, source, target)
+	syncTask := task.NewSync(ctx, source, target, model.DirectionBi)
+	syncTask.SetSnapshotFactory(endpoint.NewSnapshotFactory())
 	//syncTask.Direction = "left"
 	syncTask.Start(ctx)
-	syncTask.Resync(ctx, false, nil, nil)
-	poller := time.NewTicker(30 * time.Second)
+	syncTask.Resync(ctx, false, false, nil, nil)
+	poller := time.NewTicker(10 * time.Second)
 
 	// Start routine to watching on events.
 	go func() {
@@ -165,9 +164,9 @@ func main() {
 				syncTask.Shutdown()
 				return
 			case <-poller.C:
-				syncTask.Resync(ctx, false, nil, nil)
+				syncTask.Resync(ctx, false, false, nil, nil)
 			case <-resyncCh:
-				syncTask.Resync(ctx, false, nil, nil)
+				syncTask.Resync(ctx, false, false, nil, nil)
 			case dbEvent := <-dbEvents:
 				log.Printf("[DB] %v", dbEvent)
 			case processorEvent := <-processorEvents:
@@ -206,20 +205,14 @@ func main() {
 				commandLineCh <- true
 			} else if text == "resync" {
 				// Check Snapshot
-				fmt.Println("Computing Diff on Snapshot")
-				if diff, e := merger.ComputeDiff(context.Background(), source, leftSnapshot, nil); e == nil {
-					if batch, e := diff.ToUnidirectionalBatch("left"); e == nil {
-						fmt.Println("Snapshot Batch is", batch.String())
-					} else {
-						fmt.Println("Batch error", e)
-					}
-				}
-				if e := leftSnapshot.Capture(source); e != nil {
-					fmt.Println("Error capturing snapshot", e)
-				}
-				syncTask.Resync(context.Background(), false, nil, nil)
+				// Use dryRun as Force Resync
+				syncTask.Resync(context.Background(), false, true, nil, nil)
+			} else if text == "dry" {
+				// Check Snapshot
+				// Use dryRun as Force Resync
+				syncTask.Resync(context.Background(), true, true, nil, nil)
 			} else {
-				fmt.Println("Unsupported command, type exit or resync")
+				//fmt.Println("Unsupported command, type exit or resync")
 			}
 		}
 	}()
