@@ -106,7 +106,7 @@ func (r *RouterEndpoint) Walk(walknFc model.WalkNodesFunc, pathes ...string) (er
 			break
 		}
 		n := resp.Node
-		if n.Etag == common.NODE_FLAG_ETAG_TEMPORARY {
+		if n.Etag == common.NODE_FLAG_ETAG_TEMPORARY /*|| path.Base(n.Path) == common.PYDIO_SYNC_HIDDEN_FILE_META*/ {
 			continue
 		}
 		n.Path = r.unrooted(resp.Node.Path)
@@ -142,6 +142,11 @@ func (r *RouterEndpoint) UpdateNode(ctx context.Context, node *tree.Node) (err e
 }
 
 func (r *RouterEndpoint) DeleteNode(ctx context.Context, name string) (err error) {
+	// Ignore .pydio files !
+	if path.Base(name) == common.PYDIO_SYNC_HIDDEN_FILE_META {
+		log.Logger(ctx).Error("[router] Ignoring " + name)
+		return nil
+	}
 	router := r.getRouter()
 	ctx = r.getContext(ctx)
 	read, e := router.ReadNode(ctx, &tree.ReadNodeRequest{Node: &tree.Node{Path: r.rooted(name)}})
@@ -213,6 +218,7 @@ func (r *RouterEndpoint) GetWriterOn(p string, targetSize int64) (out io.WriteCl
 		return nil, fmt.Errorf("cannot create empty files")
 	}
 	if path.Base(p) == common.PYDIO_SYNC_HIDDEN_FILE_META {
+		log.Logger(r.getContext()).Error("[router] Ignoring " + p)
 		return &NoopWriter{}, nil
 	}
 	n := &tree.Node{Path: r.rooted(p)}
