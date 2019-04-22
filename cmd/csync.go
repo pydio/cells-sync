@@ -27,6 +27,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/pprof"
 	"net/url"
 	"os"
 	"os/signal"
@@ -215,6 +217,13 @@ func main() {
 				//fmt.Println("Unsupported command, type exit or resync")
 			}
 		}
+	}()
+
+	go func() {
+		fmt.Printf("Exposing debug profiles for process %d on port %d\n", os.Getpid(), 6565)
+		http.Handle("/debug", pprof.Handler("debug"))
+		http.ListenAndServe(fmt.Sprintf(":%v", 6565), nil)
+		select {}
 	}()
 
 	// Wait on the routine to be finished or exit.
