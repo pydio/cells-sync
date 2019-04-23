@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pborman/uuid"
+	"github.com/pydio/sync/config"
 
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service/context"
@@ -25,32 +25,32 @@ type Syncer struct {
 	eventsChan chan interface{}
 }
 
-func NewSyncer(left, right, direction string) (*Syncer, error) {
+func NewSyncer(conf *config.Task) (*Syncer, error) {
 	parseMessage := "invalid arguments: please provide left and right endpoints using a valid URI"
-	if left == "" || right == "" {
+	if conf.LeftURI == "" || conf.RightURI == "" {
 		return nil, fmt.Errorf(parseMessage)
 	}
-	leftEndpoint, err := endpoint.EndpointFromURI(left, right)
+	leftEndpoint, err := endpoint.EndpointFromURI(conf.LeftURI, conf.RightURI)
 	if err != nil {
 		return nil, errors.Wrap(err, parseMessage)
 	}
-	rightEndpoint, err := endpoint.EndpointFromURI(right, left)
+	rightEndpoint, err := endpoint.EndpointFromURI(conf.RightURI, conf.LeftURI)
 	if err != nil {
 		return nil, errors.Wrap(err, parseMessage)
 	}
 
 	var dir model.DirectionType
-	switch direction {
-	case "bi":
+	switch conf.Direction {
+	case "Bi":
 		dir = model.DirectionBi
-	case "left":
+	case "Left":
 		dir = model.DirectionLeft
-	case "right":
+	case "Right":
 		dir = model.DirectionRight
 	default:
-		return nil, fmt.Errorf("unsupported direction type, please use one of bi, left, right")
+		return nil, fmt.Errorf("unsupported direction type, please use one of Bi, Left, Right")
 	}
-	taskUuid := uuid.New()
+	taskUuid := conf.Uuid
 	syncTask := task.NewSync(context.Background(), leftEndpoint, rightEndpoint, dir)
 	eventsChan := make(chan interface{})
 	syncTask.SetSyncEventsChan(eventsChan)
@@ -69,7 +69,7 @@ func (s *Syncer) Serve() {
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
 
 	log.Logger(ctx).Info("Starting Sync Service")
-	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory())
+	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid))
 	s.task.Start(ctx)
 	//s.task.Resync(ctx, false, false, nil, nil)
 	bus := GetBus()

@@ -62,12 +62,12 @@ func (s *Snaphsot) MoveNode(ctx context.Context, oldPath string, newPath string)
 	panic("implement me")
 }
 
-func NewSnapshot(name string) (*Snaphsot, error) {
+func NewSnapshot(name, syncUuid string) (*Snaphsot, error) {
 	s := &Snaphsot{name: name}
 	options := bolt.DefaultOptions
 	options.Timeout = 5 * time.Second
 	appDir := config.ApplicationDataDir()
-	f := filepath.Join(appDir, "sync")
+	f := filepath.Join(appDir, "sync", syncUuid)
 	os.MkdirAll(f, 0755)
 	p := filepath.Join(f, "snapshot-"+name)
 	if _, err := os.Stat(p); err != nil {

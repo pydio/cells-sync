@@ -1,17 +1,14 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
+
+	"github.com/pydio/sync/config"
 
 	"github.com/pydio/sync/control"
 	"github.com/spf13/cobra"
 	"github.com/thejerf/suture"
-)
-
-var (
-	left      string
-	right     string
-	direction string
 )
 
 var StartCmd = &cobra.Command{
@@ -21,12 +18,18 @@ var StartCmd = &cobra.Command{
 
 		supervisor := suture.NewSimple("cells-sync")
 
-		syncer, e := control.NewSyncer(left, right, direction)
-		if e != nil {
-			cmd.Usage()
-			log.Fatal(e)
+		conf := config.Default()
+		if len(conf.Tasks) > 0 {
+			for _, t := range conf.Tasks {
+				fmt.Println("Starting Sync", t)
+				syncer, e := control.NewSyncer(t)
+				if e != nil {
+					cmd.Usage()
+					log.Fatal(e)
+				}
+				supervisor.Add(syncer)
+			}
 		}
-		supervisor.Add(syncer)
 
 		profiler := &control.Profiler{}
 		supervisor.Add(profiler)
@@ -49,8 +52,4 @@ var StartCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(StartCmd)
-	flags := StartCmd.Flags()
-	flags.StringVarP(&left, "left", "l", "", "Left endpoint URI")
-	flags.StringVarP(&right, "right", "r", "", "Right endpoint URI")
-	flags.StringVarP(&direction, "direction", "d", "bi", "Sync direction")
 }

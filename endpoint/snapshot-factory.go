@@ -8,12 +8,14 @@ import (
 
 type SnapshotFactory struct {
 	sync.Mutex
-	snaps map[string]model.Snapshoter
+	snaps    map[string]model.Snapshoter
+	syncUuid string
 }
 
-func NewSnapshotFactory() model.SnapshotFactory {
+func NewSnapshotFactory(syncUuid string) model.SnapshotFactory {
 	return &SnapshotFactory{
-		snaps: make(map[string]model.Snapshoter),
+		snaps:    make(map[string]model.Snapshoter),
+		syncUuid: syncUuid,
 	}
 }
 
@@ -23,7 +25,7 @@ func (f *SnapshotFactory) Load(name string) (model.Snapshoter, error) {
 	if s, ok := f.snaps[name]; ok {
 		return s, nil
 	}
-	s, e := NewSnapshot(name)
+	s, e := NewSnapshot(name, f.syncUuid)
 	if e != nil {
 		return nil, e
 	}
