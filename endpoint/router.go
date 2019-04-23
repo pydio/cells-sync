@@ -213,24 +213,36 @@ func (r *RouterEndpoint) changeToEventInfo(events chan model.EventInfo, change *
 			PathSyncSource: r,
 		}
 	} else if change.Type == tree.NodeChangeEvent_UPDATE_PATH {
-		log.Logger(r.getContext()).Info("Got Event " + change.Type.String() + " - " + change.Source.Path + " - " + change.Target.Path)
+		log.Logger(r.getContext()).Info("Got Move Event " + change.Type.String() + " - " + change.Source.Path + " - " + change.Target.Path)
 		events <- model.EventInfo{
-			Type:           model.EventRemove,
-			Path:           change.Source.Path,
-			ScanEvent:      true,
-			ScanSourceNode: change.Source,
-			Time:           now,
-			PathSyncSource: r,
-		}
-		events <- model.EventInfo{
-			Type:           model.EventCreate,
+			Type:           model.EventSureMove,
 			Path:           change.Target.Path,
-			Etag:           change.Target.Etag,
-			Time:           now,
 			Folder:         !change.Target.IsLeaf(),
 			Size:           change.Target.Size,
+			Etag:           change.Target.Etag,
+			MoveSource:     change.Source,
+			MoveTarget:     change.Target,
 			PathSyncSource: r,
 		}
+		/*
+			events <- model.EventInfo{
+				Type:           model.EventRemove,
+				Path:           change.Source.Path,
+				ScanEvent:      true,
+				ScanSourceNode: change.Source,
+				Time:           now,
+				PathSyncSource: r,
+			}
+			events <- model.EventInfo{
+				Type:           model.EventCreate,
+				Path:           change.Target.Path,
+				Etag:           change.Target.Etag,
+				Time:           now,
+				Folder:         !change.Target.IsLeaf(),
+				Size:           change.Target.Size,
+				PathSyncSource: r,
+			}
+		*/
 	}
 	return
 }
