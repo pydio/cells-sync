@@ -34,6 +34,10 @@ func (s *StdInner) Serve() {
 			// Check Snapshot
 			// Use dryRun as Force Resync
 			bus.Pub(MessageResyncDry, TopicSyncAll)
+		case "loop":
+			// Check Snapshot
+			// Use dryRun as Force Resync
+			bus.Pub(MessageSyncLoop, TopicSyncAll)
 		}
 	}
 

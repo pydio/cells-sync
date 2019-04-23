@@ -154,7 +154,7 @@ func (s *Snaphsot) Walk(walknFc model.WalkNodesFunc, pathes ...string) (err erro
 	return err
 }
 
-func (s *Snaphsot) Watch(recursivePath string) (*model.WatchObject, error) {
+func (s *Snaphsot) Watch(recursivePath string, connectionInfo chan model.WatchConnectionInfo) (*model.WatchObject, error) {
 	return nil, fmt.Errorf("not.implemented")
 }
 

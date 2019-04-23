@@ -26,6 +26,9 @@ import (
 	"io"
 	"path"
 	"strings"
+	"time"
+
+	"github.com/pydio/cells/common/registry"
 
 	"github.com/micro/go-micro/errors"
 
@@ -57,14 +60,21 @@ func (nw *NoopWriter) Close() error {
 }
 
 type RouterEndpoint struct {
-	router *views.Router
-	root   string
-	ctx    context.Context
+	router    *views.Router
+	root      string
+	ctx       context.Context
+	options   Options
+	watchConn chan model.WatchConnectionInfo
 }
 
-func NewRouterEndpoint(root string) *RouterEndpoint {
+type Options struct {
+	RenewFolderUuids bool
+}
+
+func NewRouterEndpoint(root string, options Options) *RouterEndpoint {
 	return &RouterEndpoint{
-		root: root,
+		root:    root,
+		options: options,
 	}
 }
 
@@ -83,6 +93,7 @@ func (r *RouterEndpoint) GetEndpointInfo() model.EndpointInfo {
 		URI: "router://" + r.root,
 		RequiresNormalization: false,
 		RequiresFoldersRescan: false,
+		EchoTime:              30 * time.Second,
 	}
 }
 
@@ -118,8 +129,131 @@ func (r *RouterEndpoint) Walk(walknFc model.WalkNodesFunc, pathes ...string) (er
 	return
 }
 
-func (r *RouterEndpoint) Watch(recursivePath string) (*model.WatchObject, error) {
-	return nil, fmt.Errorf("not.implemented")
+func (r *RouterEndpoint) Watch(recursivePath string, connectionInfo chan model.WatchConnectionInfo) (*model.WatchObject, error) {
+
+	r.watchConn = connectionInfo
+	changes := make(chan *tree.NodeChangeEvent)
+	finished := make(chan error)
+	ctx, cancel := context.WithCancel(r.getContext())
+
+	obj := &model.WatchObject{
+		EventInfoChan: make(chan model.EventInfo),
+		DoneChan:      make(chan bool, 1),
+		ErrorChan:     make(chan error),
+	}
+	go func() {
+		defer close(finished)
+		defer close(obj.EventInfoChan)
+		for {
+			select {
+			case c := <-changes:
+				r.changeToEventInfo(obj.EventInfoChan, c)
+			case er := <-finished:
+				log.Logger(r.getContext()).Info("Connection finished " + er.Error())
+				if connectionInfo != nil {
+					connectionInfo <- model.WatchDisconnected
+				}
+				<-time.After(5 * time.Second)
+				log.Logger(r.getContext()).Info("Restarting events watcher after 5s")
+				go r.receiveEvents(ctx, changes, finished)
+			case <-obj.DoneChan:
+				log.Logger(r.getContext()).Info("Stopping event watcher")
+				cancel()
+				return
+			}
+		}
+	}()
+
+	go r.receiveEvents(ctx, changes, finished)
+
+	return obj, nil
+}
+
+func (r *RouterEndpoint) changeValidPath(n *tree.Node) bool {
+	if n == nil {
+		return true
+	}
+	if n.Etag == common.NODE_FLAG_ETAG_TEMPORARY {
+		return false
+	}
+	if strings.Trim(n.Path, "/") == "" {
+		return false
+	}
+	if path.Base(n.Path) == common.PYDIO_SYNC_HIDDEN_FILE_META {
+		return false
+	}
+	return true
+}
+
+func (r *RouterEndpoint) changeToEventInfo(events chan model.EventInfo, change *tree.NodeChangeEvent) {
+
+	TimeFormatFS := "2006-01-02T15:04:05.000Z"
+	now := time.Now().UTC().Format(TimeFormatFS)
+	if !r.changeValidPath(change.Target) || !r.changeValidPath(change.Source) {
+		return
+	}
+
+	if change.Type == tree.NodeChangeEvent_CREATE || change.Type == tree.NodeChangeEvent_UPDATE_CONTENT {
+		log.Logger(r.getContext()).Info("Got Event " + change.Type.String() + " - " + change.Target.Path)
+		events <- model.EventInfo{
+			Type:           model.EventCreate,
+			Path:           change.Target.Path,
+			Etag:           change.Target.Etag,
+			Time:           now,
+			Folder:         !change.Target.IsLeaf(),
+			Size:           change.Target.Size,
+			PathSyncSource: r,
+		}
+	} else if change.Type == tree.NodeChangeEvent_DELETE {
+		log.Logger(r.getContext()).Info("Got Event " + change.Type.String() + " - " + change.Source.Path)
+		events <- model.EventInfo{
+			Type:           model.EventRemove,
+			Path:           change.Source.Path,
+			Time:           now,
+			PathSyncSource: r,
+		}
+	} else if change.Type == tree.NodeChangeEvent_UPDATE_PATH {
+		log.Logger(r.getContext()).Info("Got Event " + change.Type.String() + " - " + change.Source.Path + " - " + change.Target.Path)
+		events <- model.EventInfo{
+			Type:           model.EventRemove,
+			Path:           change.Source.Path,
+			ScanEvent:      true,
+			ScanSourceNode: change.Source,
+			Time:           now,
+			PathSyncSource: r,
+		}
+		events <- model.EventInfo{
+			Type:           model.EventCreate,
+			Path:           change.Target.Path,
+			Etag:           change.Target.Etag,
+			Time:           now,
+			Folder:         !change.Target.IsLeaf(),
+			Size:           change.Target.Size,
+			PathSyncSource: r,
+		}
+	}
+	return
+}
+
+func (r *RouterEndpoint) receiveEvents(ctx context.Context, changes chan *tree.NodeChangeEvent, finished chan error) {
+	changesClient := tree.NewNodeChangesStreamerClient(registry.GetClient(common.SERVICE_TREE))
+	streamer, e := changesClient.StreamChanges(r.getContext(), &tree.StreamChangesRequest{RootPath: r.root})
+	if e != nil {
+		finished <- e
+		return
+	}
+	if r.watchConn != nil {
+		r.watchConn <- model.WatchConnected
+	}
+	for {
+		change, e := streamer.Recv()
+		if e != nil {
+			log.Logger(r.getContext()).Error("Stopping watcher on error" + e.Error())
+			finished <- e
+			break
+		}
+		changes <- change
+	}
 }
 
 func (r *RouterEndpoint) ComputeChecksum(node *tree.Node) error {
@@ -129,7 +263,9 @@ func (r *RouterEndpoint) ComputeChecksum(node *tree.Node) error {
 func (r *RouterEndpoint) CreateNode(ctx context.Context, node *tree.Node, updateIfExists bool) (err error) {
 	n := node.Clone()
 	n.Path = r.rooted(n.Path)
-	n.Uuid = ""
+	if r.options.RenewFolderUuids {
+		n.Uuid = ""
+	}
 	_, e := r.getRouter().CreateNode(r.getContext(ctx), &tree.CreateNodeRequest{Node: n})
 	return e
 }
@@ -144,7 +280,7 @@ func (r *RouterEndpoint) UpdateNode(ctx context.Context, node *tree.Node) (err e
 func (r *RouterEndpoint) DeleteNode(ctx context.Context, name string) (err error) {
 	// Ignore .pydio files !
 	if path.Base(name) == common.PYDIO_SYNC_HIDDEN_FILE_META {
-		log.Logger(ctx).Error("[router] Ignoring " + name)
+		log.Logger(ctx).Info("[router] Ignoring " + name)
 		return nil
 	}
 	router := r.getRouter()
@@ -218,7 +354,7 @@ func (r *RouterEndpoint) GetWriterOn(p string, targetSize int64) (out io.WriteCl
 		return nil, fmt.Errorf("cannot create empty files")
 	}
 	if path.Base(p) == common.PYDIO_SYNC_HIDDEN_FILE_META {
-		log.Logger(r.getContext()).Error("[router] Ignoring " + p)
+		log.Logger(r.getContext()).Info("[router] Ignoring " + p)
 		return &NoopWriter{}, nil
 	}
 	n := &tree.Node{Path: r.rooted(p)}

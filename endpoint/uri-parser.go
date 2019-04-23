@@ -13,12 +13,13 @@ import (
 )
 
 // EndpointFromURI parse an URI string to instantiate a proper Endpoint
-func EndpointFromURI(uri string) (ep model.Endpoint, e error) {
+func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
 
 	u, e := url.Parse(uri)
 	if e != nil {
 		return nil, e
 	}
+	otherU, _ := url.Parse(otherUri)
 
 	switch u.Scheme {
 
@@ -34,7 +35,11 @@ func EndpointFromURI(uri string) (ep model.Endpoint, e error) {
 		return endpoints.NewMemDB(), nil
 
 	case "router":
-		return NewRouterEndpoint(strings.TrimLeft(u.Path, "/")), nil
+		options := Options{}
+		if otherU != nil && otherU.Scheme == "router" {
+			options.RenewFolderUuids = true
+		}
+		return NewRouterEndpoint(strings.TrimLeft(u.Path, "/"), options), nil
 
 	case "s3":
 		fullPath := u.Path
