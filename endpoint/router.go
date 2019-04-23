@@ -292,61 +292,60 @@ func (r *RouterEndpoint) UpdateNode(ctx context.Context, node *tree.Node) (err e
 func (r *RouterEndpoint) DeleteNode(ctx context.Context, name string) (err error) {
 	// Ignore .pydio files !
 	if path.Base(name) == common.PYDIO_SYNC_HIDDEN_FILE_META {
-		log.Logger(ctx).Info("[router] Ignoring " + name)
+		log.Logger(ctx).Debug("[router] Ignoring " + name)
 		return nil
 	}
 	router := r.getRouter()
 	ctx = r.getContext(ctx)
 	read, e := router.ReadNode(ctx, &tree.ReadNodeRequest{Node: &tree.Node{Path: r.rooted(name)}})
 	if e != nil {
-		log.Logger(ctx).Error("Trying to delete node with error " + r.rooted(name) + ":" + e.Error())
 		if errors.Parse(e.Error()).Code == 404 {
 			return nil
 		} else {
 			return e
 		}
 	}
-	node := read.Node
-	if node.IsLeaf() {
-		log.Logger(ctx).Info("DeleteNode LEAF: " + node.Path)
-		_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: node.Clone()})
-	} else {
-		log.Logger(ctx).Info("DeleteNode COLL: " + node.Path)
-		pFile := path.Join(node.Path, common.PYDIO_SYNC_HIDDEN_FILE_META)
-		// Now list all children and delete them all
-		stream, err := router.ListNodes(ctx, &tree.ListNodesRequest{Node: node, Recursive: true})
-		if err != nil {
-			return err
-		}
-		defer stream.Close()
-		for {
-			resp, e := stream.Recv()
-			if e != nil {
-				break
-			}
-			if resp == nil {
-				continue
-			}
-			if resp.Node.Path == pFile {
-				continue
-			}
-			log.Logger(ctx).Info("DeleteNode List Children: " + resp.Node.Path)
-			if !resp.Node.IsLeaf() {
-				resp.Node.Path = path.Join(resp.Node.Path, common.PYDIO_SYNC_HIDDEN_FILE_META, "/")
-				resp.Node.Type = tree.NodeType_LEAF
-			}
-			if _, err := router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: resp.Node}); err != nil {
-				log.Logger(ctx).Error("Error while deleting node child " + err.Error())
+	_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: read.Node.Clone()})
+	return
+	/*
+		if node.IsLeaf() {
+			_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: node.Clone()})
+		} else {
+			pFile := path.Join(node.Path, common.PYDIO_SYNC_HIDDEN_FILE_META)
+			// Now list all children and delete them all
+			stream, err := router.ListNodes(ctx, &tree.ListNodesRequest{Node: node, Recursive: true})
+			if err != nil {
 				return err
 			}
+			defer stream.Close()
+			for {
+				resp, e := stream.Recv()
+				if e != nil {
+					break
+				}
+				if resp == nil {
+					continue
+				}
+				if resp.Node.Path == pFile {
+					continue
+				}
+				if !resp.Node.IsLeaf() {
+					resp.Node.Path = path.Join(resp.Node.Path, common.PYDIO_SYNC_HIDDEN_FILE_META, "/")
+					resp.Node.Type = tree.NodeType_LEAF
+				}
+				if _, err := router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: resp.Node}); err != nil {
+					log.Logger(ctx).Error("Error while deleting node child " + err.Error())
+					return err
+				}
+			}
+			log.Logger(ctx).Info("Finally delete .pydio: " + pFile)
+			_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: &tree.Node{
+				Path: pFile,
+				Type: tree.NodeType_LEAF,
+			}})
 		}
-		log.Logger(ctx).Info("Finally delete .pydio: " + pFile)
-		_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: &tree.Node{
-			Path: pFile,
-			Type: tree.NodeType_LEAF,
-		}})
-	}
-	return err
+		return err
+	*/
 }
 
 func (r *RouterEndpoint) MoveNode(ctx context.Context, oldPath string, newPath string) (err error) {
@@ -391,9 +390,9 @@ func (r *RouterEndpoint) GetReaderOn(p string) (out io.ReadCloser, err error) {
 func (r *RouterEndpoint) getRouter() *views.Router {
 	if r.router == nil {
 		r.router = views.NewStandardRouter(views.RouterOptions{
-			WatchRegistry: true,
-			AdminView:     true,
-			Synchronous:   true,
+			WatchRegistry:    true,
+			AdminView:        true,
+			SynchronousTasks: true,
 		})
 	}
 	return r.router
