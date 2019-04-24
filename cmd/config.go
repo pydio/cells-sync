@@ -1,15 +1,46 @@
 package cmd
 
 import (
+	"context"
+	"os"
+
 	"github.com/manifoldco/promptui"
-	"github.com/micro/go-log"
 	"github.com/pborman/uuid"
+	"github.com/pydio/cells/common/log"
 	"github.com/pydio/sync/config"
 	"github.com/spf13/cobra"
 )
 
+func exit(err error) {
+	if err != nil && err.Error() != "" {
+		log.Logger(context.Background()).Error(err.Error())
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
 var AddCmd = &cobra.Command{
-	Use: "add",
+	Use:   "add",
+	Short: "Add a new sync",
+	Long: `Define a new sync task using two URI and a direction.
+
+Endpoint URI support the following schemes: 
+ - router: Direct connexion to Cells server running on the same machine
+ - fs:     Path to a local folder
+ - s3:     S3 compliant
+ - memdb:  In-memory DB for testing purposes
+
+Direction can be:
+ - Bi:     Bidirectionnal sync between two endpoints
+ - Left:   Changes are only propagated from right to left
+ - Right:  Changes are only propagated from left to right
+
+Example
+ - LeftUri : "router:///personal/admin/folder"
+ - RightUri: "fs:///Users/name/Pydio/folder"
+ - Direction: "Bi"
+
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		t := &config.Task{
@@ -21,37 +52,34 @@ var AddCmd = &cobra.Command{
 		s := promptui.Select{Label: "Sync Direction", Items: []string{"Bi", "Left", "Right"}}
 		t.LeftURI, e = l.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 		t.RightURI, e = r.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 		_, t.Direction, e = s.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 
 		config.Default().Tasks = append(config.Default().Tasks, t)
 		er := config.Save()
 		if er != nil {
-			log.Fatal(er)
+			exit(er)
 		}
 
 	},
 }
 
 var EditCmd = &cobra.Command{
-	Use: "edit",
+	Use:   "edit",
+	Short: "Exit existing sync",
 	Run: func(cmd *cobra.Command, args []string) {
-		var items []string
-		for _, t := range config.Default().Tasks {
-			items = append(items, t.Uuid)
-		}
-		tS := promptui.Select{Label: "Select Sync to Edit", Items: items}
+		tS := promptui.Select{Label: "Select Sync to Edit", Items: config.Default().Items()}
 		i, _, e := tS.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 
 		task := config.Default().Tasks[i]
@@ -60,34 +88,31 @@ var EditCmd = &cobra.Command{
 		s := promptui.Select{Label: "Sync Direction", Items: []string{"Bi", "Left", "Right"}}
 		task.LeftURI, e = l.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 		task.RightURI, e = r.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 		_, task.Direction, e = s.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 		er := config.Save()
 		if er != nil {
-			log.Fatal(er)
+			exit(er)
 		}
 	},
 }
 
 var DeleteCmd = &cobra.Command{
-	Use: "delete",
+	Use:   "delete",
+	Short: "Delete existing sync",
 	Run: func(cmd *cobra.Command, args []string) {
-		var items []string
-		for _, t := range config.Default().Tasks {
-			items = append(items, t.Uuid)
-		}
-		tS := promptui.Select{Label: "Select Sync to Edit", Items: items}
+		tS := promptui.Select{Label: "Select Sync to Edit", Items: config.Default().Items()}
 		i, _, e := tS.Run()
 		if e != nil {
-			log.Fatal(e)
+			exit(e)
 		}
 		tasks := config.Default().Tasks
 		last := len(tasks) - 1
@@ -98,7 +123,7 @@ var DeleteCmd = &cobra.Command{
 		config.Default().Tasks = tasks
 		er := config.Save()
 		if er != nil {
-			log.Fatal(er)
+			exit(er)
 		}
 
 	},

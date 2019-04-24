@@ -18,13 +18,14 @@ func (s *StdInner) Serve() {
 	s.ctx = servicecontext.WithServiceName(context.Background(), "scanner")
 	s.ctx = servicecontext.WithServiceColor(s.ctx, servicecontext.ServiceColorOther)
 
-	log.Logger(s.ctx).Info("Type 'exit' and enter or Ctrl+C to quit, type 'resync' and enter to launch a resync.")
+	log.Logger(s.ctx).Info("Use 'quit' or Ctrl+C to exit, type 'resync', 'dry', 'loop' to control syncs, 'pause' or 'resume'")
 	bus := GetBus()
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
 		switch text {
-		case "exit":
+		case "exit", "quit":
+			// Stop all
 			bus.Pub(MessageHalt, TopicGlobal)
 		case "resync":
 			// Check Snapshot
@@ -38,6 +39,12 @@ func (s *StdInner) Serve() {
 			// Check Snapshot
 			// Use dryRun as Force Resync
 			bus.Pub(MessageSyncLoop, TopicSyncAll)
+		case "pause":
+			// Pause all syncs
+			bus.Pub(MessagePause, TopicSyncAll)
+		case "resume":
+			// Resume all syncs
+			bus.Pub(MessageResume, TopicSyncAll)
 		}
 	}
 

@@ -31,6 +31,19 @@ type Task struct {
 	Direction string
 }
 
+func (g *Global) Items() (items []string) {
+	for _, t := range g.Tasks {
+		dir := "<=>"
+		if t.Direction == "Left" {
+			dir = "=>"
+		} else if t.Direction == "Right" {
+			dir = "<="
+		}
+		items = append(items, t.LeftURI+" "+dir+" "+t.RightURI)
+	}
+	return
+}
+
 var def *Global
 
 func Default() *Global {

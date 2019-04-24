@@ -17,6 +17,8 @@ type CommandMessage int
 const (
 	MessageHalt = iota
 	MessageRestart
+	MessagePause
+	MessageResume
 	MessageSyncLoop
 	MessageResync
 	MessageResyncDry

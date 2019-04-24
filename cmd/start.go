@@ -13,7 +13,7 @@ import (
 
 var StartCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start sync",
+	Short: "Start sync tasks",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		supervisor := suture.NewSimple("cells-sync")

@@ -71,7 +71,6 @@ func (s *Syncer) Serve() {
 	log.Logger(ctx).Info("Starting Sync Service")
 	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid))
 	s.task.Start(ctx)
-	//s.task.Resync(ctx, false, false, nil, nil)
 	bus := GetBus()
 	topic := bus.Sub(TopicSyncAll, TopicSync_+s.uuid)
 	s.ticker = time.NewTicker(10 * time.Minute)
@@ -97,16 +96,22 @@ func (s *Syncer) Serve() {
 
 		case message := <-topic:
 
-			if message == MessageResync {
+			switch message {
+			case MessageResync:
 				s.task.Resync(ctx, false, true, nil, nil)
-			} else if message == MessageResyncDry {
+			case MessageResyncDry:
 				s.task.Resync(ctx, true, true, nil, nil)
-			} else if message == MessageSyncLoop {
+			case MessageSyncLoop:
 				s.task.Resync(ctx, false, false, nil, nil)
-			} else if message == model.WatchDisconnected {
+			case model.WatchDisconnected:
 				log.Logger(ctx).Info("Currently disconnected")
-			} else if message == model.WatchConnected {
+			case model.WatchConnected:
 				log.Logger(ctx).Info("Connected, launching a sync loop")
+				s.task.Resync(ctx, false, false, nil, nil)
+			case MessagePause:
+				s.task.Pause()
+			case MessageResume:
+				s.task.Resume()
 				s.task.Resync(ctx, false, false, nil, nil)
 			}
 
