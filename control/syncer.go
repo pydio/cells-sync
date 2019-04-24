@@ -28,6 +28,8 @@ type Syncer struct {
 	eventsChan  chan interface{}
 	batchStatus chan merger.BatchProcessStatus
 	batchDone   chan bool
+
+	serviceCtx context.Context
 }
 
 func NewSyncer(conf *config.Task) (*Syncer, error) {
@@ -55,12 +57,46 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	default:
 		return nil, fmt.Errorf("unsupported direction type, please use one of Bi, Left, Right")
 	}
+
+	ctx := servicecontext.WithServiceName(context.Background(), "sync-task")
+	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
+
 	taskUuid := conf.Uuid
-	syncTask := task.NewSync(context.Background(), leftEndpoint, rightEndpoint, dir)
+	syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, dir)
 	eventsChan := make(chan interface{})
 	batchStatus := make(chan merger.BatchProcessStatus)
 	batchDone := make(chan bool)
+	go func() {
+		for {
+			select {
+			case l, ok := <-batchStatus:
+				if !ok {
+					return
+				}
+				msg := "Status: " + l.StatusString
+				if l.Progress > 0 {
+					msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress*100))
+				}
+				if l.IsError {
+					log.Logger(ctx).Error(msg)
+				} else {
+					log.Logger(ctx).Info(msg)
+				}
+
+			case _, ok := <-batchDone:
+				if !ok {
+					return
+				}
+				log.Logger(ctx).Info("Finished Processing Batch")
+
+			case e := <-eventsChan:
+				GetBus().Pub(e, TopicSync_+taskUuid)
+
+			}
+		}
+	}()
 	syncTask.SetSyncEventsChan(batchStatus, batchDone, eventsChan)
+
 	return &Syncer{
 		uuid:        taskUuid,
 		task:        syncTask,
@@ -68,14 +104,14 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		batchStatus: batchStatus,
 		batchDone:   batchDone,
 		stop:        make(chan bool, 1),
+		serviceCtx:  ctx,
 	}, nil
 
 }
 
 func (s *Syncer) Serve() {
 
-	ctx := servicecontext.WithServiceName(context.Background(), "sync-task")
-	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
+	ctx := s.serviceCtx
 
 	log.Logger(ctx).Info("Starting Sync Service")
 	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid))
@@ -86,24 +122,6 @@ func (s *Syncer) Serve() {
 
 	for {
 		select {
-
-		case l := <-s.batchStatus:
-			msg := "STATUS: " + l.StatusString
-			if l.Progress > 0 {
-				msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress*100))
-			}
-			if l.IsError {
-				log.Logger(ctx).Error(msg)
-			} else {
-				log.Logger(ctx).Info(msg)
-			}
-
-		case <-s.batchDone:
-			log.Logger(ctx).Info("BATCH FINISHED")
-
-		case e := <-s.eventsChan:
-
-			GetBus().Pub(e, TopicSync_+s.uuid)
 
 		case <-s.stop:
 

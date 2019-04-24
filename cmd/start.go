@@ -1,14 +1,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
-	"log"
+	"os"
 
-	"github.com/pydio/sync/config"
-
-	"github.com/pydio/sync/control"
 	"github.com/spf13/cobra"
 	"github.com/thejerf/suture"
+
+	"github.com/pydio/cells/common/log"
+	"github.com/pydio/cells/common/service/context"
+	"github.com/pydio/sync/config"
+	"github.com/pydio/sync/control"
 )
 
 var StartCmd = &cobra.Command{
@@ -16,7 +19,14 @@ var StartCmd = &cobra.Command{
 	Short: "Start sync tasks",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		supervisor := suture.NewSimple("cells-sync")
+		ctx := servicecontext.WithServiceName(context.Background(), "supervisor")
+		ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
+
+		supervisor := suture.New("cells-sync", suture.Spec{
+			Log: func(s string) {
+				log.Logger(ctx).Info(s)
+			},
+		})
 
 		conf := config.Default()
 		if len(conf.Tasks) > 0 {
@@ -24,8 +34,9 @@ var StartCmd = &cobra.Command{
 				fmt.Println("Starting Sync", t)
 				syncer, e := control.NewSyncer(t)
 				if e != nil {
+					log.Logger(ctx).Error(e.Error())
 					cmd.Usage()
-					log.Fatal(e)
+					os.Exit(1)
 				}
 				supervisor.Add(syncer)
 			}

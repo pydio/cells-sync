@@ -28,8 +28,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pydio/cells/common/registry"
-
 	"github.com/micro/go-micro/errors"
 
 	"github.com/pydio/cells/common"
@@ -38,6 +36,7 @@ import (
 	natsregistry "github.com/pydio/cells/common/micro/registry/nats"
 	grpctransport "github.com/pydio/cells/common/micro/transport/grpc"
 	"github.com/pydio/cells/common/proto/tree"
+	"github.com/pydio/cells/common/registry"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/cells/common/views"
 )
@@ -94,6 +93,7 @@ func (r *RouterEndpoint) GetEndpointInfo() model.EndpointInfo {
 		RequiresNormalization: false,
 		RequiresFoldersRescan: false,
 		EchoTime:              30 * time.Second,
+		Ignores:               []string{common.PYDIO_SYNC_HIDDEN_FILE_META},
 	}
 }
 
@@ -102,7 +102,7 @@ func (r *RouterEndpoint) Walk(walknFc model.WalkNodesFunc, pathes ...string) (er
 	if len(pathes) > 0 {
 		p = pathes[0]
 	}
-	log.Logger(r.getContext()).Info("Walking Router on " + r.rooted(p))
+	log.Logger(r.getContext()).Debug("Walking Router on " + r.rooted(p))
 	s, e := r.getRouter().ListNodes(r.getContext(), &tree.ListNodesRequest{
 		Node:      &tree.Node{Path: r.rooted(p)},
 		Recursive: true,
@@ -194,7 +194,7 @@ func (r *RouterEndpoint) changeToEventInfo(events chan model.EventInfo, change *
 	}
 
 	if change.Type == tree.NodeChangeEvent_CREATE || change.Type == tree.NodeChangeEvent_UPDATE_CONTENT {
-		log.Logger(r.getContext()).Info("Got Event " + change.Type.String() + " - " + change.Target.Path)
+		log.Logger(r.getContext()).Debug("Got Event " + change.Type.String() + " - " + change.Target.Path)
 		events <- model.EventInfo{
 			Type:           model.EventCreate,
 			Path:           change.Target.Path,
@@ -205,7 +205,7 @@ func (r *RouterEndpoint) changeToEventInfo(events chan model.EventInfo, change *
 			PathSyncSource: r,
 		}
 	} else if change.Type == tree.NodeChangeEvent_DELETE {
-		log.Logger(r.getContext()).Info("Got Event " + change.Type.String() + " - " + change.Source.Path)
+		log.Logger(r.getContext()).Debug("Got Event " + change.Type.String() + " - " + change.Source.Path)
 		events <- model.EventInfo{
 			Type:           model.EventRemove,
 			Path:           change.Source.Path,
@@ -213,7 +213,7 @@ func (r *RouterEndpoint) changeToEventInfo(events chan model.EventInfo, change *
 			PathSyncSource: r,
 		}
 	} else if change.Type == tree.NodeChangeEvent_UPDATE_PATH {
-		log.Logger(r.getContext()).Info("Got Move Event " + change.Type.String() + " - " + change.Source.Path + " - " + change.Target.Path)
+		log.Logger(r.getContext()).Debug("Got Move Event " + change.Type.String() + " - " + change.Source.Path + " - " + change.Target.Path)
 		events <- model.EventInfo{
 			Type:           model.EventSureMove,
 			Path:           change.Target.Path,
@@ -224,25 +224,6 @@ func (r *RouterEndpoint) changeToEventInfo(events chan model.EventInfo, change *
 			MoveTarget:     change.Target,
 			PathSyncSource: r,
 		}
-		/*
-			events <- model.EventInfo{
-				Type:           model.EventRemove,
-				Path:           change.Source.Path,
-				ScanEvent:      true,
-				ScanSourceNode: change.Source,
-				Time:           now,
-				PathSyncSource: r,
-			}
-			events <- model.EventInfo{
-				Type:           model.EventCreate,
-				Path:           change.Target.Path,
-				Etag:           change.Target.Etag,
-				Time:           now,
-				Folder:         !change.Target.IsLeaf(),
-				Size:           change.Target.Size,
-				PathSyncSource: r,
-			}
-		*/
 	}
 	return
 }
@@ -307,45 +288,6 @@ func (r *RouterEndpoint) DeleteNode(ctx context.Context, name string) (err error
 	}
 	_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: read.Node.Clone()})
 	return
-	/*
-		if node.IsLeaf() {
-			_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: node.Clone()})
-		} else {
-			pFile := path.Join(node.Path, common.PYDIO_SYNC_HIDDEN_FILE_META)
-			// Now list all children and delete them all
-			stream, err := router.ListNodes(ctx, &tree.ListNodesRequest{Node: node, Recursive: true})
-			if err != nil {
-				return err
-			}
-			defer stream.Close()
-			for {
-				resp, e := stream.Recv()
-				if e != nil {
-					break
-				}
-				if resp == nil {
-					continue
-				}
-				if resp.Node.Path == pFile {
-					continue
-				}
-				if !resp.Node.IsLeaf() {
-					resp.Node.Path = path.Join(resp.Node.Path, common.PYDIO_SYNC_HIDDEN_FILE_META, "/")
-					resp.Node.Type = tree.NodeType_LEAF
-				}
-				if _, err := router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: resp.Node}); err != nil {
-					log.Logger(ctx).Error("Error while deleting node child " + err.Error())
-					return err
-				}
-			}
-			log.Logger(ctx).Info("Finally delete .pydio: " + pFile)
-			_, err = router.DeleteNode(ctx, &tree.DeleteNodeRequest{Node: &tree.Node{
-				Path: pFile,
-				Type: tree.NodeType_LEAF,
-			}})
-		}
-		return err
-	*/
 }
 
 func (r *RouterEndpoint) MoveNode(ctx context.Context, oldPath string, newPath string) (err error) {
@@ -365,7 +307,7 @@ func (r *RouterEndpoint) GetWriterOn(p string, targetSize int64) (out io.WriteCl
 		return nil, fmt.Errorf("cannot create empty files")
 	}
 	if path.Base(p) == common.PYDIO_SYNC_HIDDEN_FILE_META {
-		log.Logger(r.getContext()).Info("[router] Ignoring " + p)
+		log.Logger(r.getContext()).Debug("[router] Ignoring " + p)
 		return &NoopWriter{}, nil
 	}
 	n := &tree.Node{Path: r.rooted(p)}
