@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pydio/cells/common/sync/merger"
+
 	"github.com/pydio/sync/config"
 
 	"github.com/pydio/cells/common/log"
@@ -18,11 +20,14 @@ import (
 )
 
 type Syncer struct {
-	task       *task.Sync
-	ticker     *time.Ticker
-	stop       chan bool
-	uuid       string
-	eventsChan chan interface{}
+	task   *task.Sync
+	ticker *time.Ticker
+	stop   chan bool
+	uuid   string
+
+	eventsChan  chan interface{}
+	batchStatus chan merger.BatchProcessStatus
+	batchDone   chan bool
 }
 
 func NewSyncer(conf *config.Task) (*Syncer, error) {
@@ -53,12 +58,16 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	taskUuid := conf.Uuid
 	syncTask := task.NewSync(context.Background(), leftEndpoint, rightEndpoint, dir)
 	eventsChan := make(chan interface{})
-	syncTask.SetSyncEventsChan(eventsChan)
+	batchStatus := make(chan merger.BatchProcessStatus)
+	batchDone := make(chan bool)
+	syncTask.SetSyncEventsChan(batchStatus, batchDone, eventsChan)
 	return &Syncer{
-		uuid:       taskUuid,
-		task:       syncTask,
-		eventsChan: eventsChan,
-		stop:       make(chan bool, 1),
+		uuid:        taskUuid,
+		task:        syncTask,
+		eventsChan:  eventsChan,
+		batchStatus: batchStatus,
+		batchDone:   batchDone,
+		stop:        make(chan bool, 1),
 	}, nil
 
 }
@@ -78,6 +87,20 @@ func (s *Syncer) Serve() {
 	for {
 		select {
 
+		case l := <-s.batchStatus:
+			msg := "STATUS: " + l.StatusString
+			if l.Progress > 0 {
+				msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress*100))
+			}
+			if l.IsError {
+				log.Logger(ctx).Error(msg)
+			} else {
+				log.Logger(ctx).Info(msg)
+			}
+
+		case <-s.batchDone:
+			log.Logger(ctx).Info("BATCH FINISHED")
+
 		case e := <-s.eventsChan:
 
 			GetBus().Pub(e, TopicSync_+s.uuid)
@@ -87,32 +110,34 @@ func (s *Syncer) Serve() {
 			s.task.Shutdown()
 			s.ticker.Stop()
 			close(s.eventsChan)
+			close(s.batchDone)
+			close(s.batchStatus)
 			log.Logger(ctx).Info("Stopping Service")
 			return
 
 		case <-s.ticker.C:
 
-			s.task.Resync(ctx, false, false, nil, nil)
+			s.task.Resync(ctx, false, false)
 
 		case message := <-topic:
 
 			switch message {
 			case MessageResync:
-				s.task.Resync(ctx, false, true, nil, nil)
+				s.task.Resync(ctx, false, true)
 			case MessageResyncDry:
-				s.task.Resync(ctx, true, true, nil, nil)
+				s.task.Resync(ctx, true, true)
 			case MessageSyncLoop:
-				s.task.Resync(ctx, false, false, nil, nil)
+				s.task.Resync(ctx, false, false)
 			case model.WatchDisconnected:
 				log.Logger(ctx).Info("Currently disconnected")
 			case model.WatchConnected:
 				log.Logger(ctx).Info("Connected, launching a sync loop")
-				s.task.Resync(ctx, false, false, nil, nil)
+				s.task.Resync(ctx, false, false)
 			case MessagePause:
 				s.task.Pause()
 			case MessageResume:
 				s.task.Resume()
-				s.task.Resync(ctx, false, false, nil, nil)
+				s.task.Resync(ctx, false, false)
 			}
 
 		}
