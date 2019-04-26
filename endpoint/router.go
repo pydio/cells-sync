@@ -26,6 +26,7 @@ import (
 	"io"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/micro/go-micro/errors"
@@ -59,11 +60,14 @@ func (nw *NoopWriter) Close() error {
 }
 
 type RouterEndpoint struct {
+	sync.Mutex
 	router    *views.Router
 	root      string
 	ctx       context.Context
 	options   Options
 	watchConn chan model.WatchConnectionInfo
+
+	recentMkDirs []*tree.Node
 }
 
 type Options struct {
@@ -260,6 +264,11 @@ func (r *RouterEndpoint) CreateNode(ctx context.Context, node *tree.Node, update
 		n.Uuid = ""
 	}
 	_, e := r.getRouter().CreateNode(r.getContext(ctx), &tree.CreateNodeRequest{Node: n})
+	if e == nil {
+		r.Lock()
+		r.recentMkDirs = append(r.recentMkDirs, n)
+		r.Unlock()
+	}
 	return e
 }
 
@@ -276,6 +285,7 @@ func (r *RouterEndpoint) DeleteNode(ctx context.Context, name string) (err error
 		log.Logger(ctx).Debug("[router] Ignoring " + name)
 		return nil
 	}
+	r.flushRecentMkDirs()
 	router := r.getRouter()
 	ctx = r.getContext(ctx)
 	read, e := router.ReadNode(ctx, &tree.ReadNodeRequest{Node: &tree.Node{Path: r.rooted(name)}})
@@ -292,17 +302,14 @@ func (r *RouterEndpoint) DeleteNode(ctx context.Context, name string) (err error
 
 // MoveNode renames a file or folder and *blocks* until the node has been properly moved (sync)
 func (r *RouterEndpoint) MoveNode(ctx context.Context, oldPath string, newPath string) (err error) {
+	r.flushRecentMkDirs()
 	if from, err := r.LoadNode(ctx, oldPath); err == nil {
 		to := from.Clone()
 		to.Path = r.rooted(newPath)
 		from.Path = r.rooted(from.Path)
 		_, e := r.getRouter().UpdateNode(r.getContext(ctx), &tree.UpdateNodeRequest{From: from, To: to})
-		if e == nil {
-			// Block until move is correctly indexed
-			model.Retry(func() error {
-				_, e := r.getRouter().ReadNode(r.getContext(ctx), &tree.ReadNodeRequest{Node: to})
-				return e
-			}, 1*time.Second, 10*time.Second)
+		if e == nil && !to.IsLeaf() {
+			r.readNodeBlocking(to)
 		}
 		return e
 	} else {
@@ -318,6 +325,7 @@ func (r *RouterEndpoint) GetWriterOn(p string, targetSize int64) (out io.WriteCl
 		log.Logger(r.getContext()).Debug("[router] Ignoring " + p)
 		return &NoopWriter{}, nil
 	}
+	r.flushRecentMkDirs()
 	n := &tree.Node{Path: r.rooted(p)}
 	reader, out := io.Pipe()
 	go func() {
@@ -346,6 +354,40 @@ func (r *RouterEndpoint) getRouter() *views.Router {
 		})
 	}
 	return r.router
+}
+
+func (r *RouterEndpoint) flushRecentMkDirs() {
+	if len(r.recentMkDirs) > 0 {
+		r.Lock()
+		r.readNodesBlocking(r.recentMkDirs)
+		r.recentMkDirs = []*tree.Node{}
+		r.Unlock()
+	}
+}
+
+func (r *RouterEndpoint) readNodeBlocking(n *tree.Node) {
+	// Block until move is correctly indexed
+	model.Retry(func() error {
+		_, e := r.getRouter().ReadNode(r.getContext(), &tree.ReadNodeRequest{Node: n})
+		return e
+	}, 1*time.Second, 10*time.Second)
+}
+
+func (r *RouterEndpoint) readNodesBlocking(nodes []*tree.Node) {
+	if len(nodes) == 0 {
+		return
+	}
+	// fmt.Println("Checking recent readNodesBlockings", nodes)
+	// Check target nodes are found in remote index
+	wg := &sync.WaitGroup{}
+	wg.Add(len(nodes))
+	for _, n := range nodes {
+		go func() {
+			defer wg.Done()
+			r.readNodeBlocking(n)
+		}()
+	}
+	wg.Wait()
 }
 
 func (r *RouterEndpoint) getContext(ctx ...context.Context) context.Context {
