@@ -26,8 +26,8 @@ type Syncer struct {
 	uuid   string
 
 	eventsChan  chan interface{}
-	batchStatus chan merger.BatchProcessStatus
-	batchDone   chan int
+	batchStatus chan merger.ProcessStatus
+	batchDone   chan interface{}
 
 	serviceCtx context.Context
 }
@@ -64,8 +64,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	taskUuid := conf.Uuid
 	syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, dir)
 	eventsChan := make(chan interface{})
-	batchStatus := make(chan merger.BatchProcessStatus)
-	batchDone := make(chan int)
+	batchStatus := make(chan merger.ProcessStatus)
+	batchDone := make(chan interface{})
 	var lastBatchSize int
 	go func() {
 		for {
@@ -88,8 +88,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if !ok {
 					return
 				}
-				lastBatchSize = s
-				if s > 0 {
+				lastBatchSize = s.(int)
+				if lastBatchSize > 0 {
 					log.Logger(ctx).Info(fmt.Sprintf("Finished Processing Batch of Size %d", lastBatchSize))
 				}
 
