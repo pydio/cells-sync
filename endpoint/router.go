@@ -290,12 +290,20 @@ func (r *RouterEndpoint) DeleteNode(ctx context.Context, name string) (err error
 	return
 }
 
+// MoveNode renames a file or folder and *blocks* until the node has been properly moved (sync)
 func (r *RouterEndpoint) MoveNode(ctx context.Context, oldPath string, newPath string) (err error) {
 	if from, err := r.LoadNode(ctx, oldPath); err == nil {
 		to := from.Clone()
 		to.Path = r.rooted(newPath)
 		from.Path = r.rooted(from.Path)
 		_, e := r.getRouter().UpdateNode(r.getContext(ctx), &tree.UpdateNodeRequest{From: from, To: to})
+		if e == nil {
+			// Block until move is correctly indexed
+			model.Retry(func() error {
+				_, e := r.getRouter().ReadNode(r.getContext(ctx), &tree.ReadNodeRequest{Node: to})
+				return e
+			}, 1*time.Second, 10*time.Second)
+		}
 		return e
 	} else {
 		return err

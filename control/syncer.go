@@ -27,7 +27,7 @@ type Syncer struct {
 
 	eventsChan  chan interface{}
 	batchStatus chan merger.BatchProcessStatus
-	batchDone   chan bool
+	batchDone   chan int
 
 	serviceCtx context.Context
 }
@@ -65,7 +65,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, dir)
 	eventsChan := make(chan interface{})
 	batchStatus := make(chan merger.BatchProcessStatus)
-	batchDone := make(chan bool)
+	batchDone := make(chan int)
+	var lastBatchSize int
 	go func() {
 		for {
 			select {
@@ -83,15 +84,24 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 					log.Logger(ctx).Info(msg)
 				}
 
-			case _, ok := <-batchDone:
+			case s, ok := <-batchDone:
 				if !ok {
 					return
 				}
-				log.Logger(ctx).Info("Finished Processing Batch")
+				lastBatchSize = s
+				if s > 0 {
+					log.Logger(ctx).Info(fmt.Sprintf("Finished Processing Batch of Size %d", lastBatchSize))
+				}
 
 			case e := <-eventsChan:
 				GetBus().Pub(e, TopicSync_+taskUuid)
 
+			case <-time.After(15 * time.Second):
+				if lastBatchSize > 0 {
+					fmt.Println("Sending Loop after 15s Idle Time")
+					GetBus().Pub(MessageSyncLoop, TopicSync_+taskUuid)
+				}
+				break
 			}
 		}
 	}()
