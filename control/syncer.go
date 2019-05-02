@@ -83,6 +83,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				} else {
 					log.Logger(ctx).Debug(msg)
 				}
+				go bus.Pub(l, TopicSyncAll)
 
 			case s, ok := <-batchDone:
 				if !ok {
@@ -166,6 +167,8 @@ func (s *Syncer) Serve() {
 			case MessageResume:
 				s.task.Resume()
 				s.task.Resync(ctx, false, false)
+			default:
+				break
 			}
 
 		}

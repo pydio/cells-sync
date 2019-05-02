@@ -46,6 +46,8 @@ var StartCmd = &cobra.Command{
 		supervisor.Add(profiler)
 		scanner := &control.StdInner{}
 		supervisor.Add(scanner)
+		httpServer := &control.HttpServer{}
+		supervisor.Add(httpServer)
 
 		c := control.GetBus().Sub(control.TopicGlobal)
 		go func() {
