@@ -35,11 +35,11 @@ func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
 		return endpoints.NewMemDB(), nil
 
 	case "router":
-		options := Options{}
+		options := endpoints.Options{}
 		if otherU != nil && otherU.Scheme == "router" {
 			options.RenewFolderUuids = true
 		}
-		return NewRouterEndpoint(strings.TrimLeft(u.Path, "/"), options), nil
+		return endpoints.NewRouterEndpoint(strings.TrimLeft(u.Path, "/"), options), nil
 
 	case "s3":
 		fullPath := u.Path

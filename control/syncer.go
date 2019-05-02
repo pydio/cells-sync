@@ -81,7 +81,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if l.IsError {
 					log.Logger(ctx).Error(msg)
 				} else {
-					log.Logger(ctx).Info(msg)
+					log.Logger(ctx).Debug(msg)
 				}
 
 			case s, ok := <-batchDone:
@@ -90,15 +90,15 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				}
 				lastBatchSize = s.(int)
 				if lastBatchSize > 0 {
-					log.Logger(ctx).Info(fmt.Sprintf("Finished Processing Batch of Size %d", lastBatchSize))
+					log.Logger(ctx).Info(fmt.Sprintf("Finished Processing Patch of Size %d", lastBatchSize))
 				}
 
 			case e := <-eventsChan:
 				GetBus().Pub(e, TopicSync_+taskUuid)
 
-			case <-time.After(15 * time.Second):
+			case <-time.After(15 * time.Minute):
 				if lastBatchSize > 0 {
-					fmt.Println("Sending Loop after 15s Idle Time")
+					fmt.Println("Sending Loop after 15mn Idle Time")
 					GetBus().Pub(MessageSyncLoop, TopicSync_+taskUuid)
 				}
 				break

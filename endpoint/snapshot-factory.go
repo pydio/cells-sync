@@ -3,6 +3,7 @@ package endpoint
 import (
 	"sync"
 
+	"github.com/pydio/cells/common/sync/endpoints"
 	"github.com/pydio/cells/common/sync/model"
 )
 
@@ -25,7 +26,7 @@ func (f *SnapshotFactory) Load(name string) (model.Snapshoter, error) {
 	if s, ok := f.snaps[name]; ok {
 		return s, nil
 	}
-	s, e := NewSnapshot(name, f.syncUuid)
+	s, e := endpoints.NewSnapshot(name, f.syncUuid)
 	if e != nil {
 		return nil, e
 	}
