@@ -118,7 +118,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				}()
 
 			case e := <-eventsChan:
-				GetBus().Pub(e, TopicSync_+taskUuid)
+				go GetBus().Pub(e, TopicSync_+taskUuid)
 
 			case <-time.After(15 * time.Minute):
 				if lastBatchSize > 0 {
