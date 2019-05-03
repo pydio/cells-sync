@@ -30,6 +30,7 @@ type Syncer struct {
 	batchDone   chan interface{}
 
 	serviceCtx context.Context
+	stateStore StateStore
 }
 
 func NewSyncer(conf *config.Task) (*Syncer, error) {
@@ -66,6 +67,17 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	eventsChan := make(chan interface{})
 	batchStatus := make(chan merger.ProcessStatus)
 	batchDone := make(chan interface{})
+
+	syncer := &Syncer{
+		uuid:        taskUuid,
+		task:        syncTask,
+		stateStore:  NewMemoryStateStore(conf),
+		stop:        make(chan bool, 1),
+		serviceCtx:  ctx,
+		eventsChan:  eventsChan,
+		batchStatus: batchStatus,
+		batchDone:   batchDone,
+	}
 	var lastBatchSize int
 	go func() {
 		for {
@@ -83,7 +95,10 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				} else {
 					log.Logger(ctx).Debug(msg)
 				}
-				go bus.Pub(l, TopicSyncAll)
+				go func() {
+					state := syncer.stateStore.UpdateProcessStatus(l, SyncStatusProcessing)
+					bus.Pub(state, TopicState)
+				}()
 
 			case s, ok := <-batchDone:
 				if !ok {
@@ -91,8 +106,16 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				}
 				lastBatchSize = s.(int)
 				if lastBatchSize > 0 {
-					log.Logger(ctx).Info(fmt.Sprintf("Finished Processing Patch of Size %d", lastBatchSize))
+					msg := fmt.Sprintf("Finished Processing %d files and folders", lastBatchSize)
+					log.Logger(ctx).Info(msg)
+					state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg}, SyncStatusIdle)
+					bus.Pub(state, TopicState)
 				}
+				go func() {
+					<-time.After(3 * time.Second)
+					state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, SyncStatusIdle)
+					bus.Pub(state, TopicState)
+				}()
 
 			case e := <-eventsChan:
 				GetBus().Pub(e, TopicSync_+taskUuid)
@@ -107,16 +130,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		}
 	}()
 	syncTask.SetSyncEventsChan(batchStatus, batchDone, eventsChan)
-
-	return &Syncer{
-		uuid:        taskUuid,
-		task:        syncTask,
-		eventsChan:  eventsChan,
-		batchStatus: batchStatus,
-		batchDone:   batchDone,
-		stop:        make(chan bool, 1),
-		serviceCtx:  ctx,
-	}, nil
+	return syncer, nil
 
 }
 
@@ -157,16 +171,34 @@ func (s *Syncer) Serve() {
 				s.task.Resync(ctx, true, true)
 			case MessageSyncLoop:
 				s.task.Resync(ctx, false, false)
+			case MessagePublishState:
+				go bus.Pub(s.stateStore.LastState(), TopicState)
 			case model.WatchDisconnected:
 				log.Logger(ctx).Info("Currently disconnected")
+				go func() {
+					state := s.stateStore.UpdateConnection(false)
+					bus.Pub(state, TopicState)
+				}()
 			case model.WatchConnected:
 				log.Logger(ctx).Info("Connected, launching a sync loop")
 				s.task.Resync(ctx, false, false)
+				go func() {
+					state := s.stateStore.UpdateConnection(true)
+					bus.Pub(state, TopicState)
+				}()
 			case MessagePause:
 				s.task.Pause()
+				go func() {
+					state := s.stateStore.UpdateSyncStatus(SyncStatusPaused)
+					bus.Pub(state, TopicState)
+				}()
 			case MessageResume:
 				s.task.Resume()
 				s.task.Resync(ctx, false, false)
+				go func() {
+					state := s.stateStore.UpdateSyncStatus(SyncStatusIdle)
+					bus.Pub(state, TopicState)
+				}()
 			default:
 				break
 			}

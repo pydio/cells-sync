@@ -2,6 +2,7 @@ package control
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/pydio/cells/common/log"
@@ -16,6 +17,11 @@ type Message struct {
 	Content interface{}
 }
 
+type CmdContent struct {
+	UUID string
+	Cmd  string
+}
+
 func (m *Message) Bytes() []byte {
 	d, _ := json.Marshal(m)
 	return d
@@ -24,6 +30,14 @@ func (m *Message) Bytes() []byte {
 func MessageFromData(d []byte) *Message {
 	var m Message
 	if e := json.Unmarshal(d, &m); e == nil {
+		if m.Type == "CMD" {
+			// Convert Content to CmdContent
+			d, _ := json.Marshal(m.Content)
+			var cmdContent CmdContent
+			if e := json.Unmarshal(d, &cmdContent); e == nil {
+				m.Content = &cmdContent
+			}
+		}
 		return &m
 	} else {
 		m.Type = "ERROR"
@@ -58,8 +72,17 @@ func (h *HttpServer) InitHandlers() {
 		if data.Type == "PING" {
 			m := &Message{Type: "PONG", Content: "Hello new client!"}
 			session.Write(m.Bytes())
+			GetBus().Pub(MessagePublishState, TopicSyncAll)
+		} else if data.Type == "CMD" {
+			fmt.Println(data.Content)
+			if cmd, ok := data.Content.(*CmdContent); ok {
+				if intCmd, err := MessageFromString(cmd.Cmd); err == nil {
+					log.Logger(context.Background()).Info("Sending Command " + cmd.Cmd)
+					go GetBus().Pub(intCmd, TopicSync_+cmd.UUID)
+				}
+			}
 		} else {
-			log.Logger(context.Background()).Error("Cannot read message " + data.Content.(string))
+			log.Logger(context.Background()).Error("Cannot read message" + string(bytes))
 		}
 
 	})
@@ -69,15 +92,15 @@ func (h *HttpServer) InitHandlers() {
 }
 
 func (h *HttpServer) ListenStatus() {
-	statuses := GetBus().Sub(TopicSyncAll)
+	statuses := GetBus().Sub(TopicState)
 	for {
 		select {
 		case <-h.done:
-			GetBus().Unsub(statuses, TopicSyncAll)
+			GetBus().Unsub(statuses, TopicState)
 			return
 		case s := <-statuses:
 			m := &Message{
-				Type:    "STATUS",
+				Type:    "STATE",
 				Content: s,
 			}
 			h.Websocket.Broadcast(m.Bytes())
