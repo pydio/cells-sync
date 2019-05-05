@@ -32,7 +32,7 @@ func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
 		return endpoints.NewFSClient(path)
 
 	case "db":
-		return endpoints.NewMemDB(), nil
+		return model.NewMemDB(), nil
 
 	case "router":
 		options := endpoints.Options{}
