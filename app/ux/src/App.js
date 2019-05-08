@@ -4,8 +4,17 @@ import Sockette from 'sockette'
 import SyncTask from './SyncTask'
 import {ScrollablePane} from 'office-ui-fabric-react/lib/ScrollablePane'
 import {Sticky, StickyPositionType} from 'office-ui-fabric-react/lib/Sticky'
-import { Modal } from 'office-ui-fabric-react/lib/Modal';
+import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
 import {Link} from 'office-ui-fabric-react/lib/Link'
+import { SharedColors } from '@uifabric/fluent-theme/lib/fluent/FluentColors';
+import { FontSizes } from '@uifabric/fluent-theme/lib/fluent/FluentType';
+import { Customizer } from 'office-ui-fabric-react';
+import { FluentCustomizations } from '@uifabric/fluent-theme';
+import { CompoundButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
+import { initializeIcons } from '@uifabric/icons';
+import Editor from "./Editor";
+initializeIcons();
 
 class App extends React.Component{
 
@@ -14,7 +23,8 @@ class App extends React.Component{
         this.startWs();
         this.state = {
             connected: false,
-            syncTasks: {}
+            syncTasks: {},
+            showPanel: false
         }
     }
 
@@ -82,34 +92,59 @@ class App extends React.Component{
     }
 
     render(){
-        const {connected, syncTasks} = this.state;
+        const {connected, syncTasks, showPanel} = this.state;
         return (
-            <ScrollablePane style={{opacity:connected?1:.5}}>
-                <Modal
-                    titleAriaId={"Client disconnected"}
-                    isOpen={!connected}
-                    isBlocking={true}
-                >
-                    <div style={{width: 320}}>
-                        <div style={{padding: '0 20px'}}><h2>Disconnected</h2></div>
-                        <div style={{padding: '10px 20px 20px'}}>Disconnected from process! Please wait for reconnection...</div>
-                    </div>
-                </Modal>
-                <div>
-                    <Sticky stickyPosition={StickyPositionType.Header}>
-                        <div style={{backgroundColor:'#e0e0e0', padding: 20, display:'flex', alignItems:'center'}}>
-                            <div style={{flex: 1, fontSize: 20}}>All Tasks</div>
-                            <div><Link href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link></div>
-                        </div>
-                    </Sticky>
+            <Customizer {...FluentCustomizations}>
+                <ScrollablePane>
+                    <Dialog
+                        hidden={connected}
+                        onDismiss={this._closeDialog}
+                        dialogContentProps={{
+                            type: DialogType.normal,
+                            title: 'Disconnected',
+                            subText: 'Application is disconnected from agent. Please wait while we are trying to reconnect...'
+                        }}
+                        modalProps={{
+                            isBlocking: true,
+                            styles: { main: { maxWidth: 450 } },
+                        }}
+                    >
+                        <DialogFooter>
+                            <PrimaryButton onClick={() => {this.ws.reconnect()}} text="Reconnect Now" />
+                        </DialogFooter>
+                    </Dialog>
+
+                    <Panel
+                        isOpen={showPanel}
+                        type={PanelType.smallFluid}
+                        onDismiss={()=>{this.setState({showPanel: false})}}
+                        headerText="Create a new Sync Task"
+                    >
+                        <Editor/>
+                    </Panel>
+
                     <div>
-                    {Object.keys(syncTasks).map(k => {
-                        const task = syncTasks[k];
-                        return <SyncTask key={k} state={task} sendMessage={this.sendMessage.bind(this)}/>
-                    })}
+                        <Sticky stickyPosition={StickyPositionType.Header}>
+                            <div style={{backgroundColor:SharedColors.cyanBlue10, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
+                                <div style={{flex: 1, fontSize: FontSizes.size42, fontWeight:300}}>Cells Sync</div>
+                                <div><Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link></div>
+                            </div>
+                        </Sticky>
+                        <div>
+                        {Object.keys(syncTasks).map(k => {
+                            const task = syncTasks[k];
+                            return <SyncTask key={k} state={task} sendMessage={this.sendMessage.bind(this)}/>
+                        })}
+                        </div>
+                        <div style={{padding: 20, textAlign:'center'}}>
+                            <CompoundButton
+                                iconProps={{iconName:'Add'}}
+                                secondaryText={"Setup a new synchronization task"}
+                                onClick={()=>{this.setState({showPanel: true})}}>Create Sync</CompoundButton>
+                        </div>
                     </div>
-                </div>
-            </ScrollablePane>
+                </ScrollablePane>
+            </Customizer>
         );
     }
 }

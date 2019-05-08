@@ -64,6 +64,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 
 	taskUuid := conf.Uuid
 	syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, dir)
+	syncTask.Roots = conf.SelectiveRoots
+
 	eventsChan := make(chan interface{})
 	batchStatus := make(chan merger.ProcessStatus)
 	batchDone := make(chan interface{})

@@ -2,6 +2,7 @@ import React from 'react'
 import {ProgressIndicator} from "office-ui-fabric-react/lib/ProgressIndicator";
 import {DefaultButton} from "office-ui-fabric-react/lib/Button"
 import {Label} from "office-ui-fabric-react/lib/Label"
+import { Depths } from '@uifabric/fluent-theme/lib/fluent/FluentDepths';
 import moment from 'moment'
 
 const StateSample = {
@@ -38,7 +39,7 @@ class SyncTask extends React.Component {
             pg = LastProcessStatus.Progress;
         }
         return (
-            <div style={{margin:10, padding: 10, border: '1px solid #e0e0e0'}}>
+            <div style={{margin:10, padding: 10, boxShadow: Depths.depth8}}>
                 <div>
                     <div>
                         <Label>Connected</Label>

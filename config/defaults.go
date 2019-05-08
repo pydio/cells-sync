@@ -25,10 +25,11 @@ type Global struct {
 }
 
 type Task struct {
-	Uuid      string
-	LeftURI   string
-	RightURI  string
-	Direction string
+	Uuid           string
+	LeftURI        string
+	RightURI       string
+	Direction      string
+	SelectiveRoots []string
 }
 
 func (g *Global) Items() (items []string) {
