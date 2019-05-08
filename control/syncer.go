@@ -47,14 +47,14 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		return nil, errors.Wrap(err, parseMessage)
 	}
 
-	var dir model.DirectionType
+	var direction model.DirectionType
 	switch conf.Direction {
 	case "Bi":
-		dir = model.DirectionBi
+		direction = model.DirectionBi
 	case "Left":
-		dir = model.DirectionLeft
+		direction = model.DirectionLeft
 	case "Right":
-		dir = model.DirectionRight
+		direction = model.DirectionRight
 	default:
 		return nil, fmt.Errorf("unsupported direction type, please use one of Bi, Left, Right")
 	}
@@ -63,8 +63,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
 
 	taskUuid := conf.Uuid
-	syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, dir)
-	syncTask.Roots = conf.SelectiveRoots
+	syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, direction, conf.SelectiveRoots...)
 
 	eventsChan := make(chan interface{})
 	batchStatus := make(chan merger.ProcessStatus)
@@ -162,17 +161,17 @@ func (s *Syncer) Serve() {
 
 		case <-s.ticker.C:
 
-			s.task.Resync(ctx, false, false)
+			s.task.Run(ctx, false, false)
 
 		case message := <-topic:
 
 			switch message {
 			case MessageResync:
-				s.task.Resync(ctx, false, true)
+				s.task.Run(ctx, false, true)
 			case MessageResyncDry:
-				s.task.Resync(ctx, true, true)
+				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
-				s.task.Resync(ctx, false, false)
+				s.task.Run(ctx, false, false)
 			case MessagePublishState:
 				go bus.Pub(s.stateStore.LastState(), TopicState)
 			case model.WatchDisconnected:
@@ -183,7 +182,7 @@ func (s *Syncer) Serve() {
 				}()
 			case model.WatchConnected:
 				log.Logger(ctx).Info("Connected, launching a sync loop")
-				s.task.Resync(ctx, false, false)
+				s.task.Run(ctx, false, false)
 				go func() {
 					state := s.stateStore.UpdateConnection(true)
 					bus.Pub(state, TopicState)
@@ -196,9 +195,15 @@ func (s *Syncer) Serve() {
 				}()
 			case MessageResume:
 				s.task.Resume()
-				s.task.Resync(ctx, false, false)
+				s.task.Run(ctx, false, false)
 				go func() {
 					state := s.stateStore.UpdateSyncStatus(SyncStatusIdle)
+					bus.Pub(state, TopicState)
+				}()
+			case MessageDisable:
+				s.task.Shutdown()
+				go func() {
+					state := s.stateStore.UpdateSyncStatus(SyncStatusDisabled)
 					bus.Pub(state, TopicState)
 				}()
 			default:

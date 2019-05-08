@@ -62,7 +62,7 @@ class SyncTask extends React.Component {
                 <div style={{textAlign:'right'}}>
 
                     <DefaultButton
-                        data-automation-id="test"
+                        data-automation-id="loop"
                         allowDisabledFocus={true}
                         disabled={false}
                         checked={false}
@@ -72,12 +72,22 @@ class SyncTask extends React.Component {
                     &nbsp;
                     &nbsp;
                     <DefaultButton
-                        data-automation-id="test"
+                        data-automation-id="resync"
                         allowDisabledFocus={true}
                         disabled={false}
                         checked={false}
                         text="Resync"
                         onClick={() => sendMessage('CMD', {UUID:state.UUID, Cmd:'resync'})}
+                    />
+                    &nbsp;
+                    &nbsp;
+                    <DefaultButton
+                        data-automation-id="stop"
+                        allowDisabledFocus={true}
+                        disabled={false}
+                        checked={false}
+                        text="Disable"
+                        onClick={() => sendMessage('CMD', {UUID:state.UUID, Cmd:'disable'})}
                     />
 
                 </div>

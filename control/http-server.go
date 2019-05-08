@@ -78,7 +78,11 @@ func (h *HttpServer) InitHandlers() {
 			if cmd, ok := data.Content.(*CmdContent); ok {
 				if intCmd, err := MessageFromString(cmd.Cmd); err == nil {
 					log.Logger(context.Background()).Info("Sending Command " + cmd.Cmd)
-					go GetBus().Pub(intCmd, TopicSync_+cmd.UUID)
+					if cmd.UUID != "" {
+						go GetBus().Pub(intCmd, TopicSync_+cmd.UUID)
+					} else {
+						go GetBus().Pub(intCmd, TopicSyncAll)
+					}
 				}
 			}
 		} else {
