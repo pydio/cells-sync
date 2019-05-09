@@ -151,6 +151,7 @@ func (s *Syncer) Serve() {
 
 		case <-s.stop:
 
+			bus.Unsub(topic)
 			s.task.Shutdown()
 			s.ticker.Stop()
 			close(s.eventsChan)

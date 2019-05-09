@@ -2,8 +2,11 @@ package control
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+
+	"github.com/pborman/uuid"
+
+	"github.com/pydio/sync/config"
 
 	"github.com/pydio/cells/common/log"
 	"golang.org/x/net/context"
@@ -22,6 +25,11 @@ type CmdContent struct {
 	Cmd  string
 }
 
+type ConfigContent struct {
+	Cmd    string
+	Config *config.Task
+}
+
 func (m *Message) Bytes() []byte {
 	d, _ := json.Marshal(m)
 	return d
@@ -36,6 +44,12 @@ func MessageFromData(d []byte) *Message {
 			var cmdContent CmdContent
 			if e := json.Unmarshal(d, &cmdContent); e == nil {
 				m.Content = &cmdContent
+			}
+		} else if m.Type == "CONFIG" {
+			d, _ := json.Marshal(m.Content)
+			var configContent ConfigContent
+			if e := json.Unmarshal(d, &configContent); e == nil {
+				m.Content = &configContent
 			}
 		}
 		return &m
@@ -69,12 +83,15 @@ func (h *HttpServer) InitHandlers() {
 	h.Websocket.HandleMessage(func(session *melody.Session, bytes []byte) {
 
 		data := MessageFromData(bytes)
-		if data.Type == "PING" {
+		switch data.Type {
+		case "PING":
+
 			m := &Message{Type: "PONG", Content: "Hello new client!"}
 			session.Write(m.Bytes())
 			GetBus().Pub(MessagePublishState, TopicSyncAll)
-		} else if data.Type == "CMD" {
-			fmt.Println(data.Content)
+
+		case "CMD":
+
 			if cmd, ok := data.Content.(*CmdContent); ok {
 				if intCmd, err := MessageFromString(cmd.Cmd); err == nil {
 					log.Logger(context.Background()).Info("Sending Command " + cmd.Cmd)
@@ -85,10 +102,26 @@ func (h *HttpServer) InitHandlers() {
 					}
 				}
 			}
-		} else {
-			log.Logger(context.Background()).Error("Cannot read message" + string(bytes))
-		}
 
+		case "CONFIG":
+
+			if confContent, ok := data.Content.(*ConfigContent); ok {
+				confs := config.Default()
+				if confContent.Cmd == "create" {
+					confContent.Config.Uuid = uuid.New()
+					confs.Create(confContent.Config)
+				} else if confContent.Cmd == "edit" {
+					confs.Update(confContent.Config)
+				} else if confContent.Cmd == "delete" {
+					confs.Remove(confContent.Config)
+				}
+			}
+
+		default:
+
+			log.Logger(context.Background()).Error("Cannot read message" + string(bytes))
+
+		}
 	})
 
 	go h.ListenStatus()

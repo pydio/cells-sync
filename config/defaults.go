@@ -21,15 +21,75 @@
 package config
 
 type Global struct {
-	Tasks []*Task
+	Tasks   []*Task
+	changes []chan interface{}
+}
+
+type TaskChange struct {
+	Type string
+	Task *Task
 }
 
 type Task struct {
 	Uuid           string
+	Label          string
 	LeftURI        string
 	RightURI       string
 	Direction      string
 	SelectiveRoots []string
+}
+
+func (g *Global) Create(t *Task) error {
+	g.Tasks = append(g.Tasks, t)
+	e := Save()
+	if e == nil {
+		go func() {
+			for _, c := range g.changes {
+				c <- &TaskChange{Type: "create", Task: t}
+			}
+		}()
+	}
+	return e
+}
+
+func (g *Global) Remove(task *Task) error {
+	var newTasks []*Task
+	for _, t := range g.Tasks {
+		if t.Uuid != task.Uuid {
+			newTasks = append(newTasks, t)
+		}
+	}
+	g.Tasks = newTasks
+	e := Save()
+	if e == nil {
+		go func() {
+			for _, c := range g.changes {
+				c <- &TaskChange{Type: "remove", Task: task}
+			}
+		}()
+	}
+	return e
+}
+
+func (g *Global) Update(task *Task) error {
+	var newTasks []*Task
+	for _, t := range g.Tasks {
+		if t.Uuid == task.Uuid {
+			newTasks = append(newTasks, task)
+		} else {
+			newTasks = append(newTasks, t)
+		}
+	}
+	g.Tasks = newTasks
+	e := Save()
+	if e == nil {
+		go func() {
+			for _, c := range g.changes {
+				c <- &TaskChange{Type: "update", Task: task}
+			}
+		}()
+	}
+	return e
 }
 
 func (g *Global) Items() (items []string) {
@@ -60,4 +120,10 @@ func Default() *Global {
 
 func Save() error {
 	return WriteToFile(def)
+}
+
+func Watch() chan interface{} {
+	changes := make(chan interface{})
+	def.changes = append(def.changes, changes)
+	return changes
 }

@@ -5,6 +5,7 @@
   "dependencies": {
     "@uifabric/fluent-theme": "^0.16.7",
     "moment": "^2.24.0",
+    "observable-slim": "^0.1.5",
     "office-ui-fabric-react": "^6.176.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",

@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import Sockette from 'sockette'
-import SyncTask from './SyncTask'
+import SyncTask from './task/SyncTask'
 import {ScrollablePane} from 'office-ui-fabric-react/lib/ScrollablePane'
 import {Sticky, StickyPositionType} from 'office-ui-fabric-react/lib/Sticky'
 import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
@@ -12,8 +12,9 @@ import { Customizer } from 'office-ui-fabric-react';
 import { FluentCustomizations } from '@uifabric/fluent-theme';
 import { CompoundButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
+import { Depths } from '@uifabric/fluent-theme/lib/fluent/FluentDepths';
 import { initializeIcons } from '@uifabric/icons';
-import Editor from "./Editor";
+import Editor from "./task/Editor";
 initializeIcons();
 
 class App extends React.Component{
@@ -24,7 +25,7 @@ class App extends React.Component{
         this.state = {
             connected: false,
             syncTasks: {},
-            showPanel: false
+            showEditor: false
         }
     }
 
@@ -91,11 +92,12 @@ class App extends React.Component{
         this.ws.json({Type: type, Content: content});
     }
 
+
     render(){
-        const {connected, syncTasks, showPanel} = this.state;
+        const {connected, syncTasks, showEditor} = this.state;
         return (
             <Customizer {...FluentCustomizations}>
-                <ScrollablePane>
+                <ScrollablePane styles={{root:{backgroundColor:'#fafafa'}}}>
                     <Dialog
                         hidden={connected}
                         onDismiss={this._closeDialog}
@@ -115,32 +117,39 @@ class App extends React.Component{
                     </Dialog>
 
                     <Panel
-                        isOpen={showPanel}
+                        isOpen={showEditor}
                         type={PanelType.smallFluid}
-                        onDismiss={()=>{this.setState({showPanel: false})}}
-                        headerText="Create a new Sync Task"
+                        onDismiss={()=>{this.setState({showEditor: false})}}
+                        headerText={showEditor === true ? "Create a new Sync Task" : "Edit Task"}
                     >
-                        <Editor/>
+                        {showEditor &&
+                        <Editor
+                            task={showEditor}
+                            onDismiss={()=>{this.setState({showEditor: false})}}
+                            sendMessage={this.sendMessage.bind(this)}
+                        />}
                     </Panel>
 
                     <div>
                         <Sticky stickyPosition={StickyPositionType.Header}>
-                            <div style={{backgroundColor:SharedColors.cyanBlue10, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
-                                <div style={{flex: 1, fontSize: FontSizes.size42, fontWeight:300}}>Cells Sync</div>
-                                <div><Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link></div>
+                            <div style={{backgroundColor:SharedColors.cyanBlue10, boxShadow:Depths.depth8, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
+                                <div style={{flex: 1, fontSize: FontSizes.size20, fontWeight:400}}>Cells Sync</div>
+                                <div>
+                                    <Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
+                                </div>
                             </div>
                         </Sticky>
                         <div>
                         {Object.keys(syncTasks).map(k => {
                             const task = syncTasks[k];
-                            return <SyncTask key={k} state={task} sendMessage={this.sendMessage.bind(this)}/>
+                            return <SyncTask key={k} state={task} sendMessage={this.sendMessage.bind(this)} openEditor={()=>{this.setState({showEditor:task})}}/>
                         })}
                         </div>
                         <div style={{padding: 20, textAlign:'center'}}>
                             <CompoundButton
                                 iconProps={{iconName:'Add'}}
                                 secondaryText={"Setup a new synchronization task"}
-                                onClick={()=>{this.setState({showPanel: true})}}>Create Sync</CompoundButton>
+                                onClick={()=>{this.setState({showEditor: true})}}>Create Sync</CompoundButton>
                         </div>
                     </div>
                 </ScrollablePane>
