@@ -22,7 +22,9 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/pydio/cells/common/config"
@@ -51,4 +53,12 @@ func WriteToFile(config *Global) error {
 		return e
 	}
 	return ioutil.WriteFile(getPath(), data, 0755)
+}
+
+func DeleteTaskResources(uuid string) error {
+	if uuid == "" {
+		return fmt.Errorf("please provide a non empty uuid string")
+	}
+	dir := filepath.Join(config.ApplicationDataDir(), "sync", uuid)
+	return os.RemoveAll(dir)
 }

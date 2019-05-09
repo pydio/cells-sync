@@ -82,7 +82,7 @@ class SyncTask extends React.Component {
                                     iconProps: { iconName: 'Delete' },
                                     onClick: () => {
                                         if (global.confirm('Are you sure?')){
-                                            sendMessage('CMD', {UUID:state.UUID, Cmd:'delete'})
+                                            sendMessage('CONFIG', {Cmd:'delete', Config:state.Config})
                                         }
                                     }
                                 }
