@@ -25,8 +25,11 @@ class SyncTask extends React.Component {
         }
         return (
             <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical tokens={{childrenGap: 20}}>
-                {!state.Connected &&
-                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{'Not Connected to service! Last connection was ' + state.LastConnection}</div>
+                {!state.LeftInfo.Connected &&
+                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{'Not Connected to LEFT! Last connection was ' + state.LeftInfo.LastConnection}</div>
+                }
+                {!state.RightInfo.Connected &&
+                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{'Not Connected to RIGHT! Last connection was ' + state.RightInfo.LastConnection}</div>
                 }
                 <div style={{padding: '10px 20px'}}>
                     <h3>{state.Config.Label}</h3>

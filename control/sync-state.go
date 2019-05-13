@@ -24,6 +24,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pydio/cells/common/sync/model"
+
 	"github.com/pydio/sync/config"
 
 	"github.com/pydio/cells/common/sync/merger"
@@ -40,6 +42,9 @@ const (
 )
 
 type EndpointInfo struct {
+	Connected      bool
+	LastConnection time.Time
+
 	FoldersCount   uint64
 	FilesCount     uint64
 	TotalSpace     uint64
@@ -47,13 +52,11 @@ type EndpointInfo struct {
 }
 
 type SyncState struct {
-	UUID      string
-	Config    *config.Task
-	Connected bool
-
 	// Sync Process
+	UUID   string
+	Config *config.Task
+
 	Status            SyncStatus
-	LastConnection    time.Time
 	LastSyncTime      time.Time
 	LastProcessStatus merger.ProcessStatus
 
@@ -64,7 +67,8 @@ type SyncState struct {
 
 type StateStore interface {
 	LastState() SyncState
-	UpdateConnection(c bool) SyncState
+	UpdateConnection(c bool, i *model.EndpointInfo) SyncState
+	BothConnected() bool
 	UpdateSyncStatus(s SyncStatus) SyncState
 	UpdateProcessStatus(processStatus merger.ProcessStatus, status ...SyncStatus) SyncState
 }
@@ -82,7 +86,8 @@ func NewMemoryStateStore(config *config.Task) *MemoryStateStore {
 			UUID:      config.Uuid,
 			Config:    config,
 			Status:    SyncStatusIdle,
-			Connected: false,
+			LeftInfo:  &EndpointInfo{Connected: false},
+			RightInfo: &EndpointInfo{Connected: false},
 		},
 	}
 	return s
@@ -112,12 +117,26 @@ func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatu
 	return b.state
 }
 
-func (b *MemoryStateStore) UpdateConnection(c bool) SyncState {
+func (b *MemoryStateStore) UpdateConnection(c bool, i *model.EndpointInfo) SyncState {
 	b.Lock()
 	defer b.Unlock()
-	b.state.Connected = c
+	var internalInfo *EndpointInfo
+	if i.URI == b.config.LeftURI {
+		internalInfo = b.state.LeftInfo
+	} else if i.URI == b.config.RightURI {
+		internalInfo = b.state.RightInfo
+	} else {
+		return b.state
+	}
+	internalInfo.Connected = c
 	if c {
-		b.state.LastConnection = time.Now()
+		internalInfo.LastConnection = time.Now()
 	}
 	return b.state
+}
+
+func (b *MemoryStateStore) BothConnected() bool {
+	b.Lock()
+	defer b.Unlock()
+	return b.state.LeftInfo.Connected && b.state.RightInfo.Connected
 }

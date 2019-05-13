@@ -135,13 +135,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 
 }
 
-func (s *Syncer) Serve() {
+func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 
-	ctx := s.serviceCtx
-
-	log.Logger(ctx).Info("Starting Sync Service")
-	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid))
-	s.task.Start(ctx)
 	bus := GetBus()
 	topic := bus.Sub(TopicSyncAll, TopicSync_+s.uuid)
 	s.ticker = time.NewTicker(10 * time.Minute)
@@ -149,7 +144,7 @@ func (s *Syncer) Serve() {
 	for {
 		select {
 
-		case <-s.stop:
+		case <-done:
 
 			bus.Unsub(topic)
 			s.task.Shutdown()
@@ -175,19 +170,6 @@ func (s *Syncer) Serve() {
 				s.task.Run(ctx, false, false)
 			case MessagePublishState:
 				go bus.Pub(s.stateStore.LastState(), TopicState)
-			case model.WatchDisconnected:
-				log.Logger(ctx).Info("Currently disconnected")
-				go func() {
-					state := s.stateStore.UpdateConnection(false)
-					bus.Pub(state, TopicState)
-				}()
-			case model.WatchConnected:
-				log.Logger(ctx).Info("Connected, launching a sync loop")
-				s.task.Run(ctx, false, false)
-				go func() {
-					state := s.stateStore.UpdateConnection(true)
-					bus.Pub(state, TopicState)
-				}()
 			case MessagePause:
 				s.task.Pause()
 				go func() {
@@ -208,9 +190,51 @@ func (s *Syncer) Serve() {
 					bus.Pub(state, TopicState)
 				}()
 			default:
+				if status, ok := message.(*model.EndpointStatus); ok {
+					initialState := s.stateStore.BothConnected()
+					var epConnected bool
+					if status.WatchConnection == model.WatchConnected {
+						log.Logger(ctx).Info(status.EndpointInfo.URI + " is now connected")
+						epConnected = true
+					} else {
+						log.Logger(ctx).Info(status.EndpointInfo.URI + " is currently disconnected")
+					}
+					state := s.stateStore.UpdateConnection(epConnected, &status.EndpointInfo)
+					newState := s.stateStore.BothConnected()
+					if newState && newState != initialState {
+						log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
+						s.task.Run(ctx, false, false)
+					}
+					go func() {
+						bus.Pub(state, TopicState)
+					}()
+
+				}
 				break
 			}
 
+		}
+	}
+
+}
+
+func (s *Syncer) Serve() {
+
+	ctx := s.serviceCtx
+
+	log.Logger(ctx).Info("Starting Sync Service")
+	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid))
+
+	done := make(chan bool, 1)
+	go s.dispatch(ctx, done)
+
+	s.task.Start(ctx)
+
+	for {
+		select {
+		case <-s.stop:
+			done <- true
+			return
 		}
 	}
 
