@@ -25,7 +25,8 @@ class App extends React.Component{
         this.state = {
             connected: false,
             syncTasks: {},
-            showEditor: false
+            showEditor: false,
+            maxAttemptsReached: false,
         }
     }
 
@@ -40,8 +41,8 @@ class App extends React.Component{
 
     startWs() {
         this.ws = new Sockette('ws://localhost:3636/status', {
-            timeout: 5e3,
-            maxAttempts: 20,
+            timeout: 3e3,
+            maxAttempts: 60,
             onopen: (e) => this.onOpen(e),
             onmessage: e => this.onMessage(e),
             onreconnect: e => this.onReconnect(e),
@@ -51,25 +52,38 @@ class App extends React.Component{
         });
     }
 
+    forceReconnect() {
+        const {maxAttemptsReached} = this.state;
+        if (this.ws && !maxAttemptsReached) {
+            this.ws.reconnect();
+        } else {
+            this.startWs();
+        }
+    }
+
     onOpen(msg){
         this.ws.json({Type:'PING'});
-        this.setState({connected: true})
+        this.setState({
+            connected: true,
+            maxAttemtpsReached: false,
+            connecting: false,
+        })
     }
 
     onReconnect(msg){
-
+        this.setState({connecting: true})
     }
 
     onMaximum(msg){
-
+        this.setState({maxAttemptsReached: true});
     }
 
     onClose(msg){
-        this.setState({connected: false})
+        this.setState({connected: false, connecting: false})
     }
 
     onError(msg){
-        this.setState({connected: false})
+        this.setState({connected: false, connecting: false})
     }
 
     onMessage(msg) {
@@ -94,7 +108,13 @@ class App extends React.Component{
 
 
     render(){
-        const {connected, syncTasks, showEditor} = this.state;
+        const {connected, connecting, maxAttemptsReached, syncTasks, showEditor} = this.state;
+        let dialogText = 'Application is disconnected from agent. ';
+        if(maxAttemptsReached) {
+            dialogText += 'Agent may be dead! Hit the button to force reconnection'
+        } else {
+            dialogText += 'Please wait while we are trying to reconnect...'
+        }
         return (
             <Customizer {...FluentCustomizations}>
                 <ScrollablePane styles={{root:{backgroundColor:'#fafafa'}}}>
@@ -104,7 +124,7 @@ class App extends React.Component{
                         dialogContentProps={{
                             type: DialogType.normal,
                             title: 'Disconnected',
-                            subText: 'Application is disconnected from agent. Please wait while we are trying to reconnect...'
+                            subText: dialogText
                         }}
                         modalProps={{
                             isBlocking: true,
@@ -112,7 +132,7 @@ class App extends React.Component{
                         }}
                     >
                         <DialogFooter>
-                            <PrimaryButton onClick={() => {this.ws.reconnect()}} text="Reconnect Now" />
+                            <PrimaryButton onClick={() => {this.forceReconnect()}} text={connecting?"Connecting...":"Reconnect Now"}/>
                         </DialogFooter>
                     </Dialog>
 
