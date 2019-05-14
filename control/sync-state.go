@@ -21,6 +21,8 @@
 package control
 
 import (
+	"fmt"
+	"net/url"
 	"sync"
 	"time"
 
@@ -120,10 +122,15 @@ func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatu
 func (b *MemoryStateStore) UpdateConnection(c bool, i *model.EndpointInfo) SyncState {
 	b.Lock()
 	defer b.Unlock()
+	simpleURI := func(uri string) string {
+		u, _ := url.Parse(uri)
+		out := fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
+		return out
+	}
 	var internalInfo *EndpointInfo
-	if i.URI == b.config.LeftURI {
+	if i.URI == simpleURI(b.config.LeftURI) {
 		internalInfo = b.state.LeftInfo
-	} else if i.URI == b.config.RightURI {
+	} else if i.URI == simpleURI(b.config.RightURI) {
 		internalInfo = b.state.RightInfo
 	} else {
 		return b.state
