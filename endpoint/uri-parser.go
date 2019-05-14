@@ -42,7 +42,9 @@ func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
 		return model.NewMemDB(), nil
 
 	case "router":
-		options := cells.Options{}
+		options := cells.Options{
+			LocalInitRegistry: true,
+		}
 		if otherU != nil && otherU.Scheme == "router" {
 			options.RenewFolderUuids = true
 		}
