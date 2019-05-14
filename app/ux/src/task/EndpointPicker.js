@@ -41,6 +41,8 @@ export default class EndpointPicker extends React.Component {
                     onRenderTitle={renderTitleWithIcon}
                     styles={{root:{width: 200}}}
                     options={[
+                        { key: 'https', text: 'Remote Server (SSL)', data: { icon: 'Server' } },
+                        { key: 'http', text: 'Remote Server (Insecure)', data: { icon: 'Server' } },
                         { key: 'router', text: 'Local Server', data: { icon: 'ServerEnviroment' } },
                         { key: 'fs', text: 'File system', data: { icon: 'SyncFolder' } },
                         { key: 's3', text: 'S3 Service', data: { icon: 'SplitObject' } },
