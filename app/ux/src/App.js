@@ -106,6 +106,18 @@ class App extends React.Component{
         this.ws.json({Type: type, Content: content});
     }
 
+    onDelete(config) {
+        this.sendMessage('CONFIG', {Cmd:'delete', Config:config});
+        const {syncTasks} = this.state;
+        if(syncTasks[config.Uuid]) {
+            delete(syncTasks[config.Uuid]);
+            this.setState({syncTasks});
+            // Reload tasks to be sure
+            window.setTimeout(()=>{
+                this.ws.json({type:'PING'});
+            }, 1000);
+        }
+    }
 
     render(){
         const {connected, connecting, maxAttemptsReached, syncTasks, showEditor} = this.state;
@@ -162,7 +174,13 @@ class App extends React.Component{
                         <div>
                         {Object.keys(syncTasks).map(k => {
                             const task = syncTasks[k];
-                            return <SyncTask key={k} state={task} sendMessage={this.sendMessage.bind(this)} openEditor={()=>{this.setState({showEditor:task})}}/>
+                            return <SyncTask
+                                key={k}
+                                state={task}
+                                sendMessage={this.sendMessage.bind(this)}
+                                openEditor={()=>{this.setState({showEditor:task})}}
+                                onDelete={this.onDelete.bind(this)}
+                            />
                         })}
                         </div>
                         <div style={{padding: 20, textAlign:'center'}}>

@@ -21,7 +21,8 @@ export default class EndpointPicker extends React.Component {
         const {onChange} = this.props;
         let parsed = this.parsed();
         let v = value;
-        if(partType === 'path' && (value.length === 0 || value[0] !== "/" )){
+        if(partType === 'path' && (value.length === 0 || value[0] !== "/" )
+            && parsed.scheme !== 'http' && parsed.scheme !== 'https'){
             v = '/' + value;
         }
         parsed[partType] = v;
@@ -41,8 +42,8 @@ export default class EndpointPicker extends React.Component {
                     onRenderTitle={renderTitleWithIcon}
                     styles={{root:{width: 200}}}
                     options={[
-                        { key: 'https', text: 'Remote Server (SSL)', data: { icon: 'Server' } },
-                        { key: 'http', text: 'Remote Server (Insecure)', data: { icon: 'Server' } },
+                        { key: 'https', text: 'Cells Server (SSL)', data: { icon: 'Server' } },
+                        { key: 'http', text: 'Cells Server (Insecure)', data: { icon: 'Server' } },
                         { key: 'router', text: 'Local Server', data: { icon: 'ServerEnviroment' } },
                         { key: 'fs', text: 'File system', data: { icon: 'SyncFolder' } },
                         { key: 's3', text: 'S3 Service', data: { icon: 'SplitObject' } },

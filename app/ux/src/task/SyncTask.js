@@ -17,12 +17,13 @@ class SyncTask extends React.Component {
 
     render() {
 
-        const {state, sendMessage, openEditor} = this.props;
+        const {state, sendMessage, openEditor, onDelete} = this.props;
         const {LastProcessStatus} = state;
         let pg;
         if (LastProcessStatus && LastProcessStatus.Progress) {
             pg = LastProcessStatus.Progress;
         }
+        const disabled = !(state.LeftInfo.Connected && state.RightInfo.Connected);
         return (
             <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical tokens={{childrenGap: 20}}>
                 {!state.LeftInfo.Connected &&
@@ -47,7 +48,7 @@ class SyncTask extends React.Component {
                     <DefaultButton
                         data-automation-id="loop"
                         allowDisabledFocus={true}
-                        disabled={false}
+                        disabled={disabled}
                         checked={false}
                         text="Sync Now"
                         iconProps={{iconName:'Play'}}
@@ -56,7 +57,7 @@ class SyncTask extends React.Component {
                     <DefaultButton
                         data-automation-id="resync"
                         allowDisabledFocus={true}
-                        disabled={false}
+                        disabled={disabled}
                         checked={false}
                         text="Full Resync"
                         iconProps={{iconName:'Sync'}}
@@ -85,7 +86,7 @@ class SyncTask extends React.Component {
                                     iconProps: { iconName: 'Delete' },
                                     onClick: () => {
                                         if (global.confirm('Are you sure?')){
-                                            sendMessage('CONFIG', {Cmd:'delete', Config:state.Config})
+                                            onDelete(state.Config);
                                         }
                                     }
                                 }
