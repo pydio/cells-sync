@@ -160,6 +160,9 @@ func (h *HttpServer) Serve() {
 		i.Writer.WriteHeader(200)
 		i.Writer.WriteString("Hello World!")
 	})
+	// Simple RestAPI for browsing/creating nodes inside Endpoints
+	Server.POST("/tree", ls)
+	Server.PUT("/tree", mkdir)
 	log.Logger(context.Background()).Info("Starting HttpServer on port 3636")
 	http.ListenAndServe(":3636", Server)
 
