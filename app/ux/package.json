@@ -4,13 +4,16 @@
   "private": true,
   "dependencies": {
     "@uifabric/fluent-theme": "^0.16.7",
+    "basename": "^0.1.2",
     "moment": "^2.24.0",
     "observable-slim": "^0.1.5",
     "office-ui-fabric-react": "^6.176.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.0",
-    "sockette": "^2.0.5"
+    "sockette": "^2.0.5",
+    "url-parse": "^1.4.7",
+    "whatwg-fetch": "^3.0.0"
   },
   "scripts": {
     "start": "react-scripts start",

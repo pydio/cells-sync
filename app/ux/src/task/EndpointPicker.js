@@ -3,55 +3,150 @@ import {Stack} from "office-ui-fabric-react/lib/Stack"
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownRender";
+import parse from 'url-parse'
+import TreeDialog from './TreeDialog'
 
 export default class EndpointPicker extends React.Component {
 
-    parsed(){
-        const {value} = this.props;
-        let scheme = "", path = "/";
-        if (value){
-            const parts = value.split('://');
-            scheme = parts[0];
-            path = parts[1];
-        }
-        return {scheme, path}
+    constructor(props){
+        super(props);
+        this.state = {
+            dialog: false,
+            pathDisabled: this.pathIsDisabled(parse(props.value, {}, true)),
+        };
     }
 
-    update(event, value, partType){
-        const {onChange} = this.props;
-        let parsed = this.parsed();
-        let v = value;
-        if(partType === 'path' && (value.length === 0 || value[0] !== "/" )
-            && parsed.scheme !== 'http' && parsed.scheme !== 'https'){
-            v = '/' + value;
+    pathIsDisabled(url){
+        let pathDisabled = false;
+        if(url.protocol && url.protocol.indexOf('http') === 0) {
+            pathDisabled = !(url.host && url.username && url.password && url.query && url.query.clientSecret);
         }
-        parsed[partType] = v;
-        onChange(event, parsed.scheme + '://' + parsed.path);
+        return pathDisabled
+    }
+
+    updateUrl(newUrl) {
+        const {onChange} = this.props;
+        this.setState({pathDisabled: this.pathIsDisabled(newUrl)});
+        onChange(null, newUrl.toString());
+    }
+
+    onSelect(selection){
+        if(selection && selection.length){
+            const {value, onChange} = this.props;
+            const url = parse(value, {}, true);
+            url.set('pathname', selection[0]);
+            onChange(null, url.toString());
+        }
     }
 
 
     render(){
-        const {scheme, path} = this.parsed();
+        const {dialog, pathDisabled} = this.state;
+        const {value} = this.props;
+        const url = parse(value, {}, true);
+        const rootUrl = parse(value, {}, true);
+        rootUrl.set('pathname', '');
+
+        const query = url.query || {};
+
+
+        const pathField = (
+            <TextField
+                placeholder={"Path (click to select a folder)"}
+                value={url.pathname}
+                onChange={(e, v) => {
+                    url.set('pathname', v);
+                    this.updateUrl(url);
+                }}
+                iconProps={{iconName:"FolderList"}}
+                readOnly={true}
+                disabled={pathDisabled}
+                onClick={() => {this.setState({dialog: true})}}
+            />
+        );
+
         return (
             <Stack horizontal tokens={{childrenGap: 8}} >
                 <Dropdown
-                    selectedKey={scheme}
-                    onChange={(ev, item) => {this.update(ev, item.key, 'scheme')}}
+                    selectedKey={url.protocol}
+                    onChange={(ev, item) => {
+                        url.set('protocol', item.key);
+                        this.updateUrl(url);
+                    }}
                     placeholder="Endpoint type"
                     onRenderOption={renderOptionWithIcon}
                     onRenderTitle={renderTitleWithIcon}
                     styles={{root:{width: 200}}}
                     options={[
-                        { key: 'https', text: 'Cells Server (SSL)', data: { icon: 'Server' } },
-                        { key: 'http', text: 'Cells Server (Insecure)', data: { icon: 'Server' } },
-                        { key: 'router', text: 'Local Server', data: { icon: 'ServerEnviroment' } },
-                        { key: 'fs', text: 'File system', data: { icon: 'SyncFolder' } },
-                        { key: 's3', text: 'S3 Service', data: { icon: 'SplitObject' } },
+                        { key: 'https:', text: 'Cells Server (SSL)', data: { icon: 'Server' } },
+                        { key: 'http:', text: 'Cells Server (Insecure)', data: { icon: 'Server' } },
+                        { key: 'router:', text: 'Local Server', data: { icon: 'ServerEnviroment' } },
+                        { key: 'fs:', text: 'File system', data: { icon: 'SyncFolder' } },
+                        { key: 's3:', text: 'S3 Service', data: { icon: 'SplitObject' } },
                     ]}
                 />
-                <Stack.Item grow>
-                    <TextField placeholder={"Path"} value={path} onChange={(e, v) => {this.update(e, v, 'path')}}/>
-                </Stack.Item>
+                {!url.protocol || url.protocol.indexOf('http') !== 0 &&
+                    <Stack.Item grow>{pathField}</Stack.Item>
+                }
+                {url.protocol && url.protocol.indexOf('http') === 0 &&
+                    <Stack.Item grow>
+                        <Stack vertical tokens={{childrenGap: 8}} >
+                            <Stack.Item>
+                                <TextField
+                                    placeholder={"Host"}
+                                    value={url.host}
+                                    onChange={(e, v) => {
+                                        url.set('host', v);
+                                        this.updateUrl(url);
+                                    }}/>
+                            </Stack.Item>
+                            <Stack.Item>
+                                <Stack horizontal tokens={{childrenGap: 8}} >
+                                    <Stack.Item grow>
+                                        <TextField
+                                            autoComplete={"off"}
+                                            placeholder={"User name"}
+                                            value={url.username}
+                                            onChange={(e, v) => {
+                                               url.set('username', v);
+                                               this.updateUrl(url);
+                                            }}
+                                        />
+                                    </Stack.Item>
+                                    <Stack.Item grow>
+                                        <TextField
+                                            autoComplete={"off"}
+                                            placeholder={"User Password"}
+                                            value={url.password}
+                                            onChange={(e, v) => {
+                                                url.set('password', v);
+                                                this.updateUrl(url);
+                                            }}
+                                        />
+                                    </Stack.Item>
+                                    <Stack.Item grow>
+                                        <TextField
+                                            autoComplete={"off"}
+                                            placeholder={"clientSecret (see pydio.json)"}
+                                            value={query.clientSecret}
+                                            onChange={(e, v) => {
+                                                url.set('query', {clientSecret:v});
+                                                this.updateUrl(url);
+                                            }}
+                                        />
+                                    </Stack.Item>
+                                </Stack>
+                            </Stack.Item>
+                            <Stack.Item>{pathField}</Stack.Item>
+                        </Stack>
+                    </Stack.Item>
+                }
+                <TreeDialog
+                    uri={rootUrl.toString()}
+                    hidden={!dialog}
+                    onDismiss={()=>{this.setState({dialog: false})}}
+                    onSelect={this.onSelect.bind(this)}
+                />
             </Stack>
         )
     }

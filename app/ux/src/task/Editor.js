@@ -19,12 +19,14 @@ export default class Editor extends React.Component {
         let t, isNew;
         if (task === true) {
             isNew = true;
-            t = Config
+            t = JSON.parse(JSON.stringify(Config));
+            // Default values
+            t.Config.LeftURI = "https://";
+            t.Config.RightURI = "fs://";
         } else {
             isNew = false;
-            t = task
+            t = JSON.parse(JSON.stringify(task));
         }
-        t = JSON.parse(JSON.stringify(t));
         const proxy = ObservableSlim.create(t, true, () => {
             this.setState({task: proxy});
         });
@@ -71,7 +73,9 @@ export default class Editor extends React.Component {
                     ]}
                 />
                 <Separator styles={{root:{marginTop: 10}}}/>
-                <SelectiveFolders value={task.Config.SelectiveRoots} onChange={(e,v) => {task.Config.SelectiveRoots = v}}/>
+                {task.Config.LeftURI &&
+                    <SelectiveFolders leftURI={task.Config.LeftURI} value={task.Config.SelectiveRoots} onChange={(e,v) => {task.Config.SelectiveRoots = v}}/>
+                }
 
                 <Stack horizontal tokens={{childrenGap: 8}} horizontalAlign="center" styles={{root:{marginTop: 30}}}>
                     <DefaultButton text={"Cancel"} onClick={onDismiss}/>

@@ -2,8 +2,8 @@ import React from 'react'
 import {Stack} from "office-ui-fabric-react/lib/Stack"
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
-import { IconButton } from 'office-ui-fabric-react/lib/Button'
-
+import { IconButton, CompoundButton } from 'office-ui-fabric-react/lib/Button'
+import TreeDialog from "./TreeDialog"
 
 export default class SelectiveFolders extends React.Component{
 
@@ -49,14 +49,13 @@ export default class SelectiveFolders extends React.Component{
         onChange(event, folders)
     }
 
-    add(event){
+    onSelect(selection){
         let {folders} = this.parsed();
-        const {newFolder} = this.state;
         const {onChange} = this.props;
-        folders = folders || [];
-        folders.push(newFolder);
-        this.setState({newFolder:""});
-        onChange(event, folders);
+        selection.map(folder => {
+            folders.push(folder);
+        });
+        onChange(null, folders);
     }
 
     remove(event, key){
@@ -71,62 +70,60 @@ export default class SelectiveFolders extends React.Component{
 
     render(){
         const {folders, enabled} = this.parsed();
-        const {newFolder} = this.state;
+        const {dialog} = this.state;
 
         return (
-            <Stack vertical tokens={{childrenGap: 8}}>
-                <Toggle
-                    label={"Selective Sync"}
-                    defaultChecked={enabled}
-                    onText="Enabled"
-                    offText="Disabled (all folders)"
-                    onChange={(e, v) => {this.update(e, v, 'enabled')}}
-                />
-                {enabled &&
-                    <React.Fragment>
-                    {folders.map((f,k) => {
-                        return (
-                            <Stack horizontal tokens={{childrenGap: 8}} key={k} >
-                                <Stack.Item>
-                                    <IconButton
-                                        iconProps={{ iconName: 'Remove' }}
-                                        title={"Remove"}
-                                        onClick={(e) => {this.remove(e, k)}}
-                                    />
-                                </Stack.Item>
-                                <Stack.Item grow>
-                                    <TextField
-                                        autoFocus={false}
-                                        value={f}
-                                        onChange={(e,v) => {this.update(e, v, 'folder', k)}}
-                                        iconProps={{ iconName: 'FolderList' }}
-                                    /></Stack.Item>
-                            </Stack>
-                        )
+            <React.Fragment>
+                <Stack vertical tokens={{childrenGap: 8}}>
+                    <Toggle
+                        label={"Selective Sync"}
+                        defaultChecked={enabled}
+                        onText="Enabled"
+                        offText="Disabled (all folders)"
+                        onChange={(e, v) => {this.update(e, v, 'enabled')}}
+                    />
+                    {enabled &&
+                        <React.Fragment>
+                        {folders.map((f,k) => {
+                            return (
+                                <Stack horizontal tokens={{childrenGap: 8}} key={k} >
+                                    <Stack.Item>
+                                        <IconButton
+                                            iconProps={{ iconName: 'Remove' }}
+                                            title={"Remove"}
+                                            onClick={(e) => {this.remove(e, k)}}
+                                        />
+                                    </Stack.Item>
+                                    <Stack.Item grow>
+                                        <TextField
+                                            readOnly={true}
+                                            autoFocus={false}
+                                            value={f}
+                                            onChange={(e,v) => {this.update(e, v, 'folder', k)}}
+                                            iconProps={{ iconName: 'FolderList' }}
+                                        /></Stack.Item>
+                                </Stack>
+                            )
 
-                    })}
-                        <Stack horizontal tokens={{childrenGap: 8}} key={'NEW-FOLDER'} >
-                            <Stack.Item>
-                                <IconButton
-                                    disabled={!newFolder}
-                                    iconProps={{ iconName: 'Add' }}
-                                    title={"Add"}
-                                    onClick={(e) => {this.add(e)}}
-                                />
-                            </Stack.Item>
-                            <Stack.Item grow>
-                                <TextField
-                                    autoFocus={false}
-                                    placeholder={"Select folder to sync"}
-                                    value={newFolder}
-                                    onChange={(e,v)=>{this.setState({newFolder:v})}}
-                                    key={"new_value"}
-                                    iconProps={{ iconName: 'FolderList' }}
-                                /></Stack.Item>
-                        </Stack>
-                    </React.Fragment>
-                }
-            </Stack>
+                        })}
+                            <Stack horizontal tokens={{childrenGap: 8}} key={'NEW-FOLDER'} >
+                                <Stack.Item>
+                                    <CompoundButton
+                                        iconProps={{iconName:'Add'}}
+                                        secondaryText={"Restrict sync to specific folders"}
+                                        onClick={()=>{this.setState({dialog: true})}}>Select folder(s)</CompoundButton>
+                                </Stack.Item>
+                            </Stack>
+                        </React.Fragment>
+                    }
+                </Stack>
+                <TreeDialog
+                    uri={this.props.leftURI}
+                    hidden={!dialog}
+                    onDismiss={()=>{this.setState({dialog: false})}}
+                    onSelect={this.onSelect.bind(this)}
+                />
+            </React.Fragment>
         );
 
     }
