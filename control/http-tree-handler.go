@@ -27,19 +27,16 @@ import (
 	"fmt"
 	"net/http"
 	"path"
-
-	"github.com/pydio/cells/common/log"
-
-	"github.com/pydio/cells/common"
-
-	"github.com/pydio/cells/common/sync/model"
-
-	"github.com/pydio/sync/endpoint"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/jsonpb"
 
+	"github.com/pydio/cells/common"
+	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/proto/tree"
+	"github.com/pydio/cells/common/sync/model"
+	"github.com/pydio/sync/endpoint"
 )
 
 type Request struct {
@@ -97,7 +94,7 @@ func ls(c *gin.Context) {
 		if !node.IsLeaf() {
 			if source, ok := model.AsPathSyncSource(request.endpoint); ok {
 				source.Walk(func(p string, node *tree.Node, err error) {
-					if err == nil && path.Base(p) != common.PYDIO_SYNC_HIDDEN_FILE_META {
+					if err == nil && path.Base(p) != common.PYDIO_SYNC_HIDDEN_FILE_META && !strings.HasPrefix(path.Base(p), ".") {
 						response.Children = append(response.Children, node.WithoutReservedMetas())
 					}
 				}, request.Path, false)
