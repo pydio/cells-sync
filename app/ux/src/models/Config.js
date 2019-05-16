@@ -4,8 +4,8 @@ const Config = {
     Config:{
         Label:"New Task",
         Uuid:"",
-        LeftURI:"",
-        RightURI:"",
+        LeftURI:"http://",
+        RightURI:"fs:///",
         Direction:"Bi",
         SelectiveRoots:undefined,
     },

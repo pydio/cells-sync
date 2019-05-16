@@ -92,12 +92,13 @@ class Loader {
         }).then(data => {
             return data.Children || [];
         }).catch(reason => {
-            const data = JSON.parse(reason.message);
-            if (data) {
-                throw data.error;
-            } else {
-                throw reason;
-            }
+            try{
+                const data = JSON.parse(reason.message);
+                if (data.error) {
+                    throw data.error;
+                }
+            }catch (e) {}
+            throw reason;
         });
     }
 }

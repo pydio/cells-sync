@@ -19,14 +19,12 @@ export default class Editor extends React.Component {
         let t, isNew;
         if (task === true) {
             isNew = true;
-            t = JSON.parse(JSON.stringify(Config));
-            // Default values
-            t.Config.LeftURI = "https://";
-            t.Config.RightURI = "fs://";
+            t = Config;
         } else {
             isNew = false;
-            t = JSON.parse(JSON.stringify(task));
+            t = task;
         }
+        t = JSON.parse(JSON.stringify(t));
         const proxy = ObservableSlim.create(t, true, () => {
             this.setState({task: proxy});
         });

@@ -5,9 +5,29 @@ import { Selection, SelectionMode, SelectionZone } from 'office-ui-fabric-react/
 import {TreeNode, Loader} from "../models/TreeNode";
 
 export default class TreeView extends React.Component {
-    _selection;
 
-    nodesToGroups(items, groups, node, level = -1, startIndex = 0) {
+    constructor(props) {
+        super(props);
+        const loader = new Loader(props.uri);
+        const selection = new Selection({onSelectionChanged:()=>{
+            this.setState({selection: selection}, () => {
+                this.props.onSelectionChanged(this.filterSelection());
+            });
+        }});
+        const tree = new TreeNode("/", loader, null, ()=>{
+            let items = [], groups = [];
+            this.nodesToGroups(items, groups, tree);
+            this.state.selection.setItems(items);
+            setTimeout(() => {this.forceUpdate()}, 0);
+        });
+        this.state = {
+            tree,
+            items:[],
+            groups:[], selection};
+        selection.setItems([]);
+    }
+
+    nodesToGroups(items, groups, node, level = 0, startIndex = 0) {
         items.push({key:node.getPath(), name:node.getPath()});
         let totalChildren = 0;
         node.walk(()=>{totalChildren++});
@@ -28,35 +48,26 @@ export default class TreeView extends React.Component {
         return startIndex
     }
 
-    filterSelection(selection){
-        if(!selection || !selection.length) {
-            return [];
-        } else {
-            return selection.map(item => {
-                let k = item.key;
-                if(k.length && k[0] !== '/') {
-                    k = '/' + k;
-                }
-                return k;
+    filterSelection(){
+        const {selection} = this.state;
+        if(selection.isIndexSelected(0)){
+            selection.toggleIndexSelected(0);
+            selection.getSelectedIndices().map(index => {
+                selection.toggleIndexSelected(index);
             });
+            this.forceUpdate();
         }
+        const selected = selection.getSelection() || [];
+        console.log(selection.getSelectedIndices(), selected);
+        return selected.map(item => {
+            let k = item.key;
+            if(k.length && k[0] !== '/') {
+                k = '/' + k;
+            }
+            return k;
+        });
     }
 
-    constructor(props) {
-        super(props);
-        const loader = new Loader(props.uri);
-        const tree = new TreeNode("/", loader, null, ()=>{
-            let items = [], groups = [];
-            this.nodesToGroups(items, groups, tree, 0, 0);
-            this._selection.setItems(items);
-            setTimeout(() => {this.forceUpdate()}, 0);
-        });
-        this.state = {tree, items:[], groups:[]};
-        this._selection = new Selection({onSelectionChanged:()=>{
-            this.props.onSelectionChanged(this.filterSelection(this._selection.getSelection()))
-        }});
-        this._selection.setItems([]);
-    }
 
     componentDidMount(){
         const {tree} = this.state;
@@ -78,9 +89,11 @@ export default class TreeView extends React.Component {
         const hStyles = {
             ...styles,
             headerCount:{display:'none'},
-            title:{marginRight: 10}
+            title:{marginRight: 10},
         };
-
+        if(data.group.startIndex === 0){
+            //hStyles.check = {visibility:'hidden'};
+        }
         return <GroupHeader
             {...all}
             styles={hStyles}
@@ -91,17 +104,17 @@ export default class TreeView extends React.Component {
 
     render(){
 
-        const {tree} = this.state;
+        const {tree, selection} = this.state;
         let items = [], groups = [];
-        this.nodesToGroups(items, groups, tree, 0, 0);
+        this.nodesToGroups(items, groups, tree);
 
         return (
             <div>
                 <FocusZone>
-                    <SelectionZone selection={this._selection} selectionMode={SelectionMode.single}>
+                    <SelectionZone selection={selection} selectionMode={SelectionMode.single}>
                         <GroupedList
                             items={[]}
-                            selection={this._selection}
+                            selection={selection}
                             selectionMode={SelectionMode.multiple}
                             groups={groups}
                             groupProps={{showEmptyGroups:true, onRenderHeader:this.onRenderGroup}}

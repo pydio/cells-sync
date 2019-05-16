@@ -12,6 +12,7 @@ export default class EndpointPicker extends React.Component {
         super(props);
         this.state = {
             dialog: false,
+            explicitPort: '',
             pathDisabled: this.pathIsDisabled(parse(props.value, {}, true)),
         };
     }
@@ -24,10 +25,14 @@ export default class EndpointPicker extends React.Component {
         return pathDisabled
     }
 
-    updateUrl(newUrl) {
+    updateUrl(newUrl, startPort = false) {
         const {onChange} = this.props;
-        this.setState({pathDisabled: this.pathIsDisabled(newUrl)});
-        onChange(null, newUrl.toString());
+        const explicitPort = (newUrl.protocol === 'http:' && newUrl.port === '80') || (newUrl.protocol === 'https:' && newUrl.port === '443');
+        this.setState({
+            pathDisabled: this.pathIsDisabled(newUrl),
+            explicitPort: explicitPort ? newUrl.port : '',
+        });
+        onChange(null, newUrl.toString() + (explicitPort?':' + newUrl.port : ''));
     }
 
     onSelect(selection){
@@ -41,7 +46,7 @@ export default class EndpointPicker extends React.Component {
 
 
     render(){
-        const {dialog, pathDisabled} = this.state;
+        const {dialog, pathDisabled, explicitPort} = this.state;
         const {value} = this.props;
         const url = parse(value, {}, true);
         const rootUrl = parse(value, {}, true);
@@ -142,7 +147,7 @@ export default class EndpointPicker extends React.Component {
                     </Stack.Item>
                 }
                 <TreeDialog
-                    uri={rootUrl.toString()}
+                    uri={dialog ? rootUrl.toString(): ''}
                     hidden={!dialog}
                     onDismiss={()=>{this.setState({dialog: false})}}
                     onSelect={this.onSelect.bind(this)}

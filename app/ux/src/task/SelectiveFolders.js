@@ -2,7 +2,7 @@ import React from 'react'
 import {Stack} from "office-ui-fabric-react/lib/Stack"
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
-import { IconButton, CompoundButton } from 'office-ui-fabric-react/lib/Button'
+import { IconButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button'
 import TreeDialog from "./TreeDialog"
 
 export default class SelectiveFolders extends React.Component{
@@ -108,10 +108,9 @@ export default class SelectiveFolders extends React.Component{
                         })}
                             <Stack horizontal tokens={{childrenGap: 8}} key={'NEW-FOLDER'} >
                                 <Stack.Item>
-                                    <CompoundButton
+                                    <PrimaryButton
                                         iconProps={{iconName:'Add'}}
-                                        secondaryText={"Restrict sync to specific folders"}
-                                        onClick={()=>{this.setState({dialog: true})}}>Select folder(s)</CompoundButton>
+                                        onClick={()=>{this.setState({dialog: true})}}>Select folder(s)</PrimaryButton>
                                 </Stack.Item>
                             </Stack>
                         </React.Fragment>
