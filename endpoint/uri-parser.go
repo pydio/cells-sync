@@ -20,13 +20,17 @@ import (
 )
 
 // EndpointFromURI parse an URI string to instantiate a proper Endpoint
-func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
+func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.Endpoint, e error) {
 
 	u, e := url.Parse(uri)
 	if e != nil {
 		return nil, e
 	}
 	otherU, _ := url.Parse(otherUri)
+	opts := model.EndpointOptions{}
+	if len(browseOnly) > 0 && browseOnly[0] {
+		opts.BrowseOnly = true
+	}
 
 	switch u.Scheme {
 
@@ -36,13 +40,14 @@ func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
 			parts := strings.Split(path, "/")
 			path = parts[1] + ":/" + strings.Join(parts[2:], "/")
 		}
-		return filesystem.NewFSClient(path)
+		return filesystem.NewFSClient(path, opts)
 
 	case "db":
 		return model.NewMemDB(), nil
 
 	case "router":
 		options := cells.Options{
+			EndpointOptions:   opts,
 			LocalInitRegistry: true,
 		}
 		if otherU != nil && otherU.Scheme == "router" {
@@ -75,7 +80,9 @@ func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
 			ClientSecret:  clientSecret,
 			UseTokenCache: true,
 		}
-		options := cells.Options{}
+		options := cells.Options{
+			EndpointOptions: opts,
+		}
 		return cells.NewRemote(config, strings.TrimLeft(u.Path, "/"), options), nil
 
 	case "s3":
@@ -90,7 +97,7 @@ func EndpointFromURI(uri string, otherUri string) (ep model.Endpoint, e error) {
 		password, _ := u.User.Password()
 		values := u.Query()
 		normalize := values.Get("normalize") == "true"
-		client, e := s3.NewClient(context.Background(), u.Host, u.User.Username(), password, bucket, rootPath)
+		client, e := s3.NewClient(context.Background(), u.Host, u.User.Username(), password, bucket, rootPath, opts)
 		if e != nil {
 			return nil, e
 		}

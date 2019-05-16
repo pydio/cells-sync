@@ -76,7 +76,7 @@ func parseRequest(c *gin.Context) (*Request, error) {
 	if e := dec.Decode(&request); e != nil {
 		return nil, e
 	}
-	ep, e := endpoint.EndpointFromURI(request.EndpointURI, "")
+	ep, e := endpoint.EndpointFromURI(request.EndpointURI, "", true)
 	if e != nil {
 		return nil, e
 	}

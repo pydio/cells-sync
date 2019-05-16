@@ -3,6 +3,9 @@ package control
 import (
 	"encoding/json"
 	"net/http"
+	"time"
+
+	"github.com/gin-contrib/cors"
 
 	"github.com/pborman/uuid"
 
@@ -161,6 +164,14 @@ func (h *HttpServer) Serve() {
 		i.Writer.WriteString("Hello World!")
 	})
 	// Simple RestAPI for browsing/creating nodes inside Endpoints
+	Server.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "POST"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	Server.POST("/tree", ls)
 	Server.PUT("/tree", mkdir)
 	log.Logger(context.Background()).Info("Starting HttpServer on port 3636")
