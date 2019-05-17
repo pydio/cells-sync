@@ -109,7 +109,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if lastBatchSize > 0 {
 					msg := fmt.Sprintf("Finished Processing %d files and folders", lastBatchSize)
 					log.Logger(ctx).Info(msg)
-					state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg}, SyncStatusIdle)
+					state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, SyncStatusIdle)
 					bus.Pub(state, TopicState)
 				}
 				go func() {
