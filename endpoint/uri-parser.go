@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/pydio/cells/common/sync/endpoints/memory"
+
 	"github.com/pydio/cells/common/sync/endpoints/s3"
 
 	"github.com/pydio/cells/common/sync/endpoints/filesystem"
@@ -43,7 +45,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		return filesystem.NewFSClient(path, opts)
 
 	case "db":
-		return model.NewMemDB(), nil
+		return memory.NewMemDB(), nil
 
 	case "router":
 		options := cells.Options{
