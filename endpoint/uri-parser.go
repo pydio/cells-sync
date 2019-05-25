@@ -16,8 +16,6 @@ import (
 
 	"github.com/pydio/cells/common/sync/endpoints/cells"
 
-	cells_sdk "github.com/pydio/cells-sdk-go"
-
 	"github.com/pydio/cells/common/sync/model"
 )
 
@@ -74,13 +72,12 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 			clientId = values.Get("clientId")
 		}
 		pass, _ := u.User.Password()
-		config := &cells_sdk.SdkConfig{
-			Url:           fmt.Sprintf("%s://%s", u.Scheme, u.Host),
-			User:          u.User.Username(),
-			Password:      pass,
-			ClientKey:     clientId,
-			ClientSecret:  clientSecret,
-			UseTokenCache: true,
+		config := cells.RemoteConfig{
+			Url:          fmt.Sprintf("%s://%s", u.Scheme, u.Host),
+			User:         u.User.Username(),
+			Password:     pass,
+			ClientKey:    clientId,
+			ClientSecret: clientSecret,
 		}
 		options := cells.Options{
 			EndpointOptions: opts,
