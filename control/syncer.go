@@ -63,7 +63,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
 
 	taskUuid := conf.Uuid
-	syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, direction, conf.SelectiveRoots...)
+	syncTask := task.NewSync(leftEndpoint, rightEndpoint, direction, conf.SelectiveRoots...)
 
 	eventsChan := make(chan interface{})
 	batchStatus := make(chan merger.ProcessStatus)
@@ -171,14 +171,14 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			case MessagePublishState:
 				go bus.Pub(s.stateStore.LastState(), TopicState)
 			case MessagePause:
-				s.task.Pause()
+				s.task.Pause(ctx)
 				go func() {
 					state := s.stateStore.UpdateSyncStatus(SyncStatusPaused)
 					bus.Pub(state, TopicState)
 				}()
 			case MessageResume:
-				s.task.Resume()
-				s.task.Run(ctx, false, false)
+				s.task.Resume(ctx)
+				//s.task.Run(ctx, false, false)
 				go func() {
 					state := s.stateStore.UpdateSyncStatus(SyncStatusIdle)
 					bus.Pub(state, TopicState)

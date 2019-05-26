@@ -76,7 +76,7 @@ var CaptureCmd = &cobra.Command{
 					log.Fatal("unsupported direction type, please use one of Bi, Left, Right")
 				}
 
-				syncTask := task.NewSync(ctx, leftEndpoint, rightEndpoint, dir)
+				syncTask := task.NewSync(leftEndpoint, rightEndpoint, dir)
 				syncTask.SetSnapshotFactory(endpoint.NewSnapshotFactory(t.Uuid))
 				e := syncTask.Capture(ctx, captureTarget)
 				if e != nil {

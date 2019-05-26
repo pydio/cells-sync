@@ -18,11 +18,12 @@ class SyncTask extends React.Component {
     render() {
 
         const {state, sendMessage, openEditor, onDelete} = this.props;
-        const {LastProcessStatus} = state;
+        const {LastProcessStatus, Status} = state;
         let pg;
         if (LastProcessStatus && LastProcessStatus.Progress) {
             pg = LastProcessStatus.Progress;
         }
+        const paused = Status === 1;
         const disabled = !(state.LeftInfo.Connected && state.RightInfo.Connected);
         return (
             <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical tokens={{childrenGap: 20}}>
@@ -33,7 +34,7 @@ class SyncTask extends React.Component {
                     <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{'Not Connected to RIGHT! Last connection was ' + state.RightInfo.LastConnection}</div>
                 }
                 <div style={{padding: '10px 20px'}}>
-                    <h3>{state.Config.Label}</h3>
+                    <h3>{state.Config.Label} {paused ? ' (paused)' : ''}</h3>
                     <div>
                         <Label>Status</Label>
                         {LastProcessStatus && <div>{LastProcessStatus.StatusString}</div>}
@@ -75,10 +76,10 @@ class SyncTask extends React.Component {
                                     onClick:()=>openEditor()
                                 },
                                 {
-                                    key: 'stop',
-                                    text: 'Disable',
-                                    iconProps: { iconName: 'Stop' },
-                                    onClick: () => sendMessage('CMD', {UUID:state.UUID, Cmd:'disable'})
+                                    key: 'pause',
+                                    text: paused ? 'Start' : 'Pause',
+                                    iconProps: { iconName: paused ? 'PlayResume' : 'Pause' },
+                                    onClick: () => sendMessage('CMD', {UUID:state.UUID, Cmd: paused ? 'resume' : 'pause'})
                                 },
                                 {
                                     key: 'delete',
