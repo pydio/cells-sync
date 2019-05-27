@@ -5,8 +5,9 @@ import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownRender";
 import parse from 'url-parse'
 import TreeDialog from './TreeDialog'
+import {withTranslation} from 'react-i18next'
 
-export default class EndpointPicker extends React.Component {
+class EndpointPicker extends React.Component {
 
     constructor(props){
         super(props);
@@ -47,7 +48,7 @@ export default class EndpointPicker extends React.Component {
 
     render(){
         const {dialog, pathDisabled} = this.state;
-        const {value} = this.props;
+        const {value, t} = this.props;
         const url = parse(value, {}, true);
         const rootUrl = parse(value, {}, true);
         rootUrl.set('pathname', '');
@@ -57,7 +58,7 @@ export default class EndpointPicker extends React.Component {
 
         const pathField = (
             <TextField
-                placeholder={"Path (click to select a folder)"}
+                placeholder={t('editor.picker.path')}
                 value={url.pathname}
                 onChange={(e, v) => {
                     url.set('pathname', v);
@@ -78,16 +79,16 @@ export default class EndpointPicker extends React.Component {
                         url.set('protocol', item.key);
                         this.updateUrl(url);
                     }}
-                    placeholder="Endpoint type"
+                    placeholder={t('editor.picker.type')}
                     onRenderOption={renderOptionWithIcon}
                     onRenderTitle={renderTitleWithIcon}
                     styles={{root:{width: 200}}}
                     options={[
-                        { key: 'https:', text: 'Cells Server (SSL)', data: { icon: 'Server' } },
-                        { key: 'http:', text: 'Cells Server (Insecure)', data: { icon: 'Server' } },
-                        { key: 'router:', text: 'Local Server', data: { icon: 'ServerEnviroment' } },
-                        { key: 'fs:', text: 'File system', data: { icon: 'SyncFolder' } },
-                        { key: 's3:', text: 'S3 Service', data: { icon: 'SplitObject' } },
+                        { key: 'https:', text: t('editor.picker.type.https'), data: { icon: 'Server' } },
+                        { key: 'http:', text: t('editor.picker.type.http'), data: { icon: 'Server' } },
+                        { key: 'router:', text: t('editor.picker.type.router'), data: { icon: 'ServerEnviroment' } },
+                        { key: 'fs:', text: t('editor.picker.type.fs'), data: { icon: 'SyncFolder' } },
+                        { key: 's3:', text: t('editor.picker.type.s3'), data: { icon: 'SplitObject' } },
                     ]}
                 />
                 {(!url.protocol || url.protocol.indexOf('http') !== 0) &&
@@ -98,7 +99,7 @@ export default class EndpointPicker extends React.Component {
                         <Stack vertical tokens={{childrenGap: 8}} >
                             <Stack.Item>
                                 <TextField
-                                    placeholder={"Host"}
+                                    placeholder={t('editor.picker.http.host')}
                                     value={url.host}
                                     onChange={(e, v) => {
                                         url.set('host', v);
@@ -110,7 +111,7 @@ export default class EndpointPicker extends React.Component {
                                     <Stack.Item grow>
                                         <TextField
                                             autoComplete={"off"}
-                                            placeholder={"User name"}
+                                            placeholder={t('editor.picker.http.user')}
                                             value={url.username}
                                             onChange={(e, v) => {
                                                url.set('username', v);
@@ -121,7 +122,7 @@ export default class EndpointPicker extends React.Component {
                                     <Stack.Item grow>
                                         <TextField
                                             autoComplete={"off"}
-                                            placeholder={"User Password"}
+                                            placeholder={t('editor.picker.http.password')}
                                             value={url.password}
                                             onChange={(e, v) => {
                                                 url.set('password', v);
@@ -132,7 +133,7 @@ export default class EndpointPicker extends React.Component {
                                     <Stack.Item grow>
                                         <TextField
                                             autoComplete={"off"}
-                                            placeholder={"clientSecret (see pydio.json)"}
+                                            placeholder={t('editor.picker.http.secret')}
                                             value={query.clientSecret}
                                             onChange={(e, v) => {
                                                 url.set('query', {clientSecret:v});
@@ -157,3 +158,7 @@ export default class EndpointPicker extends React.Component {
     }
 
 }
+
+EndpointPicker = withTranslation()(EndpointPicker)
+
+export default EndpointPicker

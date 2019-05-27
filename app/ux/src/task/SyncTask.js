@@ -6,6 +6,7 @@ import { Depths } from '@uifabric/fluent-theme/lib/fluent/FluentDepths';
 import {Stack} from "office-ui-fabric-react/lib/Stack"
 import {ContextualMenu} from "office-ui-fabric-react/lib/ContextualMenu"
 import moment from 'moment'
+import {withTranslation} from 'react-i18next'
 
 class SyncTask extends React.Component {
 
@@ -17,7 +18,7 @@ class SyncTask extends React.Component {
 
     render() {
 
-        const {state, sendMessage, openEditor, onDelete} = this.props;
+        const {state, sendMessage, openEditor, onDelete, t} = this.props;
         const {LastProcessStatus, Status} = state;
         let pg;
         if (LastProcessStatus && LastProcessStatus.Progress) {
@@ -28,20 +29,20 @@ class SyncTask extends React.Component {
         return (
             <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical tokens={{childrenGap: 20}}>
                 {!state.LeftInfo.Connected &&
-                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{'Not Connected to LEFT! Last connection was ' + state.LeftInfo.LastConnection}</div>
+                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{t('task.disconnected') + state.LeftInfo.LastConnection}</div>
                 }
                 {!state.RightInfo.Connected &&
-                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{'Not Connected to RIGHT! Last connection was ' + state.RightInfo.LastConnection}</div>
+                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{t('task.disconnected') + state.RightInfo.LastConnection}</div>
                 }
                 <div style={{padding: '10px 20px'}}>
-                    <h3>{state.Config.Label} {paused ? ' (paused)' : ''}</h3>
+                    <h3>{state.Config.Label} {paused ? ' ('+t('task.status.paused')+')' : ''}</h3>
                     <div>
-                        <Label>Status</Label>
+                        <Label>{t('task.status')}</Label>
                         {LastProcessStatus && <div>{LastProcessStatus.StatusString}</div>}
-                        {pg && <div><ProgressIndicator title={"Progress"} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>}
+                        {pg && <div><ProgressIndicator title={t('task.progress')} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>}
                     </div>
                     <div>
-                        <Label>Last Sync</Label>
+                        <Label>{t('task.last-sync')}</Label>
                         {moment(state.LastSyncTime).fromNow()}
                     </div>
                 </div>
@@ -51,7 +52,7 @@ class SyncTask extends React.Component {
                         allowDisabledFocus={true}
                         disabled={disabled}
                         checked={false}
-                        text="Sync Now"
+                        text={t('task.action.loop')}
                         iconProps={{iconName:'Play'}}
                         onClick={() => sendMessage('CMD', {UUID:state.UUID, Cmd:'loop'})}
                     />
@@ -60,7 +61,7 @@ class SyncTask extends React.Component {
                         allowDisabledFocus={true}
                         disabled={disabled}
                         checked={false}
-                        text="Full Resync"
+                        text={t('task.action.resync')}
                         iconProps={{iconName:'Sync'}}
                         onClick={() => sendMessage('CMD', {UUID:state.UUID, Cmd:'resync'})}
                     />
@@ -71,22 +72,22 @@ class SyncTask extends React.Component {
                             items:[
                                 {
                                     key: 'edit',
-                                    text: 'Configure',
+                                    text: t('task.action.edit'),
                                     iconProps: { iconName: 'Edit' },
                                     onClick:()=>openEditor()
                                 },
                                 {
                                     key: 'pause',
-                                    text: paused ? 'Start' : 'Pause',
+                                    text: paused ? t('task.action.resume') : t('task.action.pause'),
                                     iconProps: { iconName: paused ? 'PlayResume' : 'Pause' },
                                     onClick: () => sendMessage('CMD', {UUID:state.UUID, Cmd: paused ? 'resume' : 'pause'})
                                 },
                                 {
                                     key: 'delete',
-                                    text: 'Delete',
+                                    text: t('task.action.delete'),
                                     iconProps: { iconName: 'Delete' },
                                     onClick: () => {
-                                        if (global.confirm('Are you sure?')){
+                                        if (window.confirm(t('task.action.delete.confirm'))){
                                             onDelete(state.Config);
                                         }
                                     }
@@ -101,5 +102,7 @@ class SyncTask extends React.Component {
     }
 
 }
+
+SyncTask = withTranslation()(SyncTask);
 
 export {SyncTask as default}

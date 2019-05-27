@@ -3,6 +3,7 @@ import { Dialog, DialogFooter, DialogContent } from 'office-ui-fabric-react/lib/
 import TreeView from "./TreeView";
 import {PrimaryButton, DefaultButton} from "office-ui-fabric-react";
 import {ScrollablePane} from 'office-ui-fabric-react/lib/ScrollablePane'
+import {withTranslation} from 'react-i18next'
 
 class TreeDialog extends React.Component {
     constructor(props) {
@@ -22,9 +23,9 @@ class TreeDialog extends React.Component {
     }
 
     render() {
-        const {uri, ...dialogProps} = this.props;
+        const {uri, t, ...dialogProps} = this.props;
         return (
-            <Dialog {...dialogProps} minWidth={650} title={"Pick a folder"} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
+            <Dialog {...dialogProps} minWidth={650} title={t('tree.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
                 <DialogContent styles={{innerContent:{minHeight: 450}, inner:{padding:0}, title:{display:'none'}}}>
                     <ScrollablePane styles={{contentContainer:{maxHeight:450, backgroundColor:'#fafafa'}}}>
                         {uri &&
@@ -33,8 +34,8 @@ class TreeDialog extends React.Component {
                     </ScrollablePane>
                 </DialogContent>
                 <DialogFooter>
-                    <DefaultButton onClick={this.props.onDismiss} text={"Cancel"}/>
-                    <PrimaryButton onClick={this.submit.bind(this)} text={"Select"}/>
+                    <DefaultButton onClick={this.props.onDismiss} text={t('button.cancel')}/>
+                    <PrimaryButton onClick={this.submit.bind(this)} text={t('button.select')}/>
                 </DialogFooter>
             </Dialog>
         );
@@ -42,4 +43,5 @@ class TreeDialog extends React.Component {
 
 }
 
+TreeDialog = withTranslation()(TreeDialog);
 export {TreeDialog as default}

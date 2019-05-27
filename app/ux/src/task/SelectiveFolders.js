@@ -4,8 +4,9 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { IconButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button'
 import TreeDialog from "./TreeDialog"
+import {withTranslation} from 'react-i18next'
 
-export default class SelectiveFolders extends React.Component{
+class SelectiveFolders extends React.Component{
 
     constructor(props) {
         super(props);
@@ -71,15 +72,16 @@ export default class SelectiveFolders extends React.Component{
     render(){
         const {folders, enabled} = this.parsed();
         const {dialog} = this.state;
+        const {t} = this.props;
 
         return (
             <React.Fragment>
                 <Stack vertical tokens={{childrenGap: 8}}>
                     <Toggle
-                        label={"Selective Sync"}
+                        label={t('editor.selective')}
                         defaultChecked={enabled}
-                        onText="Enabled"
-                        offText="Disabled (all folders)"
+                        onText={t('editor.selective.on')}
+                        offText={t('editor.selective.off')}
                         onChange={(e, v) => {this.update(e, v, 'enabled')}}
                     />
                     {enabled &&
@@ -90,7 +92,7 @@ export default class SelectiveFolders extends React.Component{
                                     <Stack.Item>
                                         <IconButton
                                             iconProps={{ iconName: 'Remove' }}
-                                            title={"Remove"}
+                                            title={t('editor.selective.remove')}
                                             onClick={(e) => {this.remove(e, k)}}
                                         />
                                     </Stack.Item>
@@ -110,7 +112,7 @@ export default class SelectiveFolders extends React.Component{
                                 <Stack.Item>
                                     <PrimaryButton
                                         iconProps={{iconName:'Add'}}
-                                        onClick={()=>{this.setState({dialog: true})}}>Select folder(s)</PrimaryButton>
+                                        onClick={()=>{this.setState({dialog: true})}}>{t('editor.selective.add')}</PrimaryButton>
                                 </Stack.Item>
                             </Stack>
                         </React.Fragment>
@@ -128,3 +130,7 @@ export default class SelectiveFolders extends React.Component{
     }
 
 }
+
+SelectiveFolders = withTranslation()(SelectiveFolders);
+
+export default SelectiveFolders

@@ -4,17 +4,19 @@ import Sockette from 'sockette'
 import SyncTask from './task/SyncTask'
 import {ScrollablePane} from 'office-ui-fabric-react/lib/ScrollablePane'
 import {Sticky, StickyPositionType} from 'office-ui-fabric-react/lib/Sticky'
-import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
 import {Link} from 'office-ui-fabric-react/lib/Link'
 import { SharedColors } from '@uifabric/fluent-theme/lib/fluent/FluentColors';
 import { FontSizes } from '@uifabric/fluent-theme/lib/fluent/FluentType';
 import { Customizer } from 'office-ui-fabric-react';
 import { FluentCustomizations } from '@uifabric/fluent-theme';
-import { CompoundButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+import { CompoundButton } from 'office-ui-fabric-react/lib/Button';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
 import { Depths } from '@uifabric/fluent-theme/lib/fluent/FluentDepths';
 import { initializeIcons } from '@uifabric/icons';
 import Editor from "./task/Editor";
+import { Translation } from 'react-i18next';
+import AgentModal from './dashboard/AgentModal'
+
 initializeIcons();
 
 class App extends React.Component{
@@ -121,76 +123,60 @@ class App extends React.Component{
 
     render(){
         const {connected, connecting, maxAttemptsReached, syncTasks, showEditor} = this.state;
-        let dialogText = 'Application is disconnected from agent. ';
-        if(maxAttemptsReached) {
-            dialogText += 'Agent may be dead! Hit the button to force reconnection'
-        } else {
-            dialogText += 'Please wait while we are trying to reconnect...'
-        }
         return (
             <Customizer {...FluentCustomizations}>
-                <ScrollablePane styles={{root:{backgroundColor:'#fafafa'}}}>
-                    <Dialog
-                        hidden={connected}
-                        onDismiss={this._closeDialog}
-                        dialogContentProps={{
-                            type: DialogType.normal,
-                            title: 'Disconnected',
-                            subText: dialogText
-                        }}
-                        modalProps={{
-                            isBlocking: true,
-                            styles: { main: { maxWidth: 450 } },
-                        }}
-                    >
-                        <DialogFooter>
-                            <PrimaryButton onClick={() => {this.forceReconnect()}} text={connecting?"Connecting...":"Reconnect Now"}/>
-                        </DialogFooter>
-                    </Dialog>
+                <Translation>{(t, {i18n}) =>
+                        <ScrollablePane styles={{root:{backgroundColor:'#fafafa'}}}>
+                            <AgentModal
+                                hidden={connected}
+                                reconnect={this.forceReconnect.bind(this)}
+                                connecting={connecting}
+                                maxAttemptsReached={maxAttemptsReached}
+                            />
+                            <Panel
+                                isOpen={showEditor}
+                                type={PanelType.smallFluid}
+                                onDismiss={()=>{this.setState({showEditor: false})}}
+                                headerText={showEditor === true ? t('editor.title.new') : t('editor.title.update')}
+                            >
+                                {showEditor &&
+                                <Editor
+                                    task={showEditor}
+                                    onDismiss={()=>{this.setState({showEditor: false})}}
+                                    sendMessage={this.sendMessage.bind(this)}
+                                />}
+                            </Panel>
 
-                    <Panel
-                        isOpen={showEditor}
-                        type={PanelType.smallFluid}
-                        onDismiss={()=>{this.setState({showEditor: false})}}
-                        headerText={showEditor === true ? "Create a new Sync Task" : "Edit Task"}
-                    >
-                        {showEditor &&
-                        <Editor
-                            task={showEditor}
-                            onDismiss={()=>{this.setState({showEditor: false})}}
-                            sendMessage={this.sendMessage.bind(this)}
-                        />}
-                    </Panel>
-
-                    <div>
-                        <Sticky stickyPosition={StickyPositionType.Header}>
-                            <div style={{backgroundColor:SharedColors.cyanBlue10, boxShadow:Depths.depth8, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
-                                <div style={{flex: 1, fontSize: FontSizes.size20, fontWeight:400}}>Cells Sync</div>
+                            <div>
+                                <Sticky stickyPosition={StickyPositionType.Header}>
+                                    <div style={{backgroundColor:SharedColors.cyanBlue10, boxShadow:Depths.depth8, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
+                                        <div style={{flex: 1, fontSize: FontSizes.size20, fontWeight:400}}>{t('application.title')}</div>
+                                        <div>
+                                            <Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
+                                        </div>
+                                    </div>
+                                </Sticky>
                                 <div>
-                                    <Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
+                                    {Object.keys(syncTasks).map(k => {
+                                        const task = syncTasks[k];
+                                        return <SyncTask
+                                            key={k}
+                                            state={task}
+                                            sendMessage={this.sendMessage.bind(this)}
+                                            openEditor={()=>{this.setState({showEditor:task})}}
+                                            onDelete={this.onDelete.bind(this)}
+                                        />
+                                    })}
+                                </div>
+                                <div style={{padding: 20, textAlign:'center'}}>
+                                    <CompoundButton
+                                        iconProps={{iconName:'Add'}}
+                                        secondaryText={t('main.create.legend')}
+                                        onClick={()=>{this.setState({showEditor: true})}}>{t('main.create')}</CompoundButton>
                                 </div>
                             </div>
-                        </Sticky>
-                        <div>
-                        {Object.keys(syncTasks).map(k => {
-                            const task = syncTasks[k];
-                            return <SyncTask
-                                key={k}
-                                state={task}
-                                sendMessage={this.sendMessage.bind(this)}
-                                openEditor={()=>{this.setState({showEditor:task})}}
-                                onDelete={this.onDelete.bind(this)}
-                            />
-                        })}
-                        </div>
-                        <div style={{padding: 20, textAlign:'center'}}>
-                            <CompoundButton
-                                iconProps={{iconName:'Add'}}
-                                secondaryText={"Setup a new synchronization task"}
-                                onClick={()=>{this.setState({showEditor: true})}}>Create Sync</CompoundButton>
-                        </div>
-                    </div>
-                </ScrollablePane>
+                        </ScrollablePane>
+                }</Translation>
             </Customizer>
         );
     }
