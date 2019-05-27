@@ -53,4 +53,6 @@ xgo:
 
 clean:
 	rm -f sync-*
+	rm -f systray-*
+	rm -f webview-*
 	${GOPATH}/bin/packr clean
