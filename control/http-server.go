@@ -3,9 +3,9 @@ package control
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
+
+	"github.com/pydio/sync/app/ux"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
@@ -156,9 +156,7 @@ func (h *HttpServer) Serve() {
 	gin.DisableConsoleColor()
 	Server := gin.New()
 	Server.Use(gin.Recovery())
-	if gPath, ok := os.LookupEnv("GOPATH"); ok {
-		Server.Use(static.Serve("/", static.LocalFile(filepath.Join(gPath, "src", "github.com", "pydio", "sync", "app", "ux", "build"), true)))
-	}
+	Server.Use(static.Serve("/", ux.Box))
 	Server.GET("/status", func(c *gin.Context) {
 		h.Websocket.HandleRequest(c.Writer, c.Request)
 	})
