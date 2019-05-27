@@ -52,7 +52,7 @@ export default class SelectiveFolders extends React.Component{
     onSelect(selection){
         let {folders} = this.parsed();
         const {onChange} = this.props;
-        selection.map(folder => {
+        selection.forEach(folder => {
             folders.push(folder);
         });
         onChange(null, folders);

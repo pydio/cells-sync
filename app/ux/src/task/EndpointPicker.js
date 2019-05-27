@@ -46,7 +46,7 @@ export default class EndpointPicker extends React.Component {
 
 
     render(){
-        const {dialog, pathDisabled, explicitPort} = this.state;
+        const {dialog, pathDisabled} = this.state;
         const {value} = this.props;
         const url = parse(value, {}, true);
         const rootUrl = parse(value, {}, true);
@@ -90,7 +90,7 @@ export default class EndpointPicker extends React.Component {
                         { key: 's3:', text: 'S3 Service', data: { icon: 'SplitObject' } },
                     ]}
                 />
-                {!url.protocol || url.protocol.indexOf('http') !== 0 &&
+                {(!url.protocol || url.protocol.indexOf('http') !== 0) &&
                     <Stack.Item grow>{pathField}</Stack.Item>
                 }
                 {url.protocol && url.protocol.indexOf('http') === 0 &&

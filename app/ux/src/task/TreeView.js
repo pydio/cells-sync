@@ -52,13 +52,12 @@ export default class TreeView extends React.Component {
         const {selection} = this.state;
         if(selection.isIndexSelected(0)){
             selection.toggleIndexSelected(0);
-            selection.getSelectedIndices().map(index => {
+            selection.getSelectedIndices().forEach(index => {
                 selection.toggleIndexSelected(index);
             });
             this.forceUpdate();
         }
         const selected = selection.getSelection() || [];
-        console.log(selection.getSelectedIndices(), selected);
         return selected.map(item => {
             let k = item.key;
             if(k.length && k[0] !== '/') {

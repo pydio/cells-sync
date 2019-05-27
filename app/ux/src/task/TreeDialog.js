@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dialog, DialogType, DialogFooter, DialogContent } from 'office-ui-fabric-react/lib/Dialog';
+import { Dialog, DialogFooter, DialogContent } from 'office-ui-fabric-react/lib/Dialog';
 import TreeView from "./TreeView";
 import {PrimaryButton, DefaultButton} from "office-ui-fabric-react";
 import {ScrollablePane} from 'office-ui-fabric-react/lib/ScrollablePane'
