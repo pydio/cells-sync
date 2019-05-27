@@ -26,6 +26,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/pydio/sync/common"
+
 	"github.com/getlantern/systray"
 	"github.com/pydio/sync/app/systray/icon"
 	"github.com/skratchdot/open-golang/open"
@@ -39,6 +41,10 @@ var (
 )
 
 func main() {
+	if len(os.Args) > 0 && os.Args[1] == "version" {
+		common.PrintVersion("Cells Sync System Tray")
+		os.Exit(0)
+	}
 	go startCli()
 	// Should be called at the very beginning of main().
 	systray.Run(onReady, onExit)
