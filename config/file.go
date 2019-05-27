@@ -31,7 +31,11 @@ import (
 )
 
 func getPath() string {
-	return filepath.Join(config.ApplicationDataDir(), "sync", "config.json")
+	dir := filepath.Join(config.ApplicationDataDir(), "sync")
+	if _, e := os.Stat(dir); e != nil {
+		os.MkdirAll(dir, 0755)
+	}
+	return filepath.Join(dir, "config.json")
 }
 
 func LoadFromFile() (*Global, error) {
