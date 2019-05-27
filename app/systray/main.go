@@ -41,7 +41,7 @@ var (
 )
 
 func main() {
-	if len(os.Args) > 0 && os.Args[1] == "version" {
+	if len(os.Args) > 1 && os.Args[1] == "version" {
 		common.PrintVersion("Cells Sync System Tray")
 		os.Exit(0)
 	}
