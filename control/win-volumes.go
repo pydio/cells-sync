@@ -32,11 +32,10 @@ import (
 	"unsafe"
 
 	"github.com/pydio/cells/common/log"
-
 	"github.com/pydio/cells/common/proto/tree"
 )
 
-func browseWinVolumes(ctx context.ContextContext) (children []*tree.Node) {
+func browseWinVolumes(ctx context.Context) (children []*tree.Node) {
 
 	h := syscall.MustLoadDLL("kernel32.dll")
 	doneChan := make(chan string, 1)
