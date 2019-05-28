@@ -3,6 +3,7 @@ import {Config} from '../models/Config'
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
+import 'observable-slim/proxy'
 import ObservableSlim from 'observable-slim'
 import EndpointPicker from './EndpointPicker'
 import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownRender";
