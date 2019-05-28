@@ -38,9 +38,8 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 
 	case "fs":
 		path := u.Path
-		if runtime.GOOS == "windows" {
-			parts := strings.Split(path, "/")
-			path = parts[1] + ":/" + strings.Join(parts[2:], "/")
+		if runtime.GOOS == `windows` && path != "" && opts.BrowseOnly {
+			path = path[1:2] + ":\\" 
 		}
 		return filesystem.NewFSClient(path, opts)
 
