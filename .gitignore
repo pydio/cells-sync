@@ -1,1 +1,5 @@
 sync-*
+csync
+sync.exe*
+.vscode
+debug
