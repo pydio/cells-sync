@@ -1,22 +1,16 @@
 import React from 'react';
-import './App.css';
-import Sockette from 'sockette'
-import SyncTask from './task/SyncTask'
-import {ScrollablePane} from 'office-ui-fabric-react/lib/ScrollablePane'
-import {Sticky, StickyPositionType} from 'office-ui-fabric-react/lib/Sticky'
-import {Link} from 'office-ui-fabric-react/lib/Link'
-import { SharedColors } from '@uifabric/fluent-theme/lib/fluent/FluentColors';
-import { FontSizes } from '@uifabric/fluent-theme/lib/fluent/FluentType';
-import { Customizer } from 'office-ui-fabric-react';
-import { FluentCustomizations } from '@uifabric/fluent-theme';
-import { CompoundButton } from 'office-ui-fabric-react/lib/Button';
-import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
-import { Depths } from '@uifabric/fluent-theme/lib/fluent/FluentDepths';
+// FABRIC UI
+import {Customizer, Link, Sticky, StickyPositionType, ScrollablePane, Panel, PanelType } from 'office-ui-fabric-react';
+import {Depths, FluentCustomizations, FontSizes, SharedColors} from '@uifabric/fluent-theme';
 import { initializeIcons } from '@uifabric/icons';
-import Editor from "./task/Editor";
+// CONNECTION AND ROUTING
+import Sockette from 'sockette'
 import { Translation } from 'react-i18next';
-import AgentModal from './dashboard/AgentModal'
 import { BrowserRouter as Router, Route, Redirect} from 'react-router-dom'
+// SYNC COMPONENTS
+import Editor from "./task/Editor";
+import AgentModal from './dashboard/AgentModal'
+import TasksList from "./task/TasksList";
 
 initializeIcons();
 
@@ -158,35 +152,29 @@ class App extends React.Component{
                                         <Redirect to={"/"}/>
                                     }/>
                                 </Panel>
-
-                                <div>
-                                    <Sticky stickyPosition={StickyPositionType.Header}>
-                                        <div style={{backgroundColor:SharedColors.cyanBlue10, boxShadow:Depths.depth8, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
-                                            <div style={{flex: 1, fontSize: FontSizes.size20, fontWeight:400}}>{t('application.title')}</div>
-                                            <div>
-                                                <Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
-                                            </div>
+                                <Sticky stickyPosition={StickyPositionType.Header}>
+                                    <div style={{
+                                        backgroundColor: SharedColors.cyanBlue10,
+                                        boxShadow: Depths.depth8,
+                                        color: 'white',
+                                        padding: 20,
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}>
+                                        <div style={{
+                                            flex: 1,
+                                            fontSize: FontSizes.size20,
+                                            fontWeight: 400
+                                        }}>{t('application.title')}</div>
+                                        <div style={{color: 'white'}}>
+                                            <Link styles={{root: {color: 'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
+                                            &nbsp;|&nbsp;<Link styles={{root: {color: 'white'}}} onClick={()=>{i18n.changeLanguage('en')}}>EN</Link>
+                                            &nbsp;|&nbsp;<Link styles={{root: {color: 'white'}}} onClick={()=>{i18n.changeLanguage('fr')}}>FR</Link>
                                         </div>
-                                    </Sticky>
-                                    <div>
-                                        {Object.keys(syncTasks).map(k => {
-                                            const task = syncTasks[k];
-                                            return <SyncTask
-                                                key={k}
-                                                state={task}
-                                                sendMessage={this.sendMessage.bind(this)}
-                                                openEditor={()=>{history.push('/edit/' + task.Config.Uuid)}}
-                                                onDelete={this.onDelete.bind(this)}
-                                            />
-                                        })}
                                     </div>
-                                    <div style={{padding: 20, textAlign:'center'}}>
-                                        <CompoundButton
-                                            iconProps={{iconName:'Add'}}
-                                            secondaryText={t('main.create.legend')}
-                                            onClick={()=>{history.push('/create')}}>{t('main.create')}</CompoundButton>
-                                    </div>
-                                </div>
+                                </Sticky>
+                                <TasksList syncTasks={syncTasks} sendMessage={this.sendMessage.bind(this)} onDelete={this.onDelete.bind(this)}/>
+
                             </ScrollablePane>
                         }>
                         </Route>
