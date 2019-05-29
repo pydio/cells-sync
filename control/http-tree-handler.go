@@ -141,6 +141,10 @@ func ls(c *gin.Context) {
 						p = path.Join(request.windowsDrive, p)
 						node.Path = p
 					}
+					// Small fix for router case at level 0
+					if strings.HasPrefix(node.Uuid, "DATASOURCE:") {
+						node.Type = tree.NodeType_COLLECTION
+					}
 					if path.Base(p) != common.PYDIO_SYNC_HIDDEN_FILE_META && !strings.HasPrefix(path.Base(p), ".") {
 						response.Children = append(response.Children, node.WithoutReservedMetas())
 					}
