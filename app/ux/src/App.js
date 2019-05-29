@@ -16,6 +16,7 @@ import { initializeIcons } from '@uifabric/icons';
 import Editor from "./task/Editor";
 import { Translation } from 'react-i18next';
 import AgentModal from './dashboard/AgentModal'
+import { BrowserRouter as Router, Route, Redirect} from 'react-router-dom'
 
 initializeIcons();
 
@@ -26,9 +27,8 @@ class App extends React.Component{
         this.startWs();
         this.state = {
             connected: false,
-            syncTasks: {},
-            showEditor: false,
             maxAttemptsReached: false,
+            syncTasks: {},
         }
     }
 
@@ -122,60 +122,75 @@ class App extends React.Component{
     }
 
     render(){
-        const {connected, connecting, maxAttemptsReached, syncTasks, showEditor} = this.state;
+        const {connected, connecting, maxAttemptsReached, syncTasks} = this.state;
         return (
             <Customizer {...FluentCustomizations}>
                 <Translation>{(t, {i18n}) =>
-                        <ScrollablePane styles={{root:{backgroundColor:'#fafafa'}}}>
-                            <AgentModal
-                                hidden={connected}
-                                reconnect={this.forceReconnect.bind(this)}
-                                connecting={connecting}
-                                maxAttemptsReached={maxAttemptsReached}
-                            />
-                            <Panel
-                                isOpen={showEditor}
-                                type={PanelType.smallFluid}
-                                onDismiss={()=>{this.setState({showEditor: false})}}
-                                headerText={showEditor === true ? t('editor.title.new') : t('editor.title.update')}
-                            >
-                                {showEditor &&
-                                <Editor
-                                    task={showEditor}
-                                    onDismiss={()=>{this.setState({showEditor: false})}}
-                                    sendMessage={this.sendMessage.bind(this)}
-                                />}
-                            </Panel>
-
-                            <div>
-                                <Sticky stickyPosition={StickyPositionType.Header}>
-                                    <div style={{backgroundColor:SharedColors.cyanBlue10, boxShadow:Depths.depth8, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
-                                        <div style={{flex: 1, fontSize: FontSizes.size20, fontWeight:400}}>{t('application.title')}</div>
-                                        <div>
-                                            <Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
-                                        </div>
-                                    </div>
-                                </Sticky>
-                                <div>
-                                    {Object.keys(syncTasks).map(k => {
-                                        const task = syncTasks[k];
-                                        return <SyncTask
-                                            key={k}
-                                            state={task}
+                    <Router>
+                        <Route render={({history, location}) =>
+                            <ScrollablePane styles={{root:{backgroundColor:'#fafafa'}}}>
+                                <AgentModal
+                                    hidden={connected}
+                                    reconnect={this.forceReconnect.bind(this)}
+                                    connecting={connecting}
+                                    maxAttemptsReached={maxAttemptsReached}
+                                />
+                                <Panel
+                                    isOpen={location.pathname.indexOf('/create') === 0 || location.pathname.indexOf('/edit') === 0}
+                                    type={PanelType.smallFluid}
+                                    onDismiss={()=>{history.push('/')}}
+                                    headerText={location.pathname.indexOf('/create') === 0 ? t('editor.title.new') : t('editor.title.update')}
+                                >
+                                    <Route path={"/create"} render={({history}) =>
+                                        <Editor
+                                            task={true}
+                                            onDismiss={()=>{history.push('/')}}
                                             sendMessage={this.sendMessage.bind(this)}
-                                            openEditor={()=>{this.setState({showEditor:task})}}
-                                            onDelete={this.onDelete.bind(this)}
                                         />
-                                    })}
+                                    }/>
+                                    <Route path={"/edit/:uuid"} render={({match, history}) =>
+                                        syncTasks[match.params['uuid']] ?
+                                        <Editor
+                                            task={syncTasks[match.params['uuid']]}
+                                            onDismiss={()=>{history.push('/')}}
+                                            sendMessage={this.sendMessage.bind(this)}
+                                        /> :
+                                        <Redirect to={"/"}/>
+                                    }/>
+                                </Panel>
+
+                                <div>
+                                    <Sticky stickyPosition={StickyPositionType.Header}>
+                                        <div style={{backgroundColor:SharedColors.cyanBlue10, boxShadow:Depths.depth8, color:'white', padding: 20, display:'flex', alignItems:'center'}}>
+                                            <div style={{flex: 1, fontSize: FontSizes.size20, fontWeight:400}}>{t('application.title')}</div>
+                                            <div>
+                                                <Link styles={{root:{color:'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
+                                            </div>
+                                        </div>
+                                    </Sticky>
+                                    <div>
+                                        {Object.keys(syncTasks).map(k => {
+                                            const task = syncTasks[k];
+                                            return <SyncTask
+                                                key={k}
+                                                state={task}
+                                                sendMessage={this.sendMessage.bind(this)}
+                                                openEditor={()=>{history.push('/edit/' + task.Config.Uuid)}}
+                                                onDelete={this.onDelete.bind(this)}
+                                            />
+                                        })}
+                                    </div>
+                                    <div style={{padding: 20, textAlign:'center'}}>
+                                        <CompoundButton
+                                            iconProps={{iconName:'Add'}}
+                                            secondaryText={t('main.create.legend')}
+                                            onClick={()=>{history.push('/create')}}>{t('main.create')}</CompoundButton>
+                                    </div>
                                 </div>
-                                <div style={{padding: 20, textAlign:'center'}}>
-                                    <CompoundButton
-                                        iconProps={{iconName:'Add'}}
-                                        secondaryText={t('main.create.legend')}
-                                        onClick={()=>{this.setState({showEditor: true})}}>{t('main.create')}</CompoundButton>
-                                </div>
-                            </div>
-                        </ScrollablePane>
+                            </ScrollablePane>
+                        }>
+                        </Route>
+                    </Router>
                 }</Translation>
             </Customizer>
         );

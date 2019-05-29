@@ -33,6 +33,10 @@ class Editor extends React.Component {
         this.state = {task: proxy, isNew};
     }
 
+    componentWillReceiveProps(){
+
+    }
+
     save(){
         const {task, isNew} = this.state;
         const {sendMessage, onDismiss} = this.props;
