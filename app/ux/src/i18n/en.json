@@ -15,6 +15,7 @@
   "main.create.legend": "Setup a new synchronization task",
   "task.status": "Status",
   "task.status.paused":"paused",
+  "task.status.error":"error",
   "task.last-sync":"Last Sync",
   "task.progress":"Progress",
   "task.action.loop":"Sync Now",
