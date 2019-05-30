@@ -7,7 +7,7 @@ import {Translation} from "react-i18next";
 class TasksList extends Component {
 
     render() {
-        const {syncTasks, sendMessage, onDelete} = this.props;
+        const {syncTasks, socket} = this.props;
         return (
             <div>
                 <Translation>{(t) =>
@@ -19,11 +19,10 @@ class TasksList extends Component {
                                     return <SyncTask
                                         key={k}
                                         state={task}
-                                        sendMessage={sendMessage.bind(this)}
+                                        socket={socket}
                                         openEditor={() => {
                                             history.push('/edit/' + task.Config.Uuid)
                                         }}
-                                        onDelete={onDelete.bind(this)}
                                     />
                                 })}
                             </div>

@@ -18,7 +18,7 @@ class SyncTask extends React.Component {
 
     render() {
 
-        const {state, sendMessage, openEditor, onDelete, t} = this.props;
+        const {state, socket, openEditor, t} = this.props;
         const {LastProcessStatus, Status} = state;
         let pg;
         if (LastProcessStatus && LastProcessStatus.Progress) {
@@ -54,7 +54,7 @@ class SyncTask extends React.Component {
                         checked={false}
                         text={t('task.action.loop')}
                         iconProps={{iconName:'Play'}}
-                        onClick={() => sendMessage('CMD', {UUID:state.UUID, Cmd:'loop'})}
+                        onClick={() => socket.sendMessage('CMD', {UUID:state.UUID, Cmd:'loop'})}
                     />
                     <DefaultButton
                         data-automation-id="resync"
@@ -63,7 +63,7 @@ class SyncTask extends React.Component {
                         checked={false}
                         text={t('task.action.resync')}
                         iconProps={{iconName:'Sync'}}
-                        onClick={() => sendMessage('CMD', {UUID:state.UUID, Cmd:'resync'})}
+                        onClick={() => socket.sendMessage('CMD', {UUID:state.UUID, Cmd:'resync'})}
                     />
                     <DefaultButton
                         iconProps={{iconName:'Edit'}}
@@ -80,7 +80,7 @@ class SyncTask extends React.Component {
                                     key: 'pause',
                                     text: paused ? t('task.action.resume') : t('task.action.pause'),
                                     iconProps: { iconName: paused ? 'PlayResume' : 'Pause' },
-                                    onClick: () => sendMessage('CMD', {UUID:state.UUID, Cmd: paused ? 'resume' : 'pause'})
+                                    onClick: () => socket.sendMessage('CMD', {UUID:state.UUID, Cmd: paused ? 'resume' : 'pause'})
                                 },
                                 {
                                     key: 'delete',
@@ -88,7 +88,7 @@ class SyncTask extends React.Component {
                                     iconProps: { iconName: 'Delete' },
                                     onClick: () => {
                                         if (window.confirm(t('task.action.delete.confirm'))){
-                                            onDelete(state.Config);
+                                            socket.deleteTask(state.Config);
                                         }
                                     }
                                 }

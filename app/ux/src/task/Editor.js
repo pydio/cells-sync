@@ -39,10 +39,10 @@ class Editor extends React.Component {
 
     save(){
         const {task, isNew} = this.state;
-        const {sendMessage, onDismiss} = this.props;
+        const {socket, onDismiss} = this.props;
         const config = task.__getTarget;
         const cmd = isNew ? "create" : "edit";
-        sendMessage('CONFIG', {Cmd:cmd, Config: config.Config});
+        socket.sendMessage('CONFIG', {Cmd:cmd, Config: config.Config});
         onDismiss();
     }
 

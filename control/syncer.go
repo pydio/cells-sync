@@ -31,6 +31,7 @@ type Syncer struct {
 
 	serviceCtx context.Context
 	stateStore StateStore
+	taskPaused bool
 }
 
 func NewSyncer(conf *config.Task) (*Syncer, error) {
@@ -157,7 +158,9 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 
 		case <-s.ticker.C:
 
-			s.task.Run(ctx, false, false)
+			if !s.taskPaused {
+				s.task.Run(ctx, false, false)
+			}
 
 		case message := <-topic:
 
@@ -172,17 +175,19 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 				go bus.Pub(s.stateStore.LastState(), TopicState)
 			case MessagePause:
 				s.task.Pause(ctx)
+				s.taskPaused = true
 				go func() {
 					state := s.stateStore.UpdateSyncStatus(SyncStatusPaused)
 					bus.Pub(state, TopicState)
 				}()
 			case MessageResume:
 				s.task.Resume(ctx)
-				//s.task.Run(ctx, false, false)
+				s.taskPaused = false
 				go func() {
 					state := s.stateStore.UpdateSyncStatus(SyncStatusIdle)
 					bus.Pub(state, TopicState)
 				}()
+				s.task.Run(ctx, false, false)
 			case MessageDisable:
 				s.task.Shutdown()
 				go func() {
