@@ -25,9 +25,9 @@ class TreeDialog extends React.Component {
     render() {
         const {uri, t, ...dialogProps} = this.props;
         return (
-            <Dialog {...dialogProps} minWidth={650} title={t('tree.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
-                <DialogContent styles={{innerContent:{minHeight: 450}, inner:{padding:0}, title:{display:'none'}}}>
-                    <ScrollablePane styles={{contentContainer:{maxHeight:450, backgroundColor:'#fafafa'}}}>
+            <Dialog {...dialogProps} minWidth={700} title={t('tree.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
+                <DialogContent styles={{innerContent:{minHeight: 400}, inner:{padding:0}, title:{display:'none'}}}>
+                    <ScrollablePane styles={{contentContainer:{maxHeight:400, backgroundColor:'#fafafa'}}}>
                         {uri &&
                             <TreeView uri={uri} onSelectionChanged={(sel) => {this.setState({selection: sel})}}/>
                         }

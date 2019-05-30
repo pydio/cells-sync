@@ -28,6 +28,7 @@ class TasksList extends Component {
                             </div>
                             <div style={{padding: 20, textAlign: 'center'}}>
                                 <CompoundButton
+                                    primary={true}
                                     iconProps={{iconName: 'Add'}}
                                     secondaryText={t('main.create.legend')}
                                     onClick={() => {

@@ -26,11 +26,12 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/pydio/sync/common"
-
 	"github.com/getlantern/systray"
-	"github.com/pydio/sync/app/systray/icon"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/zserge/webview"
+
+	"github.com/pydio/sync/app/systray/icon"
+	"github.com/pydio/sync/common"
 )
 
 var (
@@ -41,13 +42,31 @@ var (
 )
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "version" {
+	var arg1 string
+	if len(os.Args) > 1 {
+		arg1 = os.Args[1]
+	}
+	switch arg1 {
+	case "version":
 		common.PrintVersion("Cells Sync System Tray")
 		os.Exit(0)
+	case "webview":
+		if len(os.Args) > 2 {
+			uxUrl = os.Args[2]
+		}
+		w := webview.New(webview.Settings{
+			Height:    600,
+			Width:     800,
+			Resizable: true,
+			Title:     "Cells Sync",
+			URL:       uxUrl,
+		})
+		w.Run()
+	default:
+		go startCli()
+		// Should be called at the very beginning of main().
+		systray.Run(onReady, onExit)
 	}
-	go startCli()
-	// Should be called at the very beginning of main().
-	systray.Run(onReady, onExit)
 }
 
 func startCli() {
@@ -62,9 +81,9 @@ func startCli() {
 	}
 }
 
-func openWebView() {
+func spawnWebView() {
 	c, cancel := context.WithCancel(context.Background())
-	cmd := exec.CommandContext(c, processName("sync-webview"), uxUrl)
+	cmd := exec.CommandContext(c, processName(os.Args[0]), "webview", uxUrl)
 	viewCancel = cancel
 	if e := cmd.Run(); e != nil {
 		if !closing {
@@ -89,7 +108,7 @@ func onReady() {
 		for {
 			select {
 			case <-mOpen.ClickedCh:
-				go openWebView()
+				go spawnWebView()
 			case <-mQuit.ClickedCh:
 				beforeExit()
 				systray.Quit()

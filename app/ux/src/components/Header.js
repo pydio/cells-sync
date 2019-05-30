@@ -20,9 +20,9 @@ class Header extends React.Component {
                     <div style={{
                         flex: 1,
                         fontSize: FontSizes.size20,
-                        fontWeight: 'bold'
+                        fontWeight: 400
                     }}>{t('application.title')}</div>
-                    <div style={{color: 'white'}}>
+                    <div style={{color: 'white', fontSize:FontSizes.size14}}>
                         <Link styles={{root: {color: 'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
                         &nbsp;|&nbsp;<Link styles={{root: {color: 'white', textDecoration:lng==='en'?'underline':'none'}}} onClick={()=>{i18n.changeLanguage('en')}}>EN</Link>
                         &nbsp;|&nbsp;<Link styles={{root: {color: 'white', textDecoration:lng==='fr'?'underline':'none'}}} onClick={()=>{i18n.changeLanguage('fr')}}>FR</Link>
