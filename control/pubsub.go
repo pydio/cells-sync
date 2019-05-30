@@ -33,7 +33,7 @@ const (
 )
 
 func init() {
-	bus = pubsub.New(0)
+	bus = pubsub.New(1000)
 }
 
 func GetBus() *pubsub.PubSub {

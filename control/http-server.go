@@ -1,21 +1,20 @@
 package control
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/pydio/sync/app/ux"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
-	"github.com/pborman/uuid"
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/sync/config"
-	"golang.org/x/net/context"
-
 	"github.com/gin-gonic/gin"
+	"github.com/pborman/uuid"
 	"gopkg.in/olahol/melody.v1"
+
+	"github.com/pydio/cells/common/log"
+	"github.com/pydio/sync/app/ux"
+	"github.com/pydio/sync/config"
 )
 
 type Message struct {
@@ -34,7 +33,10 @@ type ConfigContent struct {
 }
 
 func (m *Message) Bytes() []byte {
-	d, _ := json.Marshal(m)
+	d, e := json.Marshal(m)
+	if e != nil {
+		log.Logger(context.Background()).Info("CANNOT JSON-ENCODE MESSAGE!" + e.Error())
+	}
 	return d
 }
 

@@ -5,17 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pydio/cells/common/sync/merger"
-
-	"github.com/pydio/sync/config"
+	"github.com/pkg/errors"
 
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service/context"
-
-	"github.com/pkg/errors"
-
+	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/cells/common/sync/task"
+	"github.com/pydio/sync/config"
 	"github.com/pydio/sync/endpoint"
 )
 
@@ -26,12 +23,14 @@ type Syncer struct {
 	uuid   string
 
 	eventsChan  chan interface{}
-	batchStatus chan merger.ProcessStatus
-	batchDone   chan interface{}
+	patchStatus chan merger.ProcessStatus
+	patchDone   chan interface{}
 
 	serviceCtx context.Context
 	stateStore StateStore
 	taskPaused bool
+	// To be stored in state store?
+	lastFailedPatch merger.Patch
 }
 
 func NewSyncer(conf *config.Task) (*Syncer, error) {
@@ -77,8 +76,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		stop:        make(chan bool, 1),
 		serviceCtx:  ctx,
 		eventsChan:  eventsChan,
-		batchStatus: batchStatus,
-		batchDone:   batchDone,
+		patchStatus: batchStatus,
+		patchDone:   batchDone,
 	}
 	var lastBatchSize int
 	go func() {
@@ -92,32 +91,51 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if l.Progress > 0 {
 					msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress*100))
 				}
+				var status SyncStatus
 				if l.IsError {
+					status = SyncStatusError
 					log.Logger(ctx).Error(msg)
 				} else {
+					status = SyncStatusProcessing
 					log.Logger(ctx).Debug(msg)
 				}
-				go func() {
-					state := syncer.stateStore.UpdateProcessStatus(l, SyncStatusProcessing)
-					bus.Pub(state, TopicState)
-				}()
+				state := syncer.stateStore.UpdateProcessStatus(l, status)
+				bus.Pub(state, TopicState)
 
-			case s, ok := <-batchDone:
+			case data, ok := <-batchDone:
 				if !ok {
 					return
 				}
-				lastBatchSize = s.(int)
-				if lastBatchSize > 0 {
-					msg := fmt.Sprintf("Finished Processing %d files and folders", lastBatchSize)
-					log.Logger(ctx).Info(msg)
-					state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, SyncStatusIdle)
-					bus.Pub(state, TopicState)
+				deferIdle := true
+				if patch, ok := data.(merger.Patch); ok {
+					stats := patch.Stats()
+					if val, ok := stats["Errors"]; ok {
+						errs := val.(map[string]int)
+						msg := fmt.Sprintf("Processing ended on error (%d errors)! Pausing task.", errs["Total"])
+						log.Logger(ctx).Info(msg)
+						syncer.lastFailedPatch = patch
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, SyncStatusError)
+						bus.Pub(state, TopicState)
+						deferIdle = false
+					} else if val, ok := stats["Processed"]; ok {
+						processed := val.(map[string]int)
+						msg := fmt.Sprintf("Finished Processing %d files and folders", processed["Total"])
+						log.Logger(ctx).Info(msg)
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, SyncStatusIdle)
+						bus.Pub(state, TopicState)
+					} else {
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, SyncStatusIdle)
+						bus.Pub(state, TopicState)
+						deferIdle = false
+					}
 				}
-				go func() {
-					<-time.After(3 * time.Second)
-					state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, SyncStatusIdle)
-					bus.Pub(state, TopicState)
-				}()
+				if deferIdle {
+					go func() {
+						<-time.After(3 * time.Second)
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, SyncStatusIdle)
+						bus.Pub(state, TopicState)
+					}()
+				}
 
 			case e := <-eventsChan:
 				go GetBus().Pub(e, TopicSync_+taskUuid)
@@ -151,8 +169,8 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			s.task.Shutdown()
 			s.ticker.Stop()
 			close(s.eventsChan)
-			close(s.batchDone)
-			close(s.batchStatus)
+			close(s.patchDone)
+			close(s.patchStatus)
 			log.Logger(ctx).Info("Stopping Service")
 			return
 
@@ -170,30 +188,29 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			case MessageResyncDry:
 				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
-				s.task.Run(ctx, false, false)
+				if s.lastFailedPatch != nil {
+					s.task.ReApplyPatch(ctx, s.lastFailedPatch)
+					s.lastFailedPatch = nil
+				} else {
+					s.task.Run(ctx, false, false)
+				}
 			case MessagePublishState:
-				go bus.Pub(s.stateStore.LastState(), TopicState)
+				bus.Pub(s.stateStore.LastState(), TopicState)
 			case MessagePause:
 				s.task.Pause(ctx)
 				s.taskPaused = true
-				go func() {
-					state := s.stateStore.UpdateSyncStatus(SyncStatusPaused)
-					bus.Pub(state, TopicState)
-				}()
+				state := s.stateStore.UpdateSyncStatus(SyncStatusPaused)
+				bus.Pub(state, TopicState)
 			case MessageResume:
 				s.task.Resume(ctx)
 				s.taskPaused = false
-				go func() {
-					state := s.stateStore.UpdateSyncStatus(SyncStatusIdle)
-					bus.Pub(state, TopicState)
-				}()
+				state := s.stateStore.UpdateSyncStatus(SyncStatusIdle)
+				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, false)
 			case MessageDisable:
 				s.task.Shutdown()
-				go func() {
-					state := s.stateStore.UpdateSyncStatus(SyncStatusDisabled)
-					bus.Pub(state, TopicState)
-				}()
+				state := s.stateStore.UpdateSyncStatus(SyncStatusDisabled)
+				bus.Pub(state, TopicState)
 			default:
 				if status, ok := message.(*model.EndpointStatus); ok {
 					initialState := s.stateStore.BothConnected()
@@ -210,9 +227,7 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 						log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
 						s.task.Run(ctx, false, false)
 					}
-					go func() {
-						bus.Pub(state, TopicState)
-					}()
+					bus.Pub(state, TopicState)
 
 				}
 				break

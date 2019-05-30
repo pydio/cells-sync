@@ -22,15 +22,14 @@ package control
 
 import (
 	"fmt"
+	"math"
 	"net/url"
 	"sync"
 	"time"
 
-	"github.com/pydio/cells/common/sync/model"
-
-	"github.com/pydio/sync/config"
-
 	"github.com/pydio/cells/common/sync/merger"
+	"github.com/pydio/cells/common/sync/model"
+	"github.com/pydio/sync/config"
 )
 
 type SyncStatus int
@@ -111,6 +110,9 @@ func (b *MemoryStateStore) UpdateSyncStatus(s SyncStatus) SyncState {
 func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatus, status ...SyncStatus) SyncState {
 	b.Lock()
 	defer b.Unlock()
+	if math.IsNaN(float64(processStatus.Progress)) {
+		processStatus.Progress = 0
+	}
 	b.state.LastSyncTime = time.Now()
 	b.state.LastProcessStatus = processStatus
 	if len(status) > 0 {
