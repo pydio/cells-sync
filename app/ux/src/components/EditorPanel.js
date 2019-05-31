@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react'
+import React from 'react'
 import {Translation} from 'react-i18next'
 import {Panel, PanelType} from "office-ui-fabric-react";
 import {Route, Redirect} from 'react-router-dom'

@@ -66,6 +66,7 @@ func main() {
 			Resizable: true,
 			Title:     "Cells Sync",
 			URL:       uxUrl,
+			Debug:     true, // Enable JS Debugger
 		})
 		w.Dispatch(func() {
 			w.Bind("linkOpener", &WebviewLinkOpener{})
