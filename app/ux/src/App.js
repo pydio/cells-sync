@@ -49,7 +49,7 @@ class App extends React.Component{
                             <Stack.Item align={"stretch"}>
                                 <NavMenu/>
                             </Stack.Item>
-                            <Stack.Item grow={true} verticalFill={true}>
+                            <Stack.Item grow={true} verticalFill styles={{root:{display:'flex', boxSizing:'border-box', overflowY: 'auto', backgroundColor: '#CFD8DC'}}}>
                                 <NavRoutes syncTasks={syncTasks} socket={socket}/>
                             </Stack.Item>
                         </Stack>

@@ -9,7 +9,7 @@ class TasksList extends Component {
     render() {
         const {syncTasks, socket} = this.props;
         return (
-            <div>
+            <div style={{width:'100%'}}>
                 <Translation>{(t) =>
                     <Route render={({history}) =>
                         <Fragment>
