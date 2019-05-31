@@ -41,6 +41,12 @@ var (
 	closing    bool
 )
 
+type WebviewLinkOpener struct{}
+
+func (w *WebviewLinkOpener) Open(url string) {
+	open.Run(url)
+}
+
 func main() {
 	var arg1 string
 	if len(os.Args) > 1 {
@@ -60,6 +66,9 @@ func main() {
 			Resizable: true,
 			Title:     "Cells Sync",
 			URL:       uxUrl,
+		})
+		w.Dispatch(func() {
+			w.Bind("linkOpener", &WebviewLinkOpener{})
 		})
 		w.Run()
 	default:

@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"net/http"
 	"time"
 
@@ -67,25 +68,60 @@ func MessageFromData(d []byte) *Message {
 }
 
 type HttpServer struct {
-	Websocket *melody.Melody
-	done      chan bool
+	WebSocket  *melody.Melody
+	LogSocket  *melody.Melody
+	done       chan bool
+	recentLogs [][]byte
+}
+
+func (h *HttpServer) Sync() error {
+	return nil
+}
+
+func (h *HttpServer) Write(p []byte) (n int, err error) {
+	if h.LogSocket != nil {
+		err = h.LogSocket.Broadcast(p)
+	}
+	if err == nil {
+		n = len(p)
+	}
+	// Keep last 200 lines in memory
+	h.recentLogs = append(h.recentLogs, p)
+	upperBound := math.Min(float64(len(h.recentLogs)), 200)
+	h.recentLogs = h.recentLogs[:int(upperBound)]
+	return
 }
 
 func (h *HttpServer) InitHandlers() {
 
-	h.Websocket = melody.New()
-	h.Websocket.Config.MaxMessageSize = 2048
+	h.LogSocket = melody.New()
+	h.LogSocket.Config.MaxMessageSize = 2048
+	h.LogSocket.HandleError(func(session *melody.Session, i error) {
+		session.Close()
+	})
+	h.LogSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
+		session.Close()
+		return nil
+	})
+	h.LogSocket.HandleConnect(func(session *melody.Session) {
+		for _, p := range h.recentLogs {
+			session.Write(p)
+		}
+	})
 
-	h.Websocket.HandleError(func(session *melody.Session, i error) {
+	h.WebSocket = melody.New()
+	h.WebSocket.Config.MaxMessageSize = 2048
+
+	h.WebSocket.HandleError(func(session *melody.Session, i error) {
 		session.Close()
 	})
 
-	h.Websocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
+	h.WebSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
 		session.Close()
 		return nil
 	})
 
-	h.Websocket.HandleMessage(func(session *melody.Session, bytes []byte) {
+	h.WebSocket.HandleMessage(func(session *melody.Session, bytes []byte) {
 
 		data := MessageFromData(bytes)
 		switch data.Type {
@@ -145,7 +181,7 @@ func (h *HttpServer) ListenStatus() {
 				Type:    "STATE",
 				Content: s,
 			}
-			h.Websocket.Broadcast(m.Bytes())
+			h.WebSocket.Broadcast(m.Bytes())
 		}
 	}
 }
@@ -154,13 +190,17 @@ func (h *HttpServer) Serve() {
 
 	h.done = make(chan bool)
 	h.InitHandlers()
+	log.RegisterWriteSyncer(h)
 	gin.SetMode(gin.ReleaseMode)
 	gin.DisableConsoleColor()
 	Server := gin.New()
 	Server.Use(gin.Recovery())
 	Server.Use(static.Serve("/", ux.Box))
 	Server.GET("/status", func(c *gin.Context) {
-		h.Websocket.HandleRequest(c.Writer, c.Request)
+		h.WebSocket.HandleRequest(c.Writer, c.Request)
+	})
+	Server.GET("/logs", func(c *gin.Context) {
+		h.LogSocket.HandleRequest(c.Writer, c.Request)
 	})
 	// Simple RestAPI for browsing/creating nodes inside Endpoints
 	Server.Use(cors.New(cors.Config{

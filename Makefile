@@ -2,7 +2,7 @@ ENV=env
 TODAY=`date -u +%Y-%m-%dT%H:%M:%S`
 GITREV=`git rev-parse HEAD`
 
-all: clean ui cli
+all: clean pack ui cli
 
 ui:
 	go build \
