@@ -55,10 +55,16 @@ class SyncTask extends React.Component {
     render() {
 
         const {state, t, i18n} = this.props;
-        const {LastProcessStatus, Status, LeftInfo, RightInfo} = state;
-        let pg;
+        const {LastProcessStatus, LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo} = state;
+        let pg, leftPg, rightPg;
         if (LastProcessStatus && LastProcessStatus.Progress) {
             pg = LastProcessStatus.Progress;
+        }
+        if (LeftProcessStatus) {
+            leftPg = LeftProcessStatus.Progress;
+        }
+        if (RightProcessStatus) {
+            rightPg = RightProcessStatus.Progress;
         }
         const paused = Status === 1;
         const error = Status === 4;
@@ -85,8 +91,26 @@ class SyncTask extends React.Component {
                     </h3>
                     <div>
                         <Label>{t('task.status')}</Label>
-                        {LastProcessStatus && <div>{LastProcessStatus.StatusString}</div>}
-                        {pg && <div><ProgressIndicator title={t('task.progress')} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>}
+                        {!pg && LastProcessStatus && <div>{LastProcessStatus.StatusString}</div>}
+                        {pg &&
+                            <div><ProgressIndicator label={"Processing..."} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>
+                        }
+                        {(leftPg > 0) &&
+                            <div style={{display: 'flex', alignItems:'center'}}>
+                                <Icon iconName={"Search"} styles={{root:{fontSize: 24, margin: 10, marginLeft: 0}}}/>
+                                <div style={{flex: 1}}>
+                                    {leftPg > 0 && <ProgressIndicator label={"Analyzing Left Endpoint"} description={LeftProcessStatus?LeftProcessStatus.StatusString:''} percentComplete={leftPg}/>}
+                                </div>
+                            </div>
+                        }
+                        {(rightPg > 0) &&
+                            <div style={{display: 'flex', alignItems:'center'}}>
+                                <Icon iconName={"Search"} styles={{root:{fontSize: 24, margin: 10, marginLeft: 0}}}/>
+                                <div style={{flex: 1}}>
+                                    {rightPg > 0 && <ProgressIndicator label={"Analyzing Right Endpoint"} description={RightProcessStatus?RightProcessStatus.StatusString:''} percentComplete={rightPg}/>}
+                                </div>
+                            </div>
+                        }
                     </div>
                     <div>
                         <Label>{t('task.last-sync')}</Label>

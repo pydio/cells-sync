@@ -24,7 +24,7 @@ class NavMenu extends React.Component {
                         selectedKey={location.pathname}
                         styles={{
                             root: {
-                                width: 208,
+                                width: 200,
                                 height: '100%',
                                 boxSizing: 'border-box',
                                 overflowY: 'auto'

@@ -57,13 +57,21 @@ type SyncState struct {
 	UUID   string
 	Config *config.Task
 
-	Status            SyncStatus
-	LastSyncTime      time.Time
-	LastProcessStatus merger.ProcessStatus
+	Status             SyncStatus
+	LastSyncTime       time.Time
+	LastProcessStatus  merger.ProcessStatus
+	LeftProcessStatus  merger.ProcessStatus
+	RightProcessStatus merger.ProcessStatus
 
 	// Endpoints Current Info
 	LeftInfo  *EndpointInfo
 	RightInfo *EndpointInfo
+}
+
+func compareURI(status, config string) bool {
+	sU, _ := url.Parse(status)
+	cU, _ := url.Parse(config)
+	return sU.Scheme == cU.Scheme && sU.Host == cU.Host && sU.Path == cU.Path
 }
 
 type StateStore interface {
@@ -114,7 +122,13 @@ func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatu
 		processStatus.Progress = 0
 	}
 	b.state.LastSyncTime = time.Now()
-	b.state.LastProcessStatus = processStatus
+	if processStatus.EndpointURI != "" && compareURI(b.config.LeftURI, processStatus.EndpointURI) {
+		b.state.LeftProcessStatus = processStatus
+	} else if processStatus.EndpointURI != "" && compareURI(b.config.RightURI, processStatus.EndpointURI) {
+		b.state.RightProcessStatus = processStatus
+	} else {
+		b.state.LastProcessStatus = processStatus
+	}
 	if len(status) > 0 {
 		b.state.Status = status[0]
 	}
