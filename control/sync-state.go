@@ -27,46 +27,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pydio/sync/common"
+
 	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/sync/config"
 )
-
-type SyncStatus int
-
-const (
-	SyncStatusIdle SyncStatus = iota
-	SyncStatusPaused
-	SyncStatusDisabled
-	SyncStatusProcessing
-	SyncStatusError
-)
-
-type EndpointInfo struct {
-	Connected      bool
-	LastConnection time.Time
-
-	FoldersCount   uint64
-	FilesCount     uint64
-	TotalSpace     uint64
-	AvailableSpace uint64
-}
-
-type SyncState struct {
-	// Sync Process
-	UUID   string
-	Config *config.Task
-
-	Status             SyncStatus
-	LastSyncTime       time.Time
-	LastProcessStatus  merger.ProcessStatus
-	LeftProcessStatus  merger.ProcessStatus
-	RightProcessStatus merger.ProcessStatus
-
-	// Endpoints Current Info
-	LeftInfo  *EndpointInfo
-	RightInfo *EndpointInfo
-}
 
 func compareURI(status, config string) bool {
 	sU, _ := url.Parse(status)
@@ -75,47 +41,47 @@ func compareURI(status, config string) bool {
 }
 
 type StateStore interface {
-	LastState() SyncState
-	UpdateConnection(c bool, i *model.EndpointInfo) SyncState
+	LastState() common.SyncState
+	UpdateConnection(c bool, i *model.EndpointInfo) common.SyncState
 	BothConnected() bool
-	UpdateSyncStatus(s SyncStatus) SyncState
-	UpdateProcessStatus(processStatus merger.ProcessStatus, status ...SyncStatus) SyncState
+	UpdateSyncStatus(s common.SyncStatus) common.SyncState
+	UpdateProcessStatus(processStatus merger.ProcessStatus, status ...common.SyncStatus) common.SyncState
 }
 
 type MemoryStateStore struct {
 	sync.Mutex
 	config *config.Task
-	state  SyncState
+	state  common.SyncState
 }
 
 func NewMemoryStateStore(config *config.Task) *MemoryStateStore {
 	s := &MemoryStateStore{
 		config: config,
-		state: SyncState{
+		state: common.SyncState{
 			UUID:      config.Uuid,
 			Config:    config,
-			Status:    SyncStatusIdle,
-			LeftInfo:  &EndpointInfo{Connected: false},
-			RightInfo: &EndpointInfo{Connected: false},
+			Status:    common.SyncStatusIdle,
+			LeftInfo:  &common.EndpointInfo{Connected: false},
+			RightInfo: &common.EndpointInfo{Connected: false},
 		},
 	}
 	return s
 }
 
-func (b *MemoryStateStore) LastState() SyncState {
+func (b *MemoryStateStore) LastState() common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	return b.state
 }
 
-func (b *MemoryStateStore) UpdateSyncStatus(s SyncStatus) SyncState {
+func (b *MemoryStateStore) UpdateSyncStatus(s common.SyncStatus) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	b.state.Status = s
 	return b.state
 }
 
-func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatus, status ...SyncStatus) SyncState {
+func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatus, status ...common.SyncStatus) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	if math.IsNaN(float64(processStatus.Progress)) {
@@ -135,7 +101,7 @@ func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatu
 	return b.state
 }
 
-func (b *MemoryStateStore) UpdateConnection(c bool, i *model.EndpointInfo) SyncState {
+func (b *MemoryStateStore) UpdateConnection(c bool, i *model.EndpointInfo) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	simpleURI := func(uri string) string {
@@ -143,7 +109,7 @@ func (b *MemoryStateStore) UpdateConnection(c bool, i *model.EndpointInfo) SyncS
 		out := fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
 		return out
 	}
-	var internalInfo *EndpointInfo
+	var internalInfo *common.EndpointInfo
 	if i.URI == simpleURI(b.config.LeftURI) {
 		internalInfo = b.state.LeftInfo
 	} else if i.URI == simpleURI(b.config.RightURI) {

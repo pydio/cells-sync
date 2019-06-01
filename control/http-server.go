@@ -2,10 +2,11 @@ package control
 
 import (
 	"context"
-	"encoding/json"
 	"math"
 	"net/http"
 	"time"
+
+	"github.com/pydio/sync/common"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
@@ -17,55 +18,6 @@ import (
 	"github.com/pydio/sync/app/ux"
 	"github.com/pydio/sync/config"
 )
-
-type Message struct {
-	Type    string
-	Content interface{}
-}
-
-type CmdContent struct {
-	UUID string
-	Cmd  string
-}
-
-type ConfigContent struct {
-	Cmd    string
-	Config *config.Task
-}
-
-func (m *Message) Bytes() []byte {
-	d, e := json.Marshal(m)
-	if e != nil {
-		log.Logger(context.Background()).Info("CANNOT JSON-ENCODE MESSAGE!" + e.Error())
-	}
-	return d
-}
-
-func MessageFromData(d []byte) *Message {
-	var m Message
-	if e := json.Unmarshal(d, &m); e == nil {
-		if m.Type == "CMD" {
-			// Convert Content to CmdContent
-			d, _ := json.Marshal(m.Content)
-			var cmdContent CmdContent
-			if e := json.Unmarshal(d, &cmdContent); e == nil {
-				m.Content = &cmdContent
-			}
-		} else if m.Type == "CONFIG" {
-			d, _ := json.Marshal(m.Content)
-			var configContent ConfigContent
-			if e := json.Unmarshal(d, &configContent); e == nil {
-				m.Content = &configContent
-			}
-		}
-		return &m
-	} else {
-		m.Type = "ERROR"
-		m.Content = e.Error()
-		return &m
-	}
-
-}
 
 type HttpServer struct {
 	WebSocket  *melody.Melody
@@ -123,17 +75,17 @@ func (h *HttpServer) InitHandlers() {
 
 	h.WebSocket.HandleMessage(func(session *melody.Session, bytes []byte) {
 
-		data := MessageFromData(bytes)
+		data := common.MessageFromData(bytes)
 		switch data.Type {
 		case "PING":
 
-			m := &Message{Type: "PONG", Content: "Hello new client!"}
+			m := &common.Message{Type: "PONG", Content: "Hello new client!"}
 			session.Write(m.Bytes())
 			GetBus().Pub(MessagePublishState, TopicSyncAll)
 
 		case "CMD":
 
-			if cmd, ok := data.Content.(*CmdContent); ok {
+			if cmd, ok := data.Content.(*common.CmdContent); ok {
 				if intCmd, err := MessageFromString(cmd.Cmd); err == nil {
 					log.Logger(context.Background()).Info("Sending Command " + cmd.Cmd)
 					if cmd.UUID != "" {
@@ -146,7 +98,7 @@ func (h *HttpServer) InitHandlers() {
 
 		case "CONFIG":
 
-			if confContent, ok := data.Content.(*ConfigContent); ok {
+			if confContent, ok := data.Content.(*common.ConfigContent); ok {
 				confs := config.Default()
 				if confContent.Cmd == "create" {
 					confContent.Config.Uuid = uuid.New()
@@ -177,7 +129,7 @@ func (h *HttpServer) ListenStatus() {
 			GetBus().Unsub(statuses, TopicState)
 			return
 		case s := <-statuses:
-			m := &Message{
+			m := &common.Message{
 				Type:    "STATE",
 				Content: s,
 			}

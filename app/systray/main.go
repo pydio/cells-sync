@@ -39,6 +39,8 @@ var (
 	cliCancel  context.CancelFunc
 	uxUrl      = "http://localhost:3636"
 	closing    bool
+	ws         *Client
+	stateSlots []*systray.MenuItem
 )
 
 type WebviewLinkOpener struct{}
@@ -61,8 +63,8 @@ func main() {
 			uxUrl = os.Args[2]
 		}
 		w := webview.New(webview.Settings{
-			Height:    600,
-			Width:     800,
+			Width:     779,
+			Height:    536,
 			Resizable: true,
 			Title:     "Cells Sync",
 			URL:       uxUrl,
@@ -91,9 +93,13 @@ func startCli() {
 	}
 }
 
-func spawnWebView() {
+func spawnWebView(path ...string) {
 	c, cancel := context.WithCancel(context.Background())
-	cmd := exec.CommandContext(c, processName(os.Args[0]), "webview", uxUrl)
+	url := uxUrl
+	if len(path) > 0 {
+		url += path[0]
+	}
+	cmd := exec.CommandContext(c, processName(os.Args[0]), "webview", url)
 	viewCancel = cancel
 	if e := cmd.Run(); e != nil {
 		if !closing {
@@ -107,30 +113,101 @@ func spawnWebView() {
 
 func onReady() {
 	systray.SetIcon(icon.Data)
-	systray.SetTitle("Cells")
+	systray.SetTitle("Starting")
 	systray.SetTooltip("Cells Sync Client")
-	mOpen := systray.AddMenuItem("Open", "Open Sync UX")
+	mOpen := systray.AddMenuItem("Open Interface", "Open Sync UX")
+	mOpen.Disable()
 	systray.AddSeparator()
+	// Prepare slots for tasks
+	for i := 0; i < 10; i++ {
+		slot := systray.AddMenuItem("", "")
+		slot.Hide()
+		stateSlots = append(stateSlots, slot)
+	}
+	mNewTasks := systray.AddMenuItem("Create new task...", "")
+	systray.AddSeparator()
+	mAbout := systray.AddMenuItem("About", "About Cells Sync")
 	mQuit := systray.AddMenuItem("Quit", "Exit Sync")
+	ws = NewClient()
 
 	// We can manipulate the systray in other goroutines
 	go func() {
 		for {
 			select {
+			case s := <-ws.Status:
+				fmt.Println("Read Status Chan", s)
+				if s == StatusConnected {
+					systray.SetTitle("Cells")
+					mOpen.Enable()
+					mNewTasks.Enable()
+					for _, slot := range stateSlots {
+						slot.Disable()
+					}
+				} else {
+					systray.SetTitle("Cells (!)")
+					mOpen.Disable()
+					mNewTasks.Disable()
+					for _, slot := range stateSlots {
+						slot.Enable()
+					}
+				}
+			case tasks := <-ws.Tasks:
+				i := 0
+				for _, t := range tasks {
+					label := t.Config.Label
+					switch t.Status {
+					case common.SyncStatusDisabled:
+						label += " (disabled)"
+					case common.SyncStatusProcessing:
+						label += " (syncing)"
+					case common.SyncStatusPaused:
+						label += " (paused)"
+					case common.SyncStatusError:
+						label += " (error!)"
+					}
+					stateSlots[i].SetTitle(label)
+					stateSlots[i].SetTooltip(t.Config.Uuid)
+					stateSlots[i].Show()
+					if mOpen.Disabled() {
+						stateSlots[i].Disable()
+					} else {
+						stateSlots[i].Enable()
+					}
+					i++
+					if i >= len(stateSlots) {
+						return
+					}
+				}
+				for k, slot := range stateSlots {
+					if k > len(tasks) {
+						slot.Hide()
+					}
+				}
+			case e := <-ws.Errors:
+				fmt.Println("Errors from client", e)
 			case <-mOpen.ClickedCh:
 				go spawnWebView()
+			case <-mNewTasks.ClickedCh:
+				go spawnWebView("/create")
+			case <-mAbout.ClickedCh:
+				go spawnWebView("/about")
 			case <-mQuit.ClickedCh:
+				fmt.Println("Quitting now...")
 				beforeExit()
 				systray.Quit()
-				fmt.Println("Quitting now...")
 				return
 			}
 		}
 	}()
+
+	ws.Connect()
 }
 
 func beforeExit() {
 	closing = true
+	if ws != nil {
+		ws.Close()
+	}
 	if viewCancel != nil {
 		viewCancel()
 		viewCancel = nil

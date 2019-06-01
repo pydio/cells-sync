@@ -25,9 +25,13 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func processName(name string) string {
 	dir, _ := os.Getwd()
-	return filepath.Join(dir, name+".exe")
+	if !strings.HasSuffix(name, ".exe") {
+		name += ".exe"
+	}
+	return filepath.Join(dir, name)
 }

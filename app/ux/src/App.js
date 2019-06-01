@@ -3,7 +3,7 @@ import React from 'react';
 import {Customizer, Stack } from 'office-ui-fabric-react';
 import {FluentCustomizations} from '@uifabric/fluent-theme';
 import { initializeIcons } from '@uifabric/icons';
-import { BrowserRouter as Router} from 'react-router-dom'
+import { BrowserRouter as Router, Route} from 'react-router-dom'
 
 import AgentModal from './components/AgentModal'
 import Header from "./components/Header";
@@ -33,12 +33,14 @@ class App extends React.Component{
         return (
             <Customizer {...FluentCustomizations}>
                 <Router>
-                    <AgentModal
-                        hidden={connected}
-                        reconnect={socket.forceReconnect.bind(socket)}
-                        connecting={connecting}
-                        maxAttemptsReached={maxAttemptsReached}
-                    />
+                    <Route render={({history, location}) =>
+                        <AgentModal
+                            hidden={connected || location.pathname === "/about"}
+                            reconnect={socket.forceReconnect.bind(socket)}
+                            connecting={connecting}
+                            maxAttemptsReached={maxAttemptsReached}
+                        />
+                    }/>
                     <EditorPanel
                         syncTasks={syncTasks}
                         socket={socket}

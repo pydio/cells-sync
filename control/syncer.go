@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pydio/sync/common"
+
 	"github.com/pkg/errors"
 
 	"github.com/pydio/cells/common/log"
@@ -91,12 +93,12 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if l.Progress > 0 {
 					msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress*100))
 				}
-				var status SyncStatus
+				var status common.SyncStatus
 				if l.IsError {
-					status = SyncStatusError
+					status = common.SyncStatusError
 					log.Logger(ctx).Error(msg)
 				} else {
-					status = SyncStatusProcessing
+					status = common.SyncStatusProcessing
 					log.Logger(ctx).Debug(msg)
 				}
 				state := syncer.stateStore.UpdateProcessStatus(l, status)
@@ -114,17 +116,17 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 						msg := fmt.Sprintf("Processing ended on error (%d errors)! Pausing task.", errs["Total"])
 						log.Logger(ctx).Info(msg)
 						syncer.lastFailedPatch = patch
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, SyncStatusError)
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
 						deferIdle = false
 					} else if val, ok := stats["Processed"]; ok {
 						processed := val.(map[string]int)
 						msg := fmt.Sprintf("Finished Processing %d files and folders", processed["Total"])
 						log.Logger(ctx).Info(msg)
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, SyncStatusIdle)
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 					} else {
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, SyncStatusIdle)
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 						deferIdle = false
 					}
@@ -132,7 +134,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if deferIdle {
 					go func() {
 						<-time.After(3 * time.Second)
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, SyncStatusIdle)
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 					}()
 				}
@@ -199,17 +201,17 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			case MessagePause:
 				s.task.Pause(ctx)
 				s.taskPaused = true
-				state := s.stateStore.UpdateSyncStatus(SyncStatusPaused)
+				state := s.stateStore.UpdateSyncStatus(common.SyncStatusPaused)
 				bus.Pub(state, TopicState)
 			case MessageResume:
 				s.task.Resume(ctx)
 				s.taskPaused = false
-				state := s.stateStore.UpdateSyncStatus(SyncStatusIdle)
+				state := s.stateStore.UpdateSyncStatus(common.SyncStatusIdle)
 				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, false)
 			case MessageDisable:
 				s.task.Shutdown()
-				state := s.stateStore.UpdateSyncStatus(SyncStatusDisabled)
+				state := s.stateStore.UpdateSyncStatus(common.SyncStatusDisabled)
 				bus.Pub(state, TopicState)
 			default:
 				if status, ok := message.(*model.EndpointStatus); ok {
