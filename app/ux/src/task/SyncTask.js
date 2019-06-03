@@ -114,7 +114,7 @@ class SyncTask extends React.Component {
                     </div>
                     <div>
                         <Label>{t('task.last-sync')}</Label>
-                        {moment(state.LastSyncTime).fromNow()}
+                        {state.LastSyncTime ? moment(state.LastSyncTime).fromNow() : '-'}
                     </div>
                 </div>
                 <Stack horizontal horizontalAlign="end" tokens={{childrenGap:8}} styles={{root:{padding: 10, paddingTop: 20}}}>
