@@ -44,6 +44,10 @@ type Task struct {
 	RightURI       string
 	Direction      string
 	SelectiveRoots []string
+
+	Realtime     bool
+	LoopInterval string
+	HardInterval string
 }
 
 func (g *Global) Create(t *Task) error {

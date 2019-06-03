@@ -36,8 +36,10 @@ import (
 type Supervisor struct {
 	sync.Mutex
 	*suture.Supervisor
-	tokens map[string]suture.ServiceToken
-	ctx    context.Context
+
+	ctx            context.Context
+	tasksTokens    map[string]suture.ServiceToken
+	schedulerToken suture.ServiceToken
 }
 
 // NewSupervisor creates a new Supervisor
@@ -45,8 +47,8 @@ func NewSupervisor() *Supervisor {
 	ctx := servicecontext.WithServiceName(context.Background(), "supervisor")
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
 	s := &Supervisor{
-		tokens: make(map[string]suture.ServiceToken),
-		ctx:    ctx,
+		ctx:         ctx,
+		tasksTokens: make(map[string]suture.ServiceToken),
 		Supervisor: suture.New("cells-sync", suture.Spec{
 			Log: func(s string) {
 				log.Logger(ctx).Info(s)
@@ -66,10 +68,11 @@ func (s *Supervisor) Serve() error {
 			if e != nil {
 				return e
 			}
-			s.tokens[t.Uuid] = s.Add(syncer)
+			s.tasksTokens[t.Uuid] = s.Add(syncer)
 		}
 	}
 
+	s.schedulerToken = s.Add(NewScheduler(conf.Tasks))
 	s.Add(&Profiler{})
 	s.Add(&StdInner{})
 	s.Add(&HttpServer{})
@@ -85,20 +88,26 @@ func (s *Supervisor) listenConfig() {
 	c := config.Watch()
 	for event := range c {
 		if taskChange, ok := event.(*config.TaskChange); ok {
+			// Restart Scheduler
+			s.Remove(s.schedulerToken)
+			allTasks := config.Default().Tasks
+			s.schedulerToken = s.Add(NewScheduler(allTasks))
+
+			// Start/stop sync tasks
 			if taskChange.Type == "create" {
 				syncer, e := NewSyncer(taskChange.Task)
 				if e == nil {
 					log.Logger(s.ctx).Info("Starting New Task " + taskChange.Task.Uuid)
 					t := s.Add(syncer)
 					s.Lock()
-					s.tokens[taskChange.Task.Uuid] = t
+					s.tasksTokens[taskChange.Task.Uuid] = t
 					s.Unlock()
 				} else {
 					log.Logger(s.ctx).Error("Cannot Start Task " + e.Error())
 				}
 			} else if taskChange.Type == "update" {
 				s.Lock()
-				token, ok := s.tokens[taskChange.Task.Uuid]
+				token, ok := s.tasksTokens[taskChange.Task.Uuid]
 				s.Unlock()
 				if ok {
 					log.Logger(s.ctx).Info("Restarting Task " + taskChange.Task.Uuid)
@@ -111,19 +120,19 @@ func (s *Supervisor) listenConfig() {
 					log.Logger(s.ctx).Info("Starting Task " + taskChange.Task.Uuid)
 					t := s.Add(syncer)
 					s.Lock()
-					s.tokens[taskChange.Task.Uuid] = t
+					s.tasksTokens[taskChange.Task.Uuid] = t
 					s.Unlock()
 				}
 			} else if taskChange.Type == "remove" {
 				s.Lock()
-				token, ok := s.tokens[taskChange.Task.Uuid]
+				token, ok := s.tasksTokens[taskChange.Task.Uuid]
 				s.Unlock()
 				if ok {
 					log.Logger(s.ctx).Info("Removing Task " + taskChange.Task.Uuid)
 					s.Remove(token)
 					log.Logger(s.ctx).Info("Removed from Supervisor" + taskChange.Task.Uuid)
 					s.Lock()
-					delete(s.tokens, taskChange.Task.Uuid)
+					delete(s.tasksTokens, taskChange.Task.Uuid)
 					s.Unlock()
 				}
 			}

@@ -19,10 +19,10 @@ import (
 )
 
 type Syncer struct {
-	task   *task.Sync
-	ticker *time.Ticker
-	stop   chan bool
-	uuid   string
+	task    *task.Sync
+	stop    chan bool
+	uuid    string
+	watches bool
 
 	eventsChan  chan interface{}
 	patchStatus chan merger.ProcessStatus
@@ -73,6 +73,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 
 	syncer := &Syncer{
 		uuid:        taskUuid,
+		watches:     conf.Realtime,
 		task:        syncTask,
 		stateStore:  NewMemoryStateStore(conf),
 		stop:        make(chan bool, 1),
@@ -160,7 +161,6 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 
 	bus := GetBus()
 	topic := bus.Sub(TopicSyncAll, TopicSync_+s.uuid)
-	s.ticker = time.NewTicker(10 * time.Minute)
 
 	for {
 		select {
@@ -169,18 +169,11 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 
 			bus.Unsub(topic)
 			s.task.Shutdown()
-			s.ticker.Stop()
 			close(s.eventsChan)
 			close(s.patchDone)
 			close(s.patchStatus)
 			log.Logger(ctx).Info("Stopping Service")
 			return
-
-		case <-s.ticker.C:
-
-			if !s.taskPaused {
-				s.task.Run(ctx, false, false)
-			}
 
 		case message := <-topic:
 
@@ -250,7 +243,7 @@ func (s *Syncer) Serve() {
 	done := make(chan bool, 1)
 	go s.dispatch(ctx, done)
 
-	s.task.Start(ctx)
+	s.task.Start(ctx, s.watches)
 
 	for {
 		select {
