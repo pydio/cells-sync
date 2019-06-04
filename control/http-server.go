@@ -49,7 +49,7 @@ func (h *HttpServer) InitHandlers() {
 	h.LogSocket = melody.New()
 	h.LogSocket.Config.MaxMessageSize = 2048
 	h.LogSocket.HandleError(func(session *melody.Session, i error) {
-		session.Close()
+		log.Logger(context.Background()).Info("Got Error from websocket " + i.Error())
 	})
 	h.LogSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
 		session.Close()
@@ -65,7 +65,7 @@ func (h *HttpServer) InitHandlers() {
 	h.WebSocket.Config.MaxMessageSize = 2048
 
 	h.WebSocket.HandleError(func(session *melody.Session, i error) {
-		session.Close()
+		log.Logger(context.Background()).Info("Got Error from websocket " + i.Error())
 	})
 
 	h.WebSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
