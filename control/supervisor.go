@@ -111,6 +111,7 @@ func (s *Supervisor) listenConfig() {
 				s.Unlock()
 				if ok {
 					log.Logger(s.ctx).Info("Restarting Task " + taskChange.Task.Uuid)
+					GetBus().Pub(MessageRestart, TopicSync_+taskChange.Task.Uuid)
 					s.Remove(token)
 					log.Logger(s.ctx).Info("Removed from Supervisor" + taskChange.Task.Uuid)
 					<-time.After(5 * time.Second)
@@ -129,6 +130,7 @@ func (s *Supervisor) listenConfig() {
 				s.Unlock()
 				if ok {
 					log.Logger(s.ctx).Info("Removing Task " + taskChange.Task.Uuid)
+					GetBus().Pub(MessageHalt, TopicSync_+taskChange.Task.Uuid)
 					s.Remove(token)
 					log.Logger(s.ctx).Info("Removed from Supervisor" + taskChange.Task.Uuid)
 					s.Lock()

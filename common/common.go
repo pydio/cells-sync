@@ -19,6 +19,7 @@ var (
 )
 
 type SyncStatus int
+type SyncErrorType int
 
 const (
 	SyncStatusIdle SyncStatus = iota
@@ -26,6 +27,13 @@ const (
 	SyncStatusDisabled
 	SyncStatusProcessing
 	SyncStatusError
+	SyncStatusRestarting
+	SyncStatusStopping
+
+	SyncErrorUnknown SyncErrorType = iota
+	SyncErrorNetworking
+	SyncErrorAuthentication
+	SyncErrorConflicts
 )
 
 type EndpointInfo struct {

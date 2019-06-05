@@ -20,10 +20,11 @@ import (
 )
 
 type HttpServer struct {
-	WebSocket  *melody.Melody
-	LogSocket  *melody.Melody
-	done       chan bool
-	recentLogs [][]byte
+	WebSocket     *melody.Melody
+	LogSocket     *melody.Melody
+	done          chan bool
+	recentLogs    [][]byte
+	lastSyncState common.SyncState
 }
 
 func (h *HttpServer) Sync() error {
@@ -49,7 +50,7 @@ func (h *HttpServer) InitHandlers() {
 	h.LogSocket = melody.New()
 	h.LogSocket.Config.MaxMessageSize = 2048
 	h.LogSocket.HandleError(func(session *melody.Session, i error) {
-		log.Logger(context.Background()).Info("Got Error from websocket " + i.Error())
+		log.Logger(context.Background()).Info("Got Error from LogSocket " + i.Error())
 	})
 	h.LogSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
 		session.Close()
@@ -65,7 +66,7 @@ func (h *HttpServer) InitHandlers() {
 	h.WebSocket.Config.MaxMessageSize = 2048
 
 	h.WebSocket.HandleError(func(session *melody.Session, i error) {
-		log.Logger(context.Background()).Info("Got Error from websocket " + i.Error())
+		log.Logger(context.Background()).Info("Got Error from WebSocket " + i.Error())
 	})
 
 	h.WebSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
@@ -121,6 +122,23 @@ func (h *HttpServer) InitHandlers() {
 
 }
 
+func (h *HttpServer) drop(s common.SyncState) bool {
+	defer func() {
+		h.lastSyncState = s
+	}()
+	if (h.lastSyncState == common.SyncState{}) {
+		return false
+	}
+	if h.lastSyncState.Status == common.SyncStatusProcessing && s.Status == common.SyncStatusProcessing {
+		newPg := s.LastProcessStatus.Progress
+		oldPg := h.lastSyncState.LastProcessStatus.Progress
+		if newPg > 0 && oldPg > 0 && newPg-oldPg <= 0.001 {
+			return true
+		}
+	}
+	return false
+}
+
 func (h *HttpServer) ListenStatus() {
 	statuses := GetBus().Sub(TopicState)
 	for {
@@ -129,11 +147,14 @@ func (h *HttpServer) ListenStatus() {
 			GetBus().Unsub(statuses, TopicState)
 			return
 		case s := <-statuses:
-			m := &common.Message{
-				Type:    "STATE",
-				Content: s,
+			state := s.(common.SyncState)
+			if !h.drop(state) {
+				m := &common.Message{
+					Type:    "STATE",
+					Content: s,
+				}
+				h.WebSocket.Broadcast(m.Bytes())
 			}
-			h.WebSocket.Broadcast(m.Bytes())
 		}
 	}
 }

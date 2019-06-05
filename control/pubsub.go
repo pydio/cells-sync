@@ -62,6 +62,9 @@ func MessageFromString(text string) (int, error) {
 	case "disable":
 		// Stop and disable one sync
 		return MessageDisable, nil
+	case "restart":
+		// Stop and disable one sync
+		return MessageRestart, nil
 	case "pause":
 		// Pause all syncs
 		return MessagePause, nil

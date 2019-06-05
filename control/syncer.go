@@ -178,11 +178,20 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 		case message := <-topic:
 
 			switch message {
+			case MessageRestart:
+				// Message from supervisor, just update status
+				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusRestarting), TopicState)
+			case MessageHalt:
+				// Message from supervisor, just update status
+				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusStopping), TopicState)
 			case MessageResync:
+				// Trigger a full resync
 				s.task.Run(ctx, false, true)
 			case MessageResyncDry:
+				// Trigger a dry-run
 				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
+				// Trigger the loop
 				if s.lastFailedPatch != nil {
 					s.task.ReApplyPatch(ctx, s.lastFailedPatch)
 					s.lastFailedPatch = nil
@@ -190,23 +199,28 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 					s.task.Run(ctx, false, false)
 				}
 			case MessagePublishState:
+				// Broadcast current state
 				bus.Pub(s.stateStore.LastState(), TopicState)
 			case MessagePause:
+				// Stop watching for events
 				s.task.Pause(ctx)
 				s.taskPaused = true
 				state := s.stateStore.UpdateSyncStatus(common.SyncStatusPaused)
 				bus.Pub(state, TopicState)
 			case MessageResume:
+				// Start watching for events
 				s.task.Resume(ctx)
 				s.taskPaused = false
 				state := s.stateStore.UpdateSyncStatus(common.SyncStatusIdle)
 				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, false)
 			case MessageDisable:
+				// Disable Task
 				s.task.Shutdown()
 				state := s.stateStore.UpdateSyncStatus(common.SyncStatusDisabled)
 				bus.Pub(state, TopicState)
 			default:
+				// Received info about an Endpoint
 				if status, ok := message.(*model.EndpointStatus); ok {
 					initialState := s.stateStore.BothConnected()
 					var epConnected bool

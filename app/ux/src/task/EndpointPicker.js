@@ -6,6 +6,7 @@ import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownR
 import parse from 'url-parse'
 import TreeDialog from './TreeDialog'
 import {withTranslation} from 'react-i18next'
+import EndpointTypes from '../models/EndpointTypes'
 
 class EndpointPicker extends React.Component {
 
@@ -83,13 +84,9 @@ class EndpointPicker extends React.Component {
                     onRenderOption={renderOptionWithIcon}
                     onRenderTitle={renderTitleWithIcon}
                     styles={{root:{width: 200}}}
-                    options={[
-                        { key: 'https:', text: t('editor.picker.type.https'), data: { icon: 'Server' } },
-                        { key: 'http:', text: t('editor.picker.type.http'), data: { icon: 'Server' } },
-                        { key: 'router:', text: t('editor.picker.type.router'), data: { icon: 'ServerEnviroment' } },
-                        { key: 'fs:', text: t('editor.picker.type.fs'), data: { icon: 'SyncFolder' } },
-                        { key: 's3:', text: t('editor.picker.type.s3'), data: { icon: 'SplitObject' } },
-                    ]}
+                    options={EndpointTypes.map(({key, icon}) => {
+                        return { key: key + ':', text: t('editor.picker.type.' + key), data: {icon} }
+                    })}
                 />
                 {(!url.protocol || url.protocol.indexOf('http') !== 0) &&
                     <Stack.Item grow>{pathField}</Stack.Item>

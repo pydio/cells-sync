@@ -6,6 +6,7 @@ import { Depths } from '@uifabric/fluent-theme/lib/fluent/FluentDepths';
 import {Stack} from "office-ui-fabric-react/lib/Stack"
 import {ContextualMenu} from "office-ui-fabric-react/lib/ContextualMenu"
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
+import EndpointLabel from './EndpointLabel'
 import moment from 'moment'
 import 'moment/locale/fr';
 import 'moment/locale/es';
@@ -66,22 +67,22 @@ class SyncTask extends React.Component {
         if (RightProcessStatus) {
             rightPg = RightProcessStatus.Progress;
         }
+        const idle = Status === 0;
         const paused = Status === 1;
         const error = Status === 4;
+        const restarting = Status === 5;
+        const stopping = Status === 6;
+
         const menu = this.buildMenu();
         moment.locale(i18n.language);
         return (
             <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
-                {!LeftInfo.Connected &&
-                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{t('task.disconnected') + state.LeftInfo.LastConnection}</div>
-                }
-                {!RightInfo.Connected &&
-                    <div style={{backgroundColor:'#fde7e9', padding: '10px'}}>{t('task.disconnected') + state.RightInfo.LastConnection}</div>
-                }
                 <div style={{padding: '10px 20px'}}>
                     <h3 style={{display:'flex', alignItems:'flex-end'}}>
                         {state.Config.Label}
                         {paused ? ' ('+t('task.status.paused')+')' : ''}
+                        {restarting ? ' ('+t('task.status.restarting')+'...)' : ''}
+                        {stopping ? ' ('+t('task.status.stopping')+'...)' : ''}
                         {error &&
                         <Fragment>
                             &nbsp;
@@ -89,9 +90,19 @@ class SyncTask extends React.Component {
                         </Fragment>
                         }
                     </h3>
+                    <div style={{marginBottom: 10}}>
+                        <div style={{display:'flex', alignItems:'center'}}>
+                            <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} t={t} style={{flex: 1, marginRight: 5}}/>
+                            <div style={{padding:5}}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortDown' : 'SortUp')}/></div>
+                            <EndpointLabel uri={state.Config.RightURI} info={RightInfo} t={t} style={{flex: 1, marginLeft: 5}}/>
+                        </div>
+                    </div>
                     <div>
                         <Label>{t('task.status')}</Label>
-                        {!pg && LastProcessStatus && <div>{LastProcessStatus.StatusString}</div>}
+                        {!pg && LastProcessStatus && <span>{LastProcessStatus.StatusString}</span>}
+                        {!pg && idle && state.LastSyncTime &&
+                            <span> - {t('task.last-sync')} : {moment(state.LastSyncTime).fromNow()}</span>
+                        }
                         {pg &&
                             <div><ProgressIndicator label={"Processing..."} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>
                         }
@@ -111,10 +122,6 @@ class SyncTask extends React.Component {
                                 </div>
                             </div>
                         }
-                    </div>
-                    <div>
-                        <Label>{t('task.last-sync')}</Label>
-                        {state.LastSyncTime ? moment(state.LastSyncTime).fromNow() : '-'}
                     </div>
                 </div>
                 <Stack horizontal horizontalAlign="end" tokens={{childrenGap:8}} styles={{root:{padding: 10, paddingTop: 20}}}>
