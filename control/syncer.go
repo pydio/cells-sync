@@ -222,7 +222,7 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			default:
 				// Received info about an Endpoint
 				if status, ok := message.(*model.EndpointStatus); ok {
-					initialState := s.stateStore.BothConnected()
+					initialConnState := s.stateStore.BothConnected()
 					var epConnected bool
 					if status.WatchConnection == model.WatchConnected {
 						log.Logger(ctx).Info(status.EndpointInfo.URI + " is now connected")
@@ -231,8 +231,8 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 						log.Logger(ctx).Info(status.EndpointInfo.URI + " is currently disconnected")
 					}
 					state := s.stateStore.UpdateConnection(epConnected, &status.EndpointInfo)
-					newState := s.stateStore.BothConnected()
-					if newState && newState != initialState {
+					newConnState := s.stateStore.BothConnected()
+					if state.Status == common.SyncStatusIdle && newConnState && newConnState != initialConnState {
 						log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
 						s.task.Run(ctx, false, false)
 					}
