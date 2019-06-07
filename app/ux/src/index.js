@@ -1,10 +1,11 @@
+import 'react-app-polyfill/ie11';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import "./i18n"
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import 'promise-polyfill/src/polyfill';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/polyfill": "^7.4.4",
     "@uifabric/fluent-theme": "^0.16.7",
     "ansi_up": "^4.0.3",
     "basename": "^0.1.2",
@@ -12,6 +13,7 @@
     "office-ui-fabric-react": "^6.176.0",
     "promise-polyfill": "8.1.0",
     "react": "^16.8.6",
+    "react-app-polyfill": "^1.0.1",
     "react-dom": "^16.8.6",
     "react-i18next": "^10.10.0",
     "react-router-dom": "^5.0.0",
