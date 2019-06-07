@@ -22,6 +22,7 @@ export default function ({style, uri, info, status, t}) {
         container: {
             border: '1px solid #eceff1',
             display:'flex',
+            overflow:'hidden',
         },
         type: {
             padding: '5px 5px 0',
