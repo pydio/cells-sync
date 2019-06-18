@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pydio/sync/common"
-
 	"github.com/pkg/errors"
 
 	"github.com/pydio/cells/common/log"
@@ -14,6 +12,7 @@ import (
 	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/cells/common/sync/task"
+	"github.com/pydio/sync/common"
 	"github.com/pydio/sync/config"
 	"github.com/pydio/sync/endpoint"
 )
@@ -27,6 +26,7 @@ type Syncer struct {
 	eventsChan  chan interface{}
 	patchStatus chan merger.ProcessStatus
 	patchDone   chan interface{}
+	cmd         *model.Command
 
 	serviceCtx context.Context
 	stateStore StateStore
@@ -67,26 +67,23 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	taskUuid := conf.Uuid
 	syncTask := task.NewSync(leftEndpoint, rightEndpoint, direction, conf.SelectiveRoots...)
 
-	eventsChan := make(chan interface{})
-	batchStatus := make(chan merger.ProcessStatus)
-	batchDone := make(chan interface{})
-
 	syncer := &Syncer{
 		uuid:        taskUuid,
-		watches:     conf.Realtime,
+		serviceCtx:  ctx,
 		task:        syncTask,
+		watches:     conf.Realtime,
 		stateStore:  NewMemoryStateStore(conf),
 		stop:        make(chan bool, 1),
-		serviceCtx:  ctx,
-		eventsChan:  eventsChan,
-		patchStatus: batchStatus,
-		patchDone:   batchDone,
+		eventsChan:  make(chan interface{}),
+		patchStatus: make(chan merger.ProcessStatus),
+		patchDone:   make(chan interface{}),
+		cmd:         model.NewCommand(),
 	}
 	var lastBatchSize int
 	go func() {
 		for {
 			select {
-			case l, ok := <-batchStatus:
+			case l, ok := <-syncer.patchStatus:
 				if !ok {
 					return
 				}
@@ -105,7 +102,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				state := syncer.stateStore.UpdateProcessStatus(l, status)
 				bus.Pub(state, TopicState)
 
-			case data, ok := <-batchDone:
+			case data, ok := <-syncer.patchDone:
 				if !ok {
 					return
 				}
@@ -115,7 +112,14 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 					if val, ok := stats["Errors"]; ok {
 						errs := val.(map[string]int)
 						msg := fmt.Sprintf("Processing ended on error (%d errors)! Pausing task.", errs["Total"])
-						log.Logger(ctx).Info(msg)
+						log.Logger(ctx).Error(msg)
+						syncer.lastFailedPatch = patch
+						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
+						bus.Pub(state, TopicState)
+						deferIdle = false
+					} else if err, ok := patch.HasError(); ok {
+						msg := fmt.Sprintf("Processing ended on error (%s)! Pausing task.", err.Error())
+						log.Logger(ctx).Error(msg)
 						syncer.lastFailedPatch = patch
 						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
@@ -140,7 +144,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 					}()
 				}
 
-			case e := <-eventsChan:
+			case e := <-syncer.eventsChan:
 				go GetBus().Pub(e, TopicSync_+taskUuid)
 
 			case <-time.After(15 * time.Minute):
@@ -152,7 +156,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 			}
 		}
 	}()
-	syncTask.SetSyncEventsChan(batchStatus, batchDone, eventsChan)
+	syncTask.SetupCmd(syncer.cmd)
+	syncTask.SetupEventsChan(syncer.patchStatus, syncer.patchDone, syncer.eventsChan)
 	return syncer, nil
 
 }
@@ -172,6 +177,7 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			close(s.eventsChan)
 			close(s.patchDone)
 			close(s.patchStatus)
+			s.cmd.Stop()
 			log.Logger(ctx).Info("Stopping Service")
 			return
 
@@ -201,6 +207,8 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			case MessagePublishState:
 				// Broadcast current state
 				bus.Pub(s.stateStore.LastState(), TopicState)
+			case MessageInterrupt:
+				s.cmd.Publish(model.Interrupt)
 			case MessagePause:
 				// Stop watching for events
 				s.task.Pause(ctx)

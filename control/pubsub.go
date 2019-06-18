@@ -22,6 +22,7 @@ type CommandMessage int
 const (
 	MessageHalt = iota
 	MessageRestart
+	MessageInterrupt
 	MessagePause
 	MessageResume
 	MessageEnable
@@ -52,6 +53,9 @@ func MessageFromString(text string) (int, error) {
 	case "dry":
 		// Full resync with dry run
 		return MessageResyncDry, nil
+	case "interrupt":
+		// Interrupt running sync
+		return MessageInterrupt, nil
 	case "loop":
 		// Check Snapshot
 		// Use dryRun as Force Resync

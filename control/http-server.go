@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pydio/sync/common"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -16,6 +14,7 @@ import (
 
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/sync/app/ux"
+	"github.com/pydio/sync/common"
 	"github.com/pydio/sync/config"
 )
 
@@ -88,7 +87,6 @@ func (h *HttpServer) InitHandlers() {
 
 			if cmd, ok := data.Content.(*common.CmdContent); ok {
 				if intCmd, err := MessageFromString(cmd.Cmd); err == nil {
-					log.Logger(context.Background()).Info("Sending Command " + cmd.Cmd)
 					if cmd.UUID != "" {
 						go GetBus().Pub(intCmd, TopicSync_+cmd.UUID)
 					} else {
