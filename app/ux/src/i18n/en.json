@@ -22,6 +22,7 @@
   "task.last-sync":"Last Sync",
   "task.progress":"Progress",
   "task.action.loop":"Sync Now",
+  "task.action.interrupt":"Stop Sync",
   "task.action.resync":"Full Resync",
   "task.action.edit":"Configure",
   "task.action.pause":"Pause",

@@ -1,12 +1,11 @@
 import React, {Fragment} from 'react'
 import {ProgressIndicator} from "office-ui-fabric-react/lib/ProgressIndicator";
-import {DefaultButton} from "office-ui-fabric-react/lib/Button"
 import {Label} from "office-ui-fabric-react/lib/Label"
 import { Depths } from '@uifabric/fluent-theme/lib/fluent/FluentDepths';
 import {Stack} from "office-ui-fabric-react/lib/Stack"
-import {ContextualMenu} from "office-ui-fabric-react/lib/ContextualMenu"
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import EndpointLabel from './EndpointLabel'
+import ActionBar from './ActionBar'
 import moment from 'moment'
 import 'moment/locale/fr';
 import 'moment/locale/es';
@@ -14,11 +13,6 @@ import 'moment/locale/it';
 import {withTranslation} from 'react-i18next'
 
 class SyncTask extends React.Component {
-
-    static menuAs(menuProps){
-        // Customize contextual menu with menuAs
-        return <ContextualMenu {...menuProps} />;
-    };
 
     triggerAction(key) {
         const {state, socket, openEditor, t} = this.props;
@@ -37,22 +31,6 @@ class SyncTask extends React.Component {
         }
     }
 
-    buildMenu() {
-        const {state} = this.props;
-        const {LeftInfo, RightInfo, Status} = state;
-        const paused = Status === 1;
-        const disabled = !(LeftInfo.Connected && RightInfo.Connected);
-        return [
-            {key:'loop', disabled: disabled, iconName:'Play'},
-            {key:'resync', disabled: disabled, iconName:'Sync'},
-            {key:'more', iconName:'Edit', menu:[
-                    { key: 'edit', iconName: 'Edit'},
-                    { key: paused ? 'resume' : 'pause', iconName: paused?'PlayResume': 'Pause'},
-                    { key: 'delete', iconName: 'Delete' }
-            ]},
-        ];
-    }
-
     render() {
 
         const {state, t, i18n} = this.props;
@@ -67,7 +45,6 @@ class SyncTask extends React.Component {
         const restarting = Status === 5;
         const stopping = Status === 6;
 
-        const menu = this.buildMenu();
         moment.locale(i18n.language);
         return (
             <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
@@ -102,21 +79,7 @@ class SyncTask extends React.Component {
                         }
                     </div>
                 </div>
-                <Stack horizontal horizontalAlign="end" tokens={{childrenGap:8}} styles={{root:{padding: 10, paddingTop: 20}}}>
-                    {menu.map(({key,disabled,iconName,menu}) => {
-                        const props = {key, disabled, iconProps:{iconName}};
-                        if (menu) {
-                            props.menuAs = SyncTask.menuAs;
-                            props.menuProps = {items: menu.map(({key, iconName}) => {
-                                return {key: key, text:t('task.action.'+key), iconProps:{iconName}, onClick:()=>{this.triggerAction(key)}}
-                            })}
-                        } else {
-                            props.text = t('task.action.'+key);
-                            props.onClick = ()=>{this.triggerAction(key)}
-                        }
-                        return <DefaultButton {...props}/>
-                    })}
-                </Stack>
+                <ActionBar triggerAction={this.triggerAction.bind(this)} LeftConnected={LeftInfo.Connected} RightConnected={RightInfo.Connected} Status={Status}/>
             </Stack>
         );
 
