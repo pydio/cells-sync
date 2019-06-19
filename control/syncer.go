@@ -30,6 +30,7 @@ type Syncer struct {
 
 	serviceCtx context.Context
 	stateStore StateStore
+	patchStore *endpoint.PatchStore
 	taskPaused bool
 	// To be stored in state store?
 	lastFailedPatch merger.Patch
@@ -78,6 +79,12 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		patchStatus: make(chan merger.ProcessStatus),
 		patchDone:   make(chan interface{}),
 		cmd:         model.NewCommand(),
+	}
+	if patchStore, err := endpoint.NewPatchStore(taskUuid); err == nil {
+		syncer.patchStore = patchStore
+		syncTask.SetPatchPiper(syncer.patchStore)
+	} else {
+		log.Logger(ctx).Error("Cannot open patch store: " + err.Error())
 	}
 	var lastBatchSize int
 	go func() {
@@ -135,6 +142,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 						bus.Pub(state, TopicState)
 						deferIdle = false
 					}
+					syncer.patchStore.Store(patch)
 				}
 				if deferIdle {
 					go func() {
@@ -178,6 +186,7 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			close(s.patchDone)
 			close(s.patchStatus)
 			s.cmd.Stop()
+			s.patchStore.Stop()
 			log.Logger(ctx).Info("Stopping Service")
 			return
 
@@ -260,7 +269,11 @@ func (s *Syncer) Serve() {
 	ctx := s.serviceCtx
 
 	log.Logger(ctx).Info("Starting Sync Service")
-	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid))
+	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid, s.task.Source, s.task.Target))
+
+	if s.patchStore != nil {
+		s.patchStore.Load(s.task.Source, s.task.Target)
+	}
 
 	done := make(chan bool, 1)
 	go s.dispatch(ctx, done)

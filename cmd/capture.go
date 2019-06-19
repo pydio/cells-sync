@@ -77,7 +77,7 @@ var CaptureCmd = &cobra.Command{
 				}
 
 				syncTask := task.NewSync(leftEndpoint, rightEndpoint, dir)
-				syncTask.SetSnapshotFactory(endpoint.NewSnapshotFactory(t.Uuid))
+				syncTask.SetSnapshotFactory(endpoint.NewSnapshotFactory(t.Uuid, leftEndpoint, rightEndpoint))
 				e := syncTask.Capture(ctx, captureTarget)
 				if e != nil {
 					log.Fatal(e)
