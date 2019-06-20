@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/pydio/cells/common/sync/model"
@@ -18,7 +19,21 @@ import (
 
 var (
 	patchBucket = []byte("patches")
+	timeKey     = []byte("stamp")
+	opsKey      = []byte("operations")
 )
+
+type patchSorter []merger.Patch
+
+func (p patchSorter) Len() int {
+	return len(p)
+}
+func (p patchSorter) Less(i, j int) bool {
+	return p[i].GetStamp().After(p[j].GetStamp())
+}
+func (p patchSorter) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
 
 type PatchStore struct {
 	patches  chan merger.Patch
@@ -62,6 +77,7 @@ func (p *PatchStore) Store(patch merger.Patch) {
 func (p *PatchStore) Load(source model.Endpoint, target model.Endpoint) (patches []merger.Patch) {
 	src := source.(model.PathSyncSource)
 	trg := target.(model.PathSyncTarget)
+	var stamps patchSorter
 
 	p.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket(patchBucket)
@@ -72,22 +88,31 @@ func (p *PatchStore) Load(source model.Endpoint, target model.Endpoint) (patches
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
 			patch := merger.NewPatch(src, trg, merger.PatchOptions{})
 			// v is a bucket containing all operations
-			opsBucket := bucket.Bucket(k)
+			patchBucket := bucket.Bucket(k)
+			stamp := patchBucket.Get(timeKey)
+			t := time.Now()
+			if err := t.UnmarshalJSON(stamp); err == nil {
+				patch.Stamp(t)
+			}
+			opsBucket := patchBucket.Bucket(opsKey)
 			oc := opsBucket.Cursor()
 			for _, v := oc.First(); v != nil; _, v = oc.Next() {
 				operation := merger.NewOpForUnmarshall()
 				if err := json.Unmarshal(v, &operation); err == nil {
 					patch.Enqueue(operation)
-				} else {
-					fmt.Println(err)
 				}
 			}
-			patches = append(patches, patch)
-			stats := patch.Stats()
-			fmt.Println("Loaded patch with stats", stats)
+			stamps = append(stamps, patch)
 		}
 		return nil
 	})
+	// Order patches by timestamp
+	sort.Sort(stamps)
+	for _, patch := range stamps {
+		patches = append(patches, patch)
+		stats := patch.Stats()
+		fmt.Println("Loaded patch with stats", patch.GetStamp(), stats)
+	}
 	return
 }
 
@@ -125,10 +150,18 @@ func (p PatchStore) persist(patch merger.Patch) {
 		if err != nil {
 			return err
 		}
-		opsBucket, err := bucket.CreateBucketIfNotExists([]byte(patch.GetUUID()))
+		// Fully replace bucket content
+		bName := []byte(patch.GetUUID())
+		if opsBucket := bucket.Bucket(bName); opsBucket != nil {
+			bucket.DeleteBucket(bName)
+		}
+		patchBucket, err := bucket.CreateBucketIfNotExists(bName)
 		if err != nil {
 			return err
 		}
+		mTime, _ := patch.GetStamp().MarshalJSON()
+		patchBucket.Put(timeKey, mTime)
+		opsBucket, _ := patchBucket.CreateBucket(opsKey)
 		patch.WalkOperations([]merger.OperationType{}, func(operation merger.Operation) {
 			if data, err := json.Marshal(operation); err == nil {
 				id, _ := opsBucket.NextSequence()
