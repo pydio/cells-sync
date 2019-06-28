@@ -66,7 +66,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
 
 	taskUuid := conf.Uuid
-	syncTask := task.NewSync(leftEndpoint, rightEndpoint, direction, conf.SelectiveRoots...)
+	syncTask := task.NewSync(leftEndpoint, rightEndpoint, direction)
+	syncTask.SetFilters(conf.SelectiveRoots, []string{"**/.git**", "**/.pydio"})
 
 	syncer := &Syncer{
 		uuid:        taskUuid,
