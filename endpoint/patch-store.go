@@ -120,6 +120,7 @@ func (p *PatchStore) Stop() {
 	if p.pipeDone != nil {
 		close(p.pipeDone)
 	}
+	p.db.Close()
 }
 
 func (p *PatchStore) Pipe(in chan merger.Patch) chan merger.Patch {
