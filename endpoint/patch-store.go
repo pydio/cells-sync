@@ -3,7 +3,6 @@ package endpoint
 import (
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -110,8 +109,8 @@ func (p *PatchStore) Load(source model.Endpoint, target model.Endpoint) (patches
 	sort.Sort(stamps)
 	for _, patch := range stamps {
 		patches = append(patches, patch)
-		stats := patch.Stats()
-		fmt.Println("Loaded patch with stats", patch.GetStamp(), stats)
+		//stats := patch.Stats()
+		//fmt.Println("Loaded patch with stats", patch.GetStamp(), stats)
 	}
 	return
 }
