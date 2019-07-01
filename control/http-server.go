@@ -130,7 +130,8 @@ func (h *HttpServer) drop(s common.SyncState) bool {
 	if h.lastSyncState.Status == common.SyncStatusProcessing && s.Status == common.SyncStatusProcessing {
 		newPg := s.LastProcessStatus.Progress
 		oldPg := h.lastSyncState.LastProcessStatus.Progress
-		if newPg > 0 && oldPg > 0 && newPg-oldPg <= 0.001 {
+		// Limit number of events, except if progress is 100% which may indicate some additional checks/cleaning operations
+		if newPg > 0 && newPg < 1 && oldPg > 0 && newPg-oldPg <= 0.001 {
 			return true
 		}
 	}
@@ -184,6 +185,7 @@ func (h *HttpServer) Serve() {
 	}))
 	Server.POST("/tree", ls)
 	Server.PUT("/tree", mkdir)
+	Server.GET("/patches/:uuid/:offset/:limit", listPatches)
 	log.Logger(context.Background()).Info("Starting HttpServer on port 3636")
 	http.ListenAndServe(":3636", Server)
 

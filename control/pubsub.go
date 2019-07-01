@@ -15,6 +15,7 @@ const (
 	TopicSyncAll = "sync"
 	TopicSync_   = "sync-"
 	TopicState   = "state"
+	TopicStore_  = "store"
 )
 
 type CommandMessage int
@@ -31,6 +32,7 @@ const (
 	MessageResync
 	MessageResyncDry
 	MessagePublishState
+	MessagePublishStore
 )
 
 func init() {

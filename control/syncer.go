@@ -81,7 +81,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		patchDone:   make(chan interface{}),
 		cmd:         model.NewCommand(),
 	}
-	if patchStore, err := endpoint.NewPatchStore(taskUuid); err == nil {
+	if patchStore, err := endpoint.NewPatchStore(taskUuid, leftEndpoint, rightEndpoint); err == nil {
 		syncer.patchStore = patchStore
 		syncTask.SetPatchPiper(syncer.patchStore)
 	} else {
@@ -147,7 +147,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				}
 				if deferIdle {
 					go func() {
-						<-time.After(3 * time.Second)
+						<-time.After(5 * time.Second)
 						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 					}()
@@ -217,6 +217,10 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			case MessagePublishState:
 				// Broadcast current state
 				bus.Pub(s.stateStore.LastState(), TopicState)
+			case MessagePublishStore:
+				if s.patchStore != nil {
+					bus.Pub(s.patchStore, TopicStore_+s.uuid)
+				}
 			case MessageInterrupt:
 				s.cmd.Publish(model.Interrupt)
 			case MessagePause:
@@ -273,7 +277,9 @@ func (s *Syncer) Serve() {
 	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid, s.task.Source, s.task.Target))
 
 	if s.patchStore != nil {
-		s.patchStore.Load(s.task.Source, s.task.Target)
+		if lasts, err := s.patchStore.Load(0, 1); err == nil && len(lasts) > 0 {
+			fmt.Println("Last patch in store was ", lasts[0])
+		}
 	}
 
 	done := make(chan bool, 1)

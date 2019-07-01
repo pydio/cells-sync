@@ -70,6 +70,8 @@
   "button.cancel":"Annuler",
   "button.save":"Sauver",
   "button.select":"Selectionner",
+  "button.close":"Fermer",
+  "patch.title":"Dernières Opérations",
   "schedule.monthly": "Tous les %1 de chaque mois à %2",
   "schedule.monthly.short":"Tous les %1 de chaque mois",
   "schedule.weekly":"Tous les %1 à %2",

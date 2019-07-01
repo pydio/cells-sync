@@ -70,6 +70,8 @@
   "button.cancel":"Cancel",
   "button.save":"Save",
   "button.select":"Select",
+  "button.close":"Close",
+  "patch.title":"Last Operations",
   "schedule.monthly": "Every %1 of each month at %2",
   "schedule.monthly.short":"Every %1 of each month",
   "schedule.weekly":"Every %1 at %2",

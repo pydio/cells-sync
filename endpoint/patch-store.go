@@ -1,12 +1,16 @@
 package endpoint
 
 import (
+	"context"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/pydio/cells/common/log"
 
 	"github.com/pydio/cells/common/sync/model"
 
@@ -39,14 +43,19 @@ type PatchStore struct {
 	done     chan bool
 	pipeDone chan bool
 
+	source model.Endpoint
+	target model.Endpoint
+
 	db         *bbolt.DB
 	folderPath string
 }
 
-func NewPatchStore(syncUUID string) (*PatchStore, error) {
+func NewPatchStore(syncUUID string, source model.Endpoint, target model.Endpoint) (*PatchStore, error) {
 	p := &PatchStore{
 		patches: make(chan merger.Patch),
 		done:    make(chan bool, 1),
+		source:  source,
+		target:  target,
 	}
 
 	options := bbolt.DefaultOptions
@@ -73,19 +82,19 @@ func (p *PatchStore) Store(patch merger.Patch) {
 	p.patches <- patch
 }
 
-func (p *PatchStore) Load(source model.Endpoint, target model.Endpoint) (patches []merger.Patch) {
-	src := source.(model.PathSyncSource)
-	trg := target.(model.PathSyncTarget)
+func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 	var stamps patchSorter
 
-	p.db.View(func(tx *bbolt.Tx) error {
+	e = p.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket(patchBucket)
 		if bucket == nil {
 			return nil
 		}
 		c := bucket.Cursor()
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			patch := merger.NewPatch(src, trg, merger.PatchOptions{})
+			patch := merger.NewPatch(p.source.(model.PathSyncSource), p.target.(model.PathSyncTarget), merger.PatchOptions{})
+			// Set the UUID of the patch
+			patch.SetUUID(string(k))
 			// v is a bucket containing all operations
 			patchBucket := bucket.Bucket(k)
 			stamp := patchBucket.Get(timeKey)
@@ -105,13 +114,45 @@ func (p *PatchStore) Load(source model.Endpoint, target model.Endpoint) (patches
 		}
 		return nil
 	})
+	if e != nil {
+		return patches, e
+	}
 	// Order patches by timestamp
 	sort.Sort(stamps)
-	for _, patch := range stamps {
-		patches = append(patches, patch)
-		//stats := patch.Stats()
-		//fmt.Println("Loaded patch with stats", patch.GetStamp(), stats)
+	var prunes []string
+	if len(stamps) > 100 {
+		for _, pr := range stamps[100:] {
+			prunes = append(prunes, pr.GetUUID())
+		}
 	}
+	for i, patch := range stamps {
+		if i < offset {
+			continue
+		}
+		patches = append(patches, patch)
+		if i >= offset+limit-1 {
+			break
+		}
+	}
+
+	if len(prunes) > 0 {
+		go func() {
+			log.Logger(context.Background()).Info("Pruning patch store")
+			p.db.Update(func(tx *bbolt.Tx) error {
+				bucket := tx.Bucket(patchBucket)
+				if bucket == nil {
+					return nil
+				}
+				for _, uuid := range prunes {
+					if e := bucket.DeleteBucket([]byte(uuid)); e != nil {
+						fmt.Println("cannot delete bucket", uuid, e)
+					}
+				}
+				return nil
+			})
+		}()
+	}
+
 	return
 }
 
