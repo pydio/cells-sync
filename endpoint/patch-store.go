@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"sort"
 	"time"
 
 	"github.com/etcd-io/bbolt"
 
-	"github.com/pydio/cells/common/config"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
@@ -47,7 +45,7 @@ type PatchStore struct {
 	folderPath string
 }
 
-func NewPatchStore(syncUUID string, source model.Endpoint, target model.Endpoint) (*PatchStore, error) {
+func NewPatchStore(folderPath string, source model.Endpoint, target model.Endpoint) (*PatchStore, error) {
 	p := &PatchStore{
 		patches: make(chan merger.Patch),
 		done:    make(chan bool, 1),
@@ -57,9 +55,7 @@ func NewPatchStore(syncUUID string, source model.Endpoint, target model.Endpoint
 
 	options := bbolt.DefaultOptions
 	options.Timeout = 5 * time.Second
-	appDir := config.ApplicationDataDir()
-	p.folderPath = filepath.Join(appDir, "sync", syncUUID)
-	os.MkdirAll(p.folderPath, 0755)
+	p.folderPath = folderPath
 	dbPath := filepath.Join(p.folderPath, "patches")
 	db, err := bbolt.Open(dbPath, 0644, options)
 	if err != nil {

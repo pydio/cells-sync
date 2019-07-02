@@ -20,13 +20,6 @@
 
 package config
 
-import (
-	"context"
-	"time"
-
-	"github.com/pydio/cells/common/log"
-)
-
 type Global struct {
 	Tasks   []*Task
 	changes []chan interface{}
@@ -76,12 +69,6 @@ func (g *Global) Remove(task *Task) error {
 		go func() {
 			for _, c := range g.changes {
 				c <- &TaskChange{Type: "remove", Task: task}
-			}
-		}()
-		go func() {
-			<-time.After(5 * time.Second)
-			if e := DeleteTaskResources(task.Uuid); e != nil {
-				log.Logger(context.Background()).Error("Cannot delete task resources " + e.Error())
 			}
 		}()
 	}

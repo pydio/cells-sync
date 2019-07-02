@@ -3,7 +3,11 @@ package control
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
+
+	config2 "github.com/pydio/cells/common/config"
 
 	"github.com/pkg/errors"
 
@@ -28,11 +32,16 @@ type Syncer struct {
 	patchDone   chan interface{}
 	cmd         *model.Command
 
-	serviceCtx context.Context
-	stateStore StateStore
-	patchStore *endpoint.PatchStore
-	taskPaused bool
-	lastPatch  merger.Patch
+	serviceCtx  context.Context
+	configPath  string
+	stateStore  StateStore
+	patchStore  *endpoint.PatchStore
+	snapFactory model.SnapshotFactory
+	taskPaused  bool
+	lastPatch   merger.Patch
+
+	cleanSnapsAfterStop bool
+	cleanAllAfterStop   bool
 }
 
 func NewSyncer(conf *config.Task) (*Syncer, error) {
@@ -68,11 +77,20 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 	syncTask := task.NewSync(leftEndpoint, rightEndpoint, direction)
 	syncTask.SetFilters(conf.SelectiveRoots, []string{"**/.git**", "**/.pydio"})
 
+	appDir := config2.ApplicationDataDir()
+	configPath := filepath.Join(appDir, "sync", conf.Uuid)
+	if _, er := os.Stat(configPath); er != nil && os.IsNotExist(er) {
+		if er := os.MkdirAll(configPath, 0755); er != nil {
+			return nil, er
+		}
+	}
+
 	syncer := &Syncer{
 		uuid:        taskUuid,
 		serviceCtx:  ctx,
 		task:        syncTask,
 		watches:     conf.Realtime,
+		configPath:  configPath,
 		stateStore:  NewMemoryStateStore(conf),
 		stop:        make(chan bool, 1),
 		eventsChan:  make(chan interface{}),
@@ -80,7 +98,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		patchDone:   make(chan interface{}),
 		cmd:         model.NewCommand(),
 	}
-	if patchStore, err := endpoint.NewPatchStore(taskUuid, leftEndpoint, rightEndpoint); err == nil {
+	if patchStore, err := endpoint.NewPatchStore(configPath, leftEndpoint, rightEndpoint); err == nil {
 		syncer.patchStore = patchStore
 		syncTask.SetPatchPiper(syncer.patchStore)
 	} else {
@@ -190,6 +208,14 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			s.cmd.Stop()
 			s.patchStore.Stop()
 			log.Logger(ctx).Info("Stopping Service")
+			if s.cleanSnapsAfterStop && s.snapFactory != nil {
+				log.Logger(ctx).Info("Cleaning Snapsots")
+				s.snapFactory.Reset(ctx)
+			}
+			if s.cleanAllAfterStop {
+				log.Logger(ctx).Info("Cleaning all data for service")
+				os.RemoveAll(s.configPath)
+			}
 			return
 
 		case message := <-topic:
@@ -198,8 +224,16 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			case MessageRestart:
 				// Message from supervisor, just update status
 				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusRestarting), TopicState)
+			case MessageRestartClean:
+				// Message from supervisor, just update status
+				s.cleanSnapsAfterStop = true
+				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusRestarting), TopicState)
 			case MessageHalt:
 				// Message from supervisor, just update status
+				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusStopping), TopicState)
+			case MessageHaltClean:
+				// Message from supervisor, just update status
+				s.cleanAllAfterStop = true
 				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusStopping), TopicState)
 			case MessageResync:
 				// Trigger a full resync
@@ -276,7 +310,9 @@ func (s *Syncer) Serve() {
 	ctx := s.serviceCtx
 
 	log.Logger(ctx).Info("Starting Sync Service")
-	s.task.SetSnapshotFactory(endpoint.NewSnapshotFactory(s.uuid, s.task.Source, s.task.Target))
+
+	s.snapFactory = endpoint.NewSnapshotFactory(s.configPath, s.task.Source, s.task.Target)
+	s.task.SetSnapshotFactory(s.snapFactory)
 
 	if s.patchStore != nil {
 		if lasts, err := s.patchStore.Load(0, 1); err == nil && len(lasts) > 0 {

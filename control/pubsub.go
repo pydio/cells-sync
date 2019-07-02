@@ -33,6 +33,8 @@ const (
 	MessageResyncDry
 	MessagePublishState
 	MessagePublishStore
+	MessageRestartClean // Restart an clean snapshots
+	MessageHaltClean    // Halt task and remove all configs
 )
 
 func init() {
