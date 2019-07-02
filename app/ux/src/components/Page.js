@@ -10,7 +10,7 @@ export default class Page extends React.Component{
                 {legend && <legend style={{color:"darkgrey", marginTop: -20, marginBottom: 20}}>{legend}</legend>}
             </Fragment>
         );
-        const mainStyle = {width:'100%', margin:10, padding: 20, paddingTop: 0, boxShadow: Depths.depth4, backgroundColor:'white'};
+        const mainStyle = {width:'100%', margin:10, padding: 20, paddingTop: 0, boxShadow: Depths.depth4, backgroundColor:'white', boxSizing:'border-box'};
         if (flex) {
             return (
                 <div style={{...mainStyle, display:'flex', flexDirection:'column'}}>

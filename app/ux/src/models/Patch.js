@@ -1,4 +1,4 @@
-import moment from 'moment'
+
 
 class Operation {
     constructor(data){
@@ -17,7 +17,7 @@ class PatchNode {
     }
 }
 
-class Patch {
+class PatchTreeNode {
 
     constructor(data, timeStamp = undefined){
         this.Base = data.Base;
@@ -31,7 +31,7 @@ class Patch {
         }
         if (data.Children){
             this.Children = data.Children.map(child => {
-                return new Patch(child);
+                return new PatchTreeNode(child);
             })
         } else {
             this.Children = [];
@@ -42,6 +42,13 @@ class Patch {
         if (data.PathOperation) {
             this.PathOperation = new Operation(data.PathOperation)
         }
+    }
+}
+
+class Patch {
+    constructor(data, timeStamp = undefined) {
+        this.Root = new PatchTreeNode(data.Root, timeStamp);
+        this.Stats = data.Stats;
     }
 }
 

@@ -73,20 +73,38 @@ class PageLogs extends React.Component {
 
     onMessage(msg) {
         const {lines} = this.state;
-        const newLines = [...lines, msg.data];
-        this.setState({lines: newLines});
+        let line = msg.data;
+        const newLines = [...lines, line];
+        this.setState({lines: newLines}, ()=>{
+            if(this.refs && this.refs.block){
+                this.refs.block.scrollTo(0, 10000);
+            }
+        });
     }
 
 
     render() {
         const converter = new AnsiUp();
         const {lines} = this.state;
-        lines.reverse();
+        const preStyle = {
+            backgroundColor:'black',
+            color: 'white',
+            height: "100%",
+            width:"100%",
+            overflow:'auto',
+            fontSize:11,
+            fontWeight: 'bold',
+            fontFamily: 'monospace',
+            whiteSpace: 'pre',
+            lineHeight: '1.3em'
+        };
         return (
-            <Page title={"Logs"} legend={"Application logs (linked to zap.Logger"} flex={true}>
-                <pre style={{backgroundColor:'black', color: 'white', height: "100%", width:"100%", overflow:'auto', fontSize:11, fontWeight: 'bold'}}>
-                    {lines.map(line => <div dangerouslySetInnerHTML={{__html:converter.ansi_to_html(line)}}/>)}
-                </pre>
+            <Page title={"Logs"} legend={"Application logs"} flex={true}>
+                <div ref={"block"} style={preStyle}>
+                    {lines.map((line, k) => {
+                        return (<div key={k} dangerouslySetInnerHTML={{__html:converter.ansi_to_html(line)}}/>)
+                    })}
+                </div>
             </Page>
         );
     }

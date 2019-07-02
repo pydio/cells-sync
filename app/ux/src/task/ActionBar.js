@@ -4,6 +4,14 @@ import {ContextualMenu, DefaultButton, Stack} from "office-ui-fabric-react";
 
 class ActionBar extends React.Component {
 
+    constructor(props) {
+        super(props);
+        if(props.i18n){
+            props.i18n.on("languageChanged", () => {this.forceUpdate()});
+        }
+    }
+
+
     static menuAs(menuProps){
         // Customize contextual menu with menuAs
         return <ContextualMenu {...menuProps} />;
@@ -17,7 +25,6 @@ class ActionBar extends React.Component {
     render() {
 
         const {LeftConnected, RightConnected, Status, triggerAction, t} = this.props;
-        console.log('rendering ActionBar', LeftConnected, RightConnected, Status);
         const paused = Status === 1;
         let disabled = !(LeftConnected && RightConnected);
         let loopButton = {key:'loop', disabled: disabled, iconName:'Play'};

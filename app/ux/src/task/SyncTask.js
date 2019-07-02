@@ -13,6 +13,7 @@ import 'moment/locale/es';
 import 'moment/locale/it';
 import {withTranslation} from 'react-i18next'
 import PatchDialog from "./PatchDialog";
+const emptyTime = "0001-01-01T00:00:00Z";
 
 class SyncTask extends React.Component {
 
@@ -42,7 +43,7 @@ class SyncTask extends React.Component {
     render() {
 
         const {state, t, i18n} = this.props;
-        const {LastProcessStatus, LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo} = state;
+        const {LastProcessStatus, LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo, LastSyncTime, LastOpsTime} = state;
         const {lastPatch} = this.state;
         let pg;
         if (LastProcessStatus && LastProcessStatus.Progress) {
@@ -86,8 +87,11 @@ class SyncTask extends React.Component {
                         <div>
                             <Label>{t('task.status')}</Label>
                             {!pg && LastProcessStatus && <span>{LastProcessStatus.StatusString}</span>}
-                            {!pg && idle && state.LastSyncTime &&
-                            <span> - {t('task.last-sync')} : <Link onClick={()=>{this.setState({lastPatch:true})}}>{moment(state.LastSyncTime).fromNow()}</Link></span>
+                            {!pg && idle && LastSyncTime && LastSyncTime !== emptyTime &&
+                            <span> - {t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>
+                            }
+                            {!pg && idle && LastOpsTime && LastOpsTime !== emptyTime &&
+                            <span> - {t('task.last-ops')} : <Link onClick={()=>{this.setState({lastPatch:true})}}>{moment(LastOpsTime).fromNow()}</Link></span>
                             }
                             {pg &&
                                 <div><ProgressIndicator label={"Processing..."} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>
