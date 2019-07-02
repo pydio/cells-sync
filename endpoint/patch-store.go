@@ -4,20 +4,17 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
 
-	"github.com/pydio/cells/common/log"
-
-	"github.com/pydio/cells/common/sync/model"
-
 	"github.com/etcd-io/bbolt"
 
 	"github.com/pydio/cells/common/config"
+	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/sync/merger"
+	"github.com/pydio/cells/common/sync/model"
 )
 
 var (
@@ -145,7 +142,7 @@ func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 				}
 				for _, uuid := range prunes {
 					if e := bucket.DeleteBucket([]byte(uuid)); e != nil {
-						fmt.Println("cannot delete bucket", uuid, e)
+						log.Logger(context.Background()).Error("cannot delete bucket " + uuid + " - " + e.Error())
 					}
 				}
 				return nil

@@ -53,7 +53,6 @@ var CaptureCmd = &cobra.Command{
 		conf := config.Default()
 		if len(conf.Tasks) > 0 {
 			for _, t := range conf.Tasks {
-				fmt.Println("Starting Sync", t)
 
 				leftEndpoint, err := endpoint.EndpointFromURI(t.LeftURI, t.RightURI)
 				if err != nil {

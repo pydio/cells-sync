@@ -52,7 +52,8 @@ type SyncState struct {
 	Config *config.Task
 
 	Status             SyncStatus
-	LastSyncTime       time.Time
+	LastSyncTime       time.Time `json:"LastSyncTime,omitempty"`
+	LastOpsTime        time.Time `json:"LastOpsTime,omitempty"`
 	LastProcessStatus  merger.ProcessStatus
 	LeftProcessStatus  merger.ProcessStatus
 	RightProcessStatus merger.ProcessStatus

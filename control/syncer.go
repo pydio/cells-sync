@@ -32,8 +32,7 @@ type Syncer struct {
 	stateStore StateStore
 	patchStore *endpoint.PatchStore
 	taskPaused bool
-	// To be stored in state store?
-	lastFailedPatch merger.Patch
+	lastPatch  merger.Patch
 }
 
 func NewSyncer(conf *config.Task) (*Syncer, error) {
@@ -117,18 +116,20 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				deferIdle := true
 				if patch, ok := data.(merger.Patch); ok {
 					stats := patch.Stats()
+					if patch.Size() > 0 {
+						syncer.lastPatch = patch
+						syncer.stateStore.TouchLastOpsTime()
+					}
 					if val, ok := stats["Errors"]; ok {
 						errs := val.(map[string]int)
 						msg := fmt.Sprintf("Processing ended on error (%d errors)! Pausing task.", errs["Total"])
 						log.Logger(ctx).Error(msg)
-						syncer.lastFailedPatch = patch
 						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
 						deferIdle = false
 					} else if err, ok := patch.HasError(); ok {
 						msg := fmt.Sprintf("Processing ended on error (%s)! Pausing task.", err.Error())
 						log.Logger(ctx).Error(msg)
-						syncer.lastFailedPatch = patch
 						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
 						deferIdle = false
@@ -147,7 +148,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				}
 				if deferIdle {
 					go func() {
-						<-time.After(5 * time.Second)
+						<-time.After(3 * time.Second)
 						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 					}()
@@ -156,9 +157,9 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 			case e := <-syncer.eventsChan:
 				go GetBus().Pub(e, TopicSync_+taskUuid)
 
-			case <-time.After(15 * time.Minute):
+			case <-time.After(5 * time.Minute):
 				if lastBatchSize > 0 {
-					fmt.Println("Sending Loop after 15mn Idle Time")
+					log.Logger(ctx).Info("Sending Loop after 5mn Idle Time")
 					GetBus().Pub(MessageSyncLoop, TopicSync_+taskUuid)
 				}
 				break
@@ -208,12 +209,13 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
 				// Trigger the loop
-				if s.lastFailedPatch != nil {
-					s.task.ReApplyPatch(ctx, s.lastFailedPatch)
-					s.lastFailedPatch = nil
-				} else {
-					s.task.Run(ctx, false, false)
+				if s.lastPatch != nil {
+					if _, b := s.lastPatch.HasError(); b {
+						s.task.ReApplyPatch(ctx, s.lastPatch)
+						break
+					}
 				}
+				s.task.Run(ctx, false, false)
 			case MessagePublishState:
 				// Broadcast current state
 				bus.Pub(s.stateStore.LastState(), TopicState)
@@ -278,7 +280,13 @@ func (s *Syncer) Serve() {
 
 	if s.patchStore != nil {
 		if lasts, err := s.patchStore.Load(0, 1); err == nil && len(lasts) > 0 {
-			fmt.Println("Last patch in store was ", lasts[0])
+			s.lastPatch = lasts[0]
+			s.stateStore.TouchLastOpsTime(s.lastPatch.GetStamp())
+			if _, b := s.lastPatch.HasError(); b {
+				s.stateStore.UpdateSyncStatus(common.SyncStatusError)
+			} else {
+				s.stateStore.UpdateSyncStatus(common.SyncStatusIdle)
+			}
 		}
 	}
 

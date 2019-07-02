@@ -44,6 +44,7 @@ type StateStore interface {
 	LastState() common.SyncState
 	UpdateConnection(c bool, i *model.EndpointInfo) common.SyncState
 	BothConnected() bool
+	TouchLastOpsTime(t ...time.Time)
 	UpdateSyncStatus(s common.SyncStatus) common.SyncState
 	UpdateProcessStatus(processStatus merger.ProcessStatus, status ...common.SyncStatus) common.SyncState
 }
@@ -72,6 +73,16 @@ func (b *MemoryStateStore) LastState() common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	return b.state
+}
+
+func (b *MemoryStateStore) TouchLastOpsTime(t ...time.Time) {
+	b.Lock()
+	if len(t) > 0 {
+		b.state.LastOpsTime = t[0]
+	} else {
+		b.state.LastOpsTime = time.Now()
+	}
+	b.Unlock()
 }
 
 func (b *MemoryStateStore) UpdateSyncStatus(s common.SyncStatus) common.SyncState {

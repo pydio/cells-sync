@@ -1,10 +1,13 @@
 package control
 
 import (
+	"bufio"
 	"context"
-	"math"
+	"io"
 	"net/http"
 	"time"
+
+	servicecontext "github.com/pydio/cells/common/service/context"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
@@ -24,6 +27,35 @@ type HttpServer struct {
 	done          chan bool
 	recentLogs    [][]byte
 	lastSyncState common.SyncState
+	ctx           context.Context
+
+	logWriter *io.PipeWriter
+}
+
+func NewHttpServer() *HttpServer {
+	httpServerCtx := servicecontext.WithServiceName(context.Background(), "http-server")
+	httpServerCtx = servicecontext.WithServiceColor(httpServerCtx, servicecontext.ServiceColorRest)
+	r, w := io.Pipe()
+	h := &HttpServer{
+		ctx:       httpServerCtx,
+		logWriter: w,
+	}
+	go func() {
+		scanner := bufio.NewScanner(r)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if h.LogSocket != nil {
+				h.LogSocket.Broadcast([]byte(line))
+			}
+			// Keep last 200 lines in memory
+			if len(h.recentLogs) < 200 {
+				h.recentLogs = append(h.recentLogs, []byte(line))
+			} else {
+				h.recentLogs = append(h.recentLogs[1:], []byte(line))
+			}
+		}
+	}()
+	return h
 }
 
 func (h *HttpServer) Sync() error {
@@ -31,17 +63,7 @@ func (h *HttpServer) Sync() error {
 }
 
 func (h *HttpServer) Write(p []byte) (n int, err error) {
-	if h.LogSocket != nil {
-		err = h.LogSocket.Broadcast(p)
-	}
-	if err == nil {
-		n = len(p)
-	}
-	// Keep last 200 lines in memory
-	h.recentLogs = append(h.recentLogs, p)
-	upperBound := math.Min(float64(len(h.recentLogs)), 200)
-	h.recentLogs = h.recentLogs[:int(upperBound)]
-	return
+	return h.logWriter.Write(p)
 }
 
 func (h *HttpServer) InitHandlers() {
@@ -49,7 +71,7 @@ func (h *HttpServer) InitHandlers() {
 	h.LogSocket = melody.New()
 	h.LogSocket.Config.MaxMessageSize = 2048
 	h.LogSocket.HandleError(func(session *melody.Session, i error) {
-		log.Logger(context.Background()).Info("Got Error from LogSocket " + i.Error())
+		//log.Logger(context.Background()).Info("Got Error from LogSocket " + i.Error())
 	})
 	h.LogSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
 		session.Close()
@@ -65,7 +87,7 @@ func (h *HttpServer) InitHandlers() {
 	h.WebSocket.Config.MaxMessageSize = 2048
 
 	h.WebSocket.HandleError(func(session *melody.Session, i error) {
-		log.Logger(context.Background()).Info("Got Error from WebSocket " + i.Error())
+		//log.Logger(context.Background()).Info("Got Error from WebSocket " + i.Error())
 	})
 
 	h.WebSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
@@ -111,7 +133,7 @@ func (h *HttpServer) InitHandlers() {
 
 		default:
 
-			log.Logger(context.Background()).Error("Cannot read message" + string(bytes))
+			log.Logger(h.ctx).Error("Cannot read message" + string(bytes))
 
 		}
 	})
@@ -186,7 +208,7 @@ func (h *HttpServer) Serve() {
 	Server.POST("/tree", ls)
 	Server.PUT("/tree", mkdir)
 	Server.GET("/patches/:uuid/:offset/:limit", listPatches)
-	log.Logger(context.Background()).Info("Starting HttpServer on port 3636")
+	log.Logger(h.ctx).Info("Starting HttpServer on port 3636")
 	http.ListenAndServe(":3636", Server)
 
 }

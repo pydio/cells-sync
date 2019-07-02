@@ -75,7 +75,7 @@ func (s *Supervisor) Serve() error {
 	s.schedulerToken = s.Add(NewScheduler(conf.Tasks))
 	s.Add(&Profiler{})
 	s.Add(&StdInner{})
-	s.Add(&HttpServer{})
+	s.Add(NewHttpServer())
 
 	go s.listenBus()
 	go s.listenConfig()
