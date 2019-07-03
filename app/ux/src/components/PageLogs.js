@@ -2,6 +2,7 @@ import React from 'react'
 import Page from "./Page";
 import Sockette from "sockette";
 import AnsiUp from 'ansi_up'
+import {List} from 'office-ui-fabric-react'
 
 class PageLogs extends React.Component {
 
@@ -12,7 +13,8 @@ class PageLogs extends React.Component {
             connecting: false,
             maxAttemptsReached: false,
             lines:[],
-        }
+        };
+        this.converter = new AnsiUp();
     }
 
     componentDidMount(){
@@ -87,14 +89,16 @@ class PageLogs extends React.Component {
         const newLines = [...lines, line];
         this.setState({lines: newLines}, ()=>{
             if(this.refs && this.refs.block){
-                this.refs.block.scrollTop += 100000;
+                //this.refs.block.scrollTop += 1000;
             }
         });
     }
 
+    _onRenderCell(line){
+        return (<div dangerouslySetInnerHTML={{__html:this.converter.ansi_to_html(line)}}/>)
+    }
 
     render() {
-        const converter = new AnsiUp();
         const {lines} = this.state;
         const preStyle = {
             backgroundColor:'black',
@@ -111,9 +115,7 @@ class PageLogs extends React.Component {
         return (
             <Page title={"Logs"} legend={"Application logs"} flex={true}>
                 <div ref={"block"} style={preStyle}>
-                    {lines.map((line, k) => {
-                        return (<div key={k} dangerouslySetInnerHTML={{__html:converter.ansi_to_html(line)}}/>)
-                    })}
+                    <List items={lines} onRenderCell={this._onRenderCell.bind(this)} />
                 </div>
             </Page>
         );
