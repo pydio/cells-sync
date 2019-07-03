@@ -22,8 +22,10 @@ import (
 )
 
 type HttpServer struct {
-	WebSocket     *melody.Melody
-	LogSocket     *melody.Melody
+	WebSocket          *melody.Melody
+	LogSocket          *melody.Melody
+	logSocketConnected bool
+
 	done          chan bool
 	recentLogs    [][]byte
 	lastSyncState common.SyncState
@@ -63,7 +65,10 @@ func (h *HttpServer) Sync() error {
 }
 
 func (h *HttpServer) Write(p []byte) (n int, err error) {
-	return h.logWriter.Write(p)
+	if h.logSocketConnected {
+		go h.logWriter.Write(p)
+	}
+	return len(p), nil
 }
 
 func (h *HttpServer) InitHandlers() {
@@ -74,10 +79,12 @@ func (h *HttpServer) InitHandlers() {
 		//log.Logger(context.Background()).Info("Got Error from LogSocket " + i.Error())
 	})
 	h.LogSocket.HandleClose(func(session *melody.Session, i int, i2 string) error {
+		h.logSocketConnected = false
 		session.Close()
 		return nil
 	})
 	h.LogSocket.HandleConnect(func(session *melody.Session) {
+		h.logSocketConnected = true
 		for _, p := range h.recentLogs {
 			session.Write(p)
 		}
