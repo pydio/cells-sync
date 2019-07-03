@@ -20,6 +20,7 @@ class PageLogs extends React.Component {
     }
 
     componentWillUnmount(){
+        this.stopping = true;
         if (this.ws !== null){
             this.ws.close();
         }
@@ -38,16 +39,10 @@ class PageLogs extends React.Component {
         });
     }
 
-    forceReconnect() {
-        const {maxAttemptsReached} = this.state;
-        if (this.ws && !maxAttemptsReached) {
-            this.ws.reconnect();
-        } else {
-            this.start();
-        }
-    }
-
     onOpen(msg){
+        if(this.stopping){
+            return;
+        }
         this.setState({
             connected: true,
             maxAttemtpsReached: false,
@@ -56,28 +51,43 @@ class PageLogs extends React.Component {
     }
 
     onReconnect(msg){
+        if(this.stopping){
+            return;
+        }
         this.setState({connecting: true})
     }
 
     onMaximum(msg){
+        if(this.stopping){
+            return;
+        }
         this.setState({maxAttemptsReached: true});
     }
 
     onClose(msg){
+        if(this.stopping){
+            return;
+        }
         this.setState({connected: false, connecting: false})
     }
 
     onError(msg){
+        if(this.stopping){
+            return;
+        }
         this.setState({connected: false, connecting: false})
     }
 
     onMessage(msg) {
+        if(this.stopping){
+            return;
+        }
         const {lines} = this.state;
         let line = msg.data;
         const newLines = [...lines, line];
         this.setState({lines: newLines}, ()=>{
             if(this.refs && this.refs.block){
-                this.refs.block.scrollTo(0, 10000);
+                this.refs.block.scrollTop += 100000;
             }
         });
     }

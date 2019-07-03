@@ -4,6 +4,8 @@ import {withTranslation} from 'react-i18next'
 import {load} from '../models/Patch'
 import PatchNode from "./PatchNode";
 
+const listSize = 5;
+
 class PatchDialog extends React.Component {
 
     constructor(props) {
@@ -21,8 +23,10 @@ class PatchDialog extends React.Component {
         const {syncUUID} = nextProps;
         if (syncUUID && syncUUID !== this.props.syncUUID) {
             this.setState({loading:true, first: true, offset: 0});
-            load(syncUUID, 0, 10).then(patches => {
-                this.setState({patches, loading: false, hasMore:(patches && patches.length === 10)});
+            load(syncUUID, 0, listSize).then(patches => {
+                this.setState({patches, loading: false, hasMore:(patches && patches.length === listSize)});
+            }).catch(() => {
+                this.setState({loading: false});
             });
         }
     }
@@ -30,14 +34,17 @@ class PatchDialog extends React.Component {
     loadMore(){
         let {offset} = this.state;
         const {syncUUID} = this.props;
-        load(syncUUID, offset + 10, 10).then(patches => {
-            this.setState({offset: offset + 10});
-            if(!patches || patches.length < 10){
+        this.setState({loading:true});
+        load(syncUUID, offset + listSize, listSize).then(patches => {
+            this.setState({offset: offset + listSize, loading: false});
+            if(!patches || patches.length < listSize){
                 this.setState({hasMore: false});
             }
             if(patches) {
                 this.setState({patches: [...this.state.patches, ...patches], loading: false});
             }
+        }).catch(() => {
+            this.setState({loading: false});
         });
     }
 
@@ -57,11 +64,6 @@ class PatchDialog extends React.Component {
                                 <span style={{width: 130, marginRight: 8, textAlign:'center'}}>Operations</span>
                             </div>
                         </Sticky>
-                        {loading &&
-                            <div style={{height:400, display:'flex', alignItems:'center', justifyContent:'center'}}>
-                                <Spinner size={SpinnerSize.large} />
-                            </div>
-                        }
                         {patches &&
                             patches.map((patch, k) => {
                                 return (
@@ -73,6 +75,11 @@ class PatchDialog extends React.Component {
                         }
                         {!loading && hasMore &&
                             <div style={{padding: 10, textAlign:'center'}}><Link onClick={() => {this.loadMore()}}>Load more...</Link></div>
+                        }
+                        {loading &&
+                        <div style={{height:(patches && patches.length?50:400), display:'flex', alignItems:'center', justifyContent:'center'}}>
+                            <Spinner size={SpinnerSize.large} />
+                        </div>
                         }
                     </ScrollablePane>
                 </DialogContent>

@@ -37,29 +37,46 @@ class PatchNode extends React.Component {
         if (patch.PathOperation){
             action = ops[patch.PathOperation.OpType];
             if (patch.PathOperation.OpType === 5) {
-                icon = 'Delete'
+                icon = 'Delete';
+            } else if(patch.PathOperation.OpType === 2) {
+                icon = 'NewFolder'
+            } else if(patch.PathOperation.OpType === 3) {
+                icon = 'MoveToFolder'
             }
         } else if(patch.DataOperation) {
             action = ops[patch.DataOperation.OpType];
-        } else if (stats && stats.Processed) {
-            action = '[' + stats.Processed.Total + ']';
+        }
+        let children = patch.Children;
+        let hasMore = false;
+        if (children.length > 20) {
+            hasMore = children.length;
+            children = children.slice(0, 20);
+        }
+        let label = patch.Stamp ? moment(patch.Stamp).fromNow() : patch.Base;
+        if (stats && stats.Processed) {
+            label +=  ' (' + stats.Processed.Total + ')';
         }
         return (
             <div style={{paddingLeft:(level > 0 ? 20 : 0)}}>
                 <div onClick={()=>{this.setState({open:!open})}} style={{display:'flex', alignItems:'center', fontSize:15, paddingTop: 8, paddingBottom: 8}}>
-                    {!isLeaf &&
+                    {!isLeaf && children.length > 0 &&
                         <Icon iconName={open ? 'ChevronDown' : 'ChevronRight'} styles={{root:{margin:'0 5px', cursor: 'pointer', color:'#9e9e9e'}}}/>
                     }
-                    {isLeaf &&
+                    {(isLeaf || !children.length) &&
                         <span style={{width: 25}}>&nbsp;</span>
                     }
                     <Icon iconName={icon} styles={{root:{margin:'0 5px'}}}/>
-                    <span style={{flex: 1}}>{patch.Stamp ? moment(patch.Stamp).fromNow() : patch.Base}</span>
+                    <span style={{flex: 1}}>{label}</span>
                     <span style={{width: 130, marginRight: 8, fontSize: 12, textAlign:'center'}}>{action}</span>
                 </div>
-                <div style={{display:(open?'block':'none')}} >{patch.Children.map((child) => {
-                    return <PatchNode key={child.Base} patch={child} level={level + 1}/>
-                })}</div>
+                {open &&
+                    <div>
+                        {children.map((child) => {
+                            return <PatchNode key={child.Base} patch={child} level={level + 1}/>
+                        })}
+                        {hasMore > 0 && <div style={{padding: 5, paddingLeft: 50, fontStyle: 'italic', color: '#757575'}}>...showing 20 out of {hasMore} operations.</div>}
+                    </div>
+                }
             </div>
         );
     }
