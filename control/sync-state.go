@@ -29,7 +29,6 @@ import (
 
 	"github.com/pydio/sync/common"
 
-	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/sync/config"
 )
@@ -46,7 +45,7 @@ type StateStore interface {
 	BothConnected() bool
 	TouchLastOpsTime(t ...time.Time)
 	UpdateSyncStatus(s common.SyncStatus) common.SyncState
-	UpdateProcessStatus(processStatus merger.ProcessStatus, status ...common.SyncStatus) common.SyncState
+	UpdateProcessStatus(processStatus model.ProcessStatus, status ...common.SyncStatus) common.SyncState
 }
 
 type MemoryStateStore struct {
@@ -92,7 +91,7 @@ func (b *MemoryStateStore) UpdateSyncStatus(s common.SyncStatus) common.SyncStat
 	return b.state
 }
 
-func (b *MemoryStateStore) UpdateProcessStatus(processStatus merger.ProcessStatus, status ...common.SyncStatus) common.SyncState {
+func (b *MemoryStateStore) UpdateProcessStatus(processStatus model.ProcessStatus, status ...common.SyncStatus) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	if math.IsNaN(float64(processStatus.Progress)) {

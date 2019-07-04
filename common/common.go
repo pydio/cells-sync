@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pydio/cells/common/sync/merger"
+	"github.com/pydio/cells/common/sync/model"
 
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/sync/config"
@@ -54,9 +54,9 @@ type SyncState struct {
 	Status             SyncStatus
 	LastSyncTime       time.Time `json:"LastSyncTime,omitempty"`
 	LastOpsTime        time.Time `json:"LastOpsTime,omitempty"`
-	LastProcessStatus  merger.ProcessStatus
-	LeftProcessStatus  merger.ProcessStatus
-	RightProcessStatus merger.ProcessStatus
+	LastProcessStatus  model.ProcessStatus
+	LeftProcessStatus  model.ProcessStatus
+	RightProcessStatus model.ProcessStatus
 
 	// Endpoints Current Info
 	LeftInfo  *EndpointInfo

@@ -27,7 +27,7 @@ type Syncer struct {
 	watches bool
 
 	eventsChan  chan interface{}
-	patchStatus chan merger.ProcessStatus
+	patchStatus chan model.ProcessStatus
 	patchDone   chan interface{}
 	cmd         *model.Command
 
@@ -93,7 +93,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		stateStore:  NewMemoryStateStore(conf),
 		stop:        make(chan bool, 1),
 		eventsChan:  make(chan interface{}),
-		patchStatus: make(chan merger.ProcessStatus),
+		patchStatus: make(chan model.ProcessStatus),
 		patchDone:   make(chan interface{}),
 		cmd:         model.NewCommand(),
 	}
@@ -140,23 +140,23 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 						errs := val.(map[string]int)
 						msg := fmt.Sprintf("Processing ended on error (%d errors)! Pausing task.", errs["Total"])
 						log.Logger(ctx).Error(msg)
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
+						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
 						deferIdle = false
 					} else if err, ok := patch.HasErrors(); ok {
 						msg := fmt.Sprintf("Processing ended with %d errors! Pausing task.", len(err))
 						log.Logger(ctx).Error(msg)
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
+						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
 						deferIdle = false
 					} else if val, ok := stats["Processed"]; ok {
 						processed := val.(map[string]int)
 						msg := fmt.Sprintf("Finished Processing %d files and folders", processed["Total"])
 						log.Logger(ctx).Info(msg)
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusIdle)
+						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 					} else {
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
+						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 						deferIdle = false
 					}
@@ -165,7 +165,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if deferIdle {
 					go func() {
 						<-time.After(3 * time.Second)
-						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
+						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
 						bus.Pub(state, TopicState)
 					}()
 				}
@@ -235,25 +235,25 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusStopping), TopicState)
 			case MessageResync:
 				// Trigger a full resync
-				state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Starting full resync", Progress: 0}, common.SyncStatusProcessing)
+				state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Starting full resync", Progress: 0}, common.SyncStatusProcessing)
 				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, true)
 			case MessageResyncDry:
 				// Trigger a dry-run
-				state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Running dry run", Progress: 0}, common.SyncStatusProcessing)
+				state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Running dry run", Progress: 0}, common.SyncStatusProcessing)
 				bus.Pub(state, TopicState)
 				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
 				if s.lastPatch != nil {
 					if _, b := s.lastPatch.HasErrors(); b {
 						// Trigger the loop
-						state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Re-applying last patch that has errors", Progress: 0}, common.SyncStatusProcessing)
+						state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Re-applying last patch that has errors", Progress: 0}, common.SyncStatusProcessing)
 						bus.Pub(state, TopicState)
 						s.task.ReApplyPatch(ctx, s.lastPatch)
 						break
 					}
 				}
-				state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Starting sync loop", Progress: 0}, common.SyncStatusProcessing)
+				state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Starting sync loop", Progress: 0}, common.SyncStatusProcessing)
 				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, false)
 			case MessagePublishState:
