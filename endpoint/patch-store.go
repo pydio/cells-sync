@@ -101,6 +101,8 @@ func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 				operation := merger.NewOpForUnmarshall()
 				if err := json.Unmarshal(v, &operation); err == nil {
 					patch.Enqueue(operation)
+				} else {
+					log.Logger(context.Background()).Error("Cannot unmarshall operation:" + err.Error())
 				}
 			}
 			stamps = append(stamps, patch)

@@ -7,10 +7,9 @@ import (
 	"path/filepath"
 	"time"
 
-	config2 "github.com/pydio/cells/common/config"
-
 	"github.com/pkg/errors"
 
+	config2 "github.com/pydio/cells/common/config"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/sync/merger"
@@ -116,12 +115,11 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if l.Progress > 0 {
 					msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress*100))
 				}
-				var status common.SyncStatus
+				status := common.SyncStatusProcessing
 				if l.IsError {
-					status = common.SyncStatusError
+					//status = common.SyncStatusError
 					log.Logger(ctx).Error(msg)
 				} else {
-					status = common.SyncStatusProcessing
 					log.Logger(ctx).Debug(msg)
 				}
 				state := syncer.stateStore.UpdateProcessStatus(l, status)
@@ -145,8 +143,8 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
 						deferIdle = false
-					} else if err, ok := patch.HasError(); ok {
-						msg := fmt.Sprintf("Processing ended on error (%s)! Pausing task.", err.Error())
+					} else if err, ok := patch.HasErrors(); ok {
+						msg := fmt.Sprintf("Processing ended with %d errors! Pausing task.", len(err))
 						log.Logger(ctx).Error(msg)
 						state := syncer.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
 						bus.Pub(state, TopicState)
@@ -237,18 +235,26 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusStopping), TopicState)
 			case MessageResync:
 				// Trigger a full resync
+				state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Starting full resync", Progress: 0}, common.SyncStatusProcessing)
+				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, true)
 			case MessageResyncDry:
 				// Trigger a dry-run
+				state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Running dry run", Progress: 0}, common.SyncStatusProcessing)
+				bus.Pub(state, TopicState)
 				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
-				// Trigger the loop
 				if s.lastPatch != nil {
-					if _, b := s.lastPatch.HasError(); b {
+					if _, b := s.lastPatch.HasErrors(); b {
+						// Trigger the loop
+						state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Re-applying last patch that has errors", Progress: 0}, common.SyncStatusProcessing)
+						bus.Pub(state, TopicState)
 						s.task.ReApplyPatch(ctx, s.lastPatch)
 						break
 					}
 				}
+				state := s.stateStore.UpdateProcessStatus(merger.ProcessStatus{StatusString: "Starting sync loop", Progress: 0}, common.SyncStatusProcessing)
+				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, false)
 			case MessagePublishState:
 				// Broadcast current state
@@ -318,7 +324,7 @@ func (s *Syncer) Serve() {
 		if lasts, err := s.patchStore.Load(0, 1); err == nil && len(lasts) > 0 {
 			s.lastPatch = lasts[0]
 			s.stateStore.TouchLastOpsTime(s.lastPatch.GetStamp())
-			if _, b := s.lastPatch.HasError(); b {
+			if _, b := s.lastPatch.HasErrors(); b {
 				s.stateStore.UpdateSyncStatus(common.SyncStatusError)
 			} else {
 				s.stateStore.UpdateSyncStatus(common.SyncStatusIdle)

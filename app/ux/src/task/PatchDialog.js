@@ -24,6 +24,9 @@ class PatchDialog extends React.Component {
         if (syncUUID && syncUUID !== this.props.syncUUID) {
             this.setState({loading:true, first: true, offset: 0});
             load(syncUUID, 0, listSize).then(patches => {
+                if(patches){
+                    patches.reverse();
+                }
                 this.setState({patches, loading: false, hasMore:(patches && patches.length === listSize)});
             }).catch(() => {
                 this.setState({loading: false});
@@ -41,6 +44,7 @@ class PatchDialog extends React.Component {
                 this.setState({hasMore: false});
             }
             if(patches) {
+                patches.reverse();
                 this.setState({patches: [...this.state.patches, ...patches], loading: false});
             }
         }).catch(() => {
@@ -51,9 +55,6 @@ class PatchDialog extends React.Component {
     render() {
         const {onDismiss, t, ...dialogProps} = this.props;
         const {patches, loading, hasMore} = this.state;
-        if(patches){
-            patches.reverse();
-        }
         return (
             <Dialog {...dialogProps} onDismiss={onDismiss} minWidth={700} title={t('patch.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
                 <DialogContent styles={{innerContent:{minHeight: 400}, inner:{padding:0}, title:{display:'none'}}}>

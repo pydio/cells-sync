@@ -1,5 +1,5 @@
 import React from 'react'
-import {Icon} from 'office-ui-fabric-react'
+import {Icon, TooltipHost} from 'office-ui-fabric-react'
 import moment from 'moment'
 
 const ops = {
@@ -43,8 +43,14 @@ class PatchNode extends React.Component {
             } else if(patch.PathOperation.OpType === 3) {
                 icon = 'MoveToFolder'
             }
+            if (patch.PathOperation.ErrorString){
+                action += <TooltipHost content={patch.PathOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
+            }
         } else if(patch.DataOperation) {
             action = ops[patch.DataOperation.OpType];
+            if (patch.DataOperation.ErrorString){
+                action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
+            }
         }
         let children = patch.Children;
         let hasMore = false;
@@ -53,8 +59,12 @@ class PatchNode extends React.Component {
             children = children.slice(0, 20);
         }
         let label = patch.Stamp ? moment(patch.Stamp).fromNow() : patch.Base;
-        if (stats && stats.Processed) {
-            label +=  ' (' + stats.Processed.Total + ')';
+        if (stats) {
+            if(stats.Errors){
+                label +=  ' (' + stats.Errors.Total + ' errors)';
+            } else if (stats.Processed){
+                label +=  ' (' + stats.Processed.Total + ')';
+            }
         }
         return (
             <div style={{paddingLeft:(level > 0 ? 20 : 0)}}>

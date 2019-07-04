@@ -4,6 +4,7 @@ class Operation {
     constructor(data){
         this.OpType = data.OpType;
         this.Dir = data.Dir;
+        this.ErrorString = data.ProcessingErrorString;
     }
 }
 
