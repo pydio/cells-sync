@@ -86,8 +86,12 @@ export default class Socket {
             console.log('Correctly connected!', data)
         } else if(data.Type === 'STATE'){
             const {syncTasks} = this.state;
-            const {UUID} = data.Content;
-            syncTasks[UUID] = data.Content;
+            const {UUID, Status} = data.Content;
+            if (Status === 7 && syncTasks[UUID]){
+                delete(syncTasks[UUID]);
+            } else {
+                syncTasks[UUID] = data.Content;
+            }
             this.setState({syncTasks});
         } else {
             console.log(data)
@@ -104,6 +108,7 @@ export default class Socket {
 
     deleteTask(config) {
         this.sendMessage('CONFIG', {Cmd:'delete', Config:config});
+        /*
         const {syncTasks} = this.state;
         if(syncTasks[config.Uuid]) {
             delete(syncTasks[config.Uuid]);
@@ -113,6 +118,7 @@ export default class Socket {
                 this.triggerTasksStatus({type:'PING'});
             }, 1000);
         }
+        */
     }
 
 }

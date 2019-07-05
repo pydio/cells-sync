@@ -23,6 +23,7 @@
   "task.last-ops":"Dernières opérations",
   "task.progress":"Progrès",
   "task.action.loop":"Synchroniser",
+  "task.action.retry":"Ré-essayer",
   "task.action.interrupt":"Arrêter",
   "task.action.resync":"Resync complète",
   "task.action.edit":"Configurer",

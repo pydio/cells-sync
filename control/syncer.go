@@ -208,6 +208,8 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			if s.cleanAllAfterStop {
 				log.Logger(ctx).Info("Cleaning all data for service")
 				os.RemoveAll(s.configPath)
+				// Publish that this task has been removed
+				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusRemoved), TopicState)
 			}
 			return
 

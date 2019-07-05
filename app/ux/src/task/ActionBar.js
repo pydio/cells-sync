@@ -28,7 +28,9 @@ class ActionBar extends React.Component {
         const paused = Status === 1;
         let disabled = !(LeftConnected && RightConnected);
         let loopButton = {key:'loop', disabled: disabled, iconName:'Play'};
-        if(Status === 3) {
+        if(Status === 4) { // Error
+            loopButton.label = 'task.action.retry'
+        } else  if(Status === 3) { // Processing
             loopButton = {key:'interrupt', iconName:'Stop'};
             disabled = true
         }
@@ -44,15 +46,16 @@ class ActionBar extends React.Component {
 
         return (
             <Stack horizontal horizontalAlign="end" tokens={{childrenGap:8}} styles={{root:{padding: 10, paddingTop: 20}}}>
-                {menu.map(({key,disabled,iconName,menu}) => {
+                {menu.map(({key,disabled,iconName,menu,label}) => {
                     const props = {key, disabled, iconProps:{iconName}};
                     if (menu) {
                         props.menuAs = ActionBar.menuAs;
-                        props.menuProps = {items: menu.map(({key, iconName}) => {
-                                return {key: key, text:t('task.action.'+key), iconProps:{iconName}, onClick:()=>{triggerAction(key)}}
+                        props.menuProps = {items: menu.map(({key, iconName, label}) => {
+                                const txt = label ? t(label) : t('task.action.'+key);
+                                return {key: key, text:txt, iconProps:{iconName}, onClick:()=>{triggerAction(key)}}
                             })}
                     } else {
-                        props.text = t('task.action.'+key);
+                        props.text = label ? t(label) : t('task.action.'+key);
                         props.onClick = ()=>{triggerAction(key)}
                     }
                     return <DefaultButton {...props}/>

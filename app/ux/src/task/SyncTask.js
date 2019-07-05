@@ -73,7 +73,7 @@ class SyncTask extends React.Component {
                             {error &&
                             <Fragment>
                                 &nbsp;
-                                <Icon iconName={"Error"} styles={{root:{color:'red'}}}/> ({t('task.status.paused')})
+                                <Icon iconName={"Error"} styles={{root:{color:'red', marginRight:5}}}/> {t('task.status.paused')}
                             </Fragment>
                             }
                         </h3>
@@ -92,6 +92,9 @@ class SyncTask extends React.Component {
                             }
                             {!pg && idle && LastOpsTime && LastOpsTime !== emptyTime &&
                             <span> - {t('task.last-ops')} : <Link onClick={()=>{this.setState({lastPatch:true})}}>{moment(LastOpsTime).fromNow()}</Link></span>
+                            }
+                            {!pg && error && LastOpsTime && LastOpsTime !== emptyTime &&
+                            <span>&nbsp;-&nbsp;<Link onClick={()=>{this.setState({lastPatch:true})}}>{"Display errors"}</Link></span>
                             }
                             {pg &&
                                 <div><ProgressIndicator label={"Processing..."} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>
