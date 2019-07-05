@@ -22,7 +22,6 @@ package control
 
 import (
 	"fmt"
-	"math"
 	"net/url"
 	"sync"
 	"time"
@@ -44,8 +43,8 @@ type StateStore interface {
 	UpdateConnection(c bool, i *model.EndpointInfo) common.SyncState
 	BothConnected() bool
 	TouchLastOpsTime(t ...time.Time)
-	UpdateSyncStatus(s common.SyncStatus) common.SyncState
-	UpdateProcessStatus(processStatus model.ProcessStatus, status ...common.SyncStatus) common.SyncState
+	UpdateSyncStatus(s model.TaskStatus) common.SyncState
+	UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState
 }
 
 type MemoryStateStore struct {
@@ -60,7 +59,7 @@ func NewMemoryStateStore(config *config.Task) *MemoryStateStore {
 		state: common.SyncState{
 			UUID:      config.Uuid,
 			Config:    config,
-			Status:    common.SyncStatusIdle,
+			Status:    model.TaskStatusIdle,
 			LeftInfo:  &common.EndpointInfo{Connected: false},
 			RightInfo: &common.EndpointInfo{Connected: false},
 		},
@@ -84,23 +83,20 @@ func (b *MemoryStateStore) TouchLastOpsTime(t ...time.Time) {
 	b.Unlock()
 }
 
-func (b *MemoryStateStore) UpdateSyncStatus(s common.SyncStatus) common.SyncState {
+func (b *MemoryStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	b.state.Status = s
 	return b.state
 }
 
-func (b *MemoryStateStore) UpdateProcessStatus(processStatus model.ProcessStatus, status ...common.SyncStatus) common.SyncState {
+func (b *MemoryStateStore) UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
-	if math.IsNaN(float64(processStatus.Progress)) {
-		processStatus.Progress = 0
-	}
 	b.state.LastSyncTime = time.Now()
-	if processStatus.EndpointURI != "" && compareURI(b.config.LeftURI, processStatus.EndpointURI) {
+	if processStatus.EndpointURI() != "" && compareURI(b.config.LeftURI, processStatus.EndpointURI()) {
 		b.state.LeftProcessStatus = processStatus
-	} else if processStatus.EndpointURI != "" && compareURI(b.config.RightURI, processStatus.EndpointURI) {
+	} else if processStatus.EndpointURI() != "" && compareURI(b.config.RightURI, processStatus.EndpointURI()) {
 		b.state.RightProcessStatus = processStatus
 	} else {
 		b.state.LastProcessStatus = processStatus
@@ -108,6 +104,7 @@ func (b *MemoryStateStore) UpdateProcessStatus(processStatus model.ProcessStatus
 	if len(status) > 0 {
 		b.state.Status = status[0]
 	}
+	GetBus().Pub(b.state, TopicState)
 	return b.state
 }
 

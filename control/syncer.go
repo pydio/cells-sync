@@ -15,7 +15,6 @@ import (
 	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/cells/common/sync/task"
-	"github.com/pydio/sync/common"
 	"github.com/pydio/sync/config"
 	"github.com/pydio/sync/endpoint"
 )
@@ -27,7 +26,7 @@ type Syncer struct {
 	watches bool
 
 	eventsChan  chan interface{}
-	patchStatus chan model.ProcessStatus
+	patchStatus chan model.Status
 	patchDone   chan interface{}
 	cmd         *model.Command
 
@@ -93,7 +92,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 		stateStore:  NewMemoryStateStore(conf),
 		stop:        make(chan bool, 1),
 		eventsChan:  make(chan interface{}),
-		patchStatus: make(chan model.ProcessStatus),
+		patchStatus: make(chan model.Status),
 		patchDone:   make(chan interface{}),
 		cmd:         model.NewCommand(),
 	}
@@ -111,13 +110,13 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if !ok {
 					return
 				}
-				msg := "Status: " + l.StatusString
-				if l.Progress > 0 {
-					msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress*100))
+				msg := "Status: " + l.String()
+				if l.Progress() > 0 {
+					msg += fmt.Sprintf(" - Progress: %d%%", int64(l.Progress()*100))
 				}
-				status := common.SyncStatusProcessing
-				if l.IsError {
-					//status = common.SyncStatusError
+				status := model.TaskStatusProcessing
+				if l.IsError() {
+					//status = common.TaskStatusError
 					log.Logger(ctx).Error(msg)
 				} else {
 					log.Logger(ctx).Debug(msg)
@@ -130,6 +129,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 					return
 				}
 				deferIdle := true
+				stateStore := syncer.stateStore
 				if patch, ok := data.(merger.Patch); ok {
 					stats := patch.Stats()
 					if patch.Size() > 0 {
@@ -140,24 +140,20 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 						errs := val.(map[string]int)
 						msg := fmt.Sprintf("Processing ended on error (%d errors)! Pausing task.", errs["Total"])
 						log.Logger(ctx).Error(msg)
-						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
-						bus.Pub(state, TopicState)
+						stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), model.TaskStatusError)
 						deferIdle = false
 					} else if err, ok := patch.HasErrors(); ok {
 						msg := fmt.Sprintf("Processing ended with %d errors! Pausing task.", len(err))
 						log.Logger(ctx).Error(msg)
-						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusError)
-						bus.Pub(state, TopicState)
+						stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), model.TaskStatusError)
 						deferIdle = false
 					} else if val, ok := stats["Processed"]; ok {
 						processed := val.(map[string]int)
 						msg := fmt.Sprintf("Finished Processing %d files and folders", processed["Total"])
 						log.Logger(ctx).Info(msg)
-						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: msg, Progress: 1}, common.SyncStatusIdle)
-						bus.Pub(state, TopicState)
+						stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), model.TaskStatusIdle)
 					} else {
-						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
-						bus.Pub(state, TopicState)
+						stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), model.TaskStatusIdle)
 						deferIdle = false
 					}
 					syncer.patchStore.Store(patch)
@@ -165,7 +161,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if deferIdle {
 					go func() {
 						<-time.After(3 * time.Second)
-						state := syncer.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Task Idle"}, common.SyncStatusIdle)
+						state := syncer.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), model.TaskStatusIdle)
 						bus.Pub(state, TopicState)
 					}()
 				}
@@ -221,40 +217,36 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 			switch message {
 			case MessageRestart:
 				// Message from supervisor, just update status
-				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusRestarting), TopicState)
+				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusRestarting), TopicState)
 			case MessageRestartClean:
 				// Message from supervisor, just update status
 				s.cleanSnapsAfterStop = true
-				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusRestarting), TopicState)
+				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusRestarting), TopicState)
 			case MessageHalt:
 				// Message from supervisor, just update status
-				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusStopping), TopicState)
+				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusStopping), TopicState)
 			case MessageHaltClean:
 				// Message from supervisor, just update status
 				s.cleanAllAfterStop = true
-				bus.Pub(s.stateStore.UpdateSyncStatus(common.SyncStatusStopping), TopicState)
+				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusStopping), TopicState)
 			case MessageResync:
 				// Trigger a full resync
-				state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Starting full resync", Progress: 0}, common.SyncStatusProcessing)
-				bus.Pub(state, TopicState)
+				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Starting full resync"), model.TaskStatusProcessing)
 				s.task.Run(ctx, false, true)
 			case MessageResyncDry:
 				// Trigger a dry-run
-				state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Running dry run", Progress: 0}, common.SyncStatusProcessing)
-				bus.Pub(state, TopicState)
+				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Dry-running sync"), model.TaskStatusProcessing)
 				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
 				if s.lastPatch != nil {
 					if _, b := s.lastPatch.HasErrors(); b {
 						// Trigger the loop
-						state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Re-applying last patch that has errors", Progress: 0}, common.SyncStatusProcessing)
-						bus.Pub(state, TopicState)
+						s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Re-applying last patch that had errors"), model.TaskStatusProcessing)
 						s.task.ReApplyPatch(ctx, s.lastPatch)
 						break
 					}
 				}
-				state := s.stateStore.UpdateProcessStatus(model.ProcessStatus{StatusString: "Starting sync loop", Progress: 0}, common.SyncStatusProcessing)
-				bus.Pub(state, TopicState)
+				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Starting sync loop"), model.TaskStatusProcessing)
 				s.task.Run(ctx, false, false)
 			case MessagePublishState:
 				// Broadcast current state
@@ -269,19 +261,19 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 				// Stop watching for events
 				s.task.Pause(ctx)
 				s.taskPaused = true
-				state := s.stateStore.UpdateSyncStatus(common.SyncStatusPaused)
+				state := s.stateStore.UpdateSyncStatus(model.TaskStatusPaused)
 				bus.Pub(state, TopicState)
 			case MessageResume:
 				// Start watching for events
 				s.task.Resume(ctx)
 				s.taskPaused = false
-				state := s.stateStore.UpdateSyncStatus(common.SyncStatusIdle)
+				state := s.stateStore.UpdateSyncStatus(model.TaskStatusIdle)
 				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, false)
 			case MessageDisable:
 				// Disable Task
 				s.task.Shutdown()
-				state := s.stateStore.UpdateSyncStatus(common.SyncStatusDisabled)
+				state := s.stateStore.UpdateSyncStatus(model.TaskStatusDisabled)
 				bus.Pub(state, TopicState)
 			default:
 				// Received info about an Endpoint
@@ -296,7 +288,7 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 					}
 					state := s.stateStore.UpdateConnection(epConnected, &status.EndpointInfo)
 					newConnState := s.stateStore.BothConnected()
-					if state.Status == common.SyncStatusIdle && newConnState && newConnState != initialConnState {
+					if state.Status == model.TaskStatusIdle && newConnState && newConnState != initialConnState {
 						log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
 						s.task.Run(ctx, false, false)
 					}
@@ -325,9 +317,9 @@ func (s *Syncer) Serve() {
 			s.lastPatch = lasts[0]
 			s.stateStore.TouchLastOpsTime(s.lastPatch.GetStamp())
 			if _, b := s.lastPatch.HasErrors(); b {
-				s.stateStore.UpdateSyncStatus(common.SyncStatusError)
+				s.stateStore.UpdateSyncStatus(model.TaskStatusError)
 			} else {
-				s.stateStore.UpdateSyncStatus(common.SyncStatusIdle)
+				s.stateStore.UpdateSyncStatus(model.TaskStatusIdle)
 			}
 		}
 	}

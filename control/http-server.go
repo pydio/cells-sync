@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/pydio/cells/common/sync/model"
+
 	servicecontext "github.com/pydio/cells/common/service/context"
 
 	"github.com/gin-contrib/cors"
@@ -156,9 +158,12 @@ func (h *HttpServer) drop(s common.SyncState) bool {
 	if (h.lastSyncState == common.SyncState{}) {
 		return false
 	}
-	if h.lastSyncState.Status == common.SyncStatusProcessing && s.Status == common.SyncStatusProcessing {
-		newPg := s.LastProcessStatus.Progress
-		oldPg := h.lastSyncState.LastProcessStatus.Progress
+	if h.lastSyncState.Status == model.TaskStatusProcessing && s.Status == model.TaskStatusProcessing && s.LastProcessStatus != nil {
+		newPg := s.LastProcessStatus.Progress()
+		oldPg := float32(0)
+		if h.lastSyncState.LastProcessStatus != nil {
+			oldPg = h.lastSyncState.LastProcessStatus.Progress()
+		}
 		// Limit number of events, except if progress is 100% which may indicate some additional checks/cleaning operations
 		if newPg > 0 && newPg < 1 && oldPg > 0 && newPg-oldPg <= 0.001 {
 			return true
@@ -216,8 +221,9 @@ func (h *HttpServer) Serve() {
 	Server.PUT("/tree", mkdir)
 	Server.GET("/patches/:uuid/:offset/:limit", listPatches)
 	log.Logger(h.ctx).Info("Starting HttpServer on port 3636")
-	http.ListenAndServe(":3636", Server)
-
+	if e := http.ListenAndServe(":3636", Server); e != nil {
+		log.Logger(h.ctx).Error("Cannot start server: " + e.Error())
+	}
 }
 
 func (h *HttpServer) Stop() {

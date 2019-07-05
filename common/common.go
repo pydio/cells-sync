@@ -18,24 +18,6 @@ var (
 	BuildRevision = ""
 )
 
-type SyncStatus int
-type SyncErrorType int
-
-const (
-	SyncStatusIdle SyncStatus = iota
-	SyncStatusPaused
-	SyncStatusDisabled
-	SyncStatusProcessing
-	SyncStatusError
-	SyncStatusRestarting
-	SyncStatusStopping
-
-	SyncErrorUnknown SyncErrorType = iota
-	SyncErrorNetworking
-	SyncErrorAuthentication
-	SyncErrorConflicts
-)
-
 type EndpointInfo struct {
 	Connected      bool
 	LastConnection time.Time
@@ -51,12 +33,12 @@ type SyncState struct {
 	UUID   string
 	Config *config.Task
 
-	Status             SyncStatus
-	LastSyncTime       time.Time `json:"LastSyncTime,omitempty"`
-	LastOpsTime        time.Time `json:"LastOpsTime,omitempty"`
-	LastProcessStatus  model.ProcessStatus
-	LeftProcessStatus  model.ProcessStatus
-	RightProcessStatus model.ProcessStatus
+	Status             model.TaskStatus
+	LastSyncTime       time.Time    `json:"LastSyncTime,omitempty"`
+	LastOpsTime        time.Time    `json:"LastOpsTime,omitempty"`
+	LastProcessStatus  model.Status `json:"LastProcessStatus,omitempty"`
+	LeftProcessStatus  model.Status `json:"LeftProcessStatus,omitempty"`
+	RightProcessStatus model.Status `json:"RightProcessStatus,omitempty"`
 
 	// Endpoints Current Info
 	LeftInfo  *EndpointInfo

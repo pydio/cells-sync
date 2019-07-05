@@ -26,6 +26,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/pydio/cells/common/sync/model"
+
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/zserge/webview"
@@ -156,13 +158,13 @@ func onReady() {
 				for _, t := range tasks {
 					label := t.Config.Label
 					switch t.Status {
-					case common.SyncStatusDisabled:
+					case model.TaskStatusDisabled:
 						label += " (disabled)"
-					case common.SyncStatusProcessing:
+					case model.TaskStatusProcessing:
 						label += " (syncing)"
-					case common.SyncStatusPaused:
+					case model.TaskStatusPaused:
 						label += " (paused)"
-					case common.SyncStatusError:
+					case model.TaskStatusError:
 						label += " (error!)"
 					}
 					stateSlots[i].SetTitle(label)
