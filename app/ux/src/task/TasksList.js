@@ -8,23 +8,26 @@ class TasksList extends Component {
 
     render() {
         const {syncTasks, socket} = this.props;
+        const tasksArray = Object.keys(syncTasks).map(k => syncTasks[k]);
+        tasksArray.sort((tA, tB) => {
+            const lA = tA.Config.Label.toLowerCase();
+            const lB = tB.Config.Label.toLowerCase();
+            return lA === lB ? 0 : (lA > lB ? 1 : -1);
+        });
         return (
             <div style={{width:'100%'}}>
                 <Translation>{(t) =>
                     <Route render={({history}) =>
                         <Fragment>
                             <div>
-                                {Object.keys(syncTasks).map(k => {
-                                    const task = syncTasks[k];
-                                    return <SyncTask
-                                        key={k}
-                                        state={task}
-                                        socket={socket}
-                                        openEditor={() => {
-                                            history.push('/edit/' + task.Config.Uuid)
-                                        }}
-                                    />
-                                })}
+                                {tasksArray.map(task => <SyncTask
+                                    key={task.Config.Uuid}
+                                    state={task}
+                                    socket={socket}
+                                    openEditor={() => {
+                                        history.push('/edit/' + task.Config.Uuid)
+                                    }}
+                                />)}
                             </div>
                             <div style={{padding: 20, textAlign: 'center'}}>
                                 <CompoundButton
