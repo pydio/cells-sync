@@ -64,8 +64,8 @@ class SyncTask extends React.Component {
                     onDismiss={()=>{this.setState({lastPatch: false})}}
                 />
                 <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
-                    <div style={{padding: '10px 20px'}}>
-                        <h3 style={{display:'flex', alignItems:'flex-end'}}>
+                    <div style={{padding: '0px 16px 10px'}}>
+                        <h2 style={{display:'flex', alignItems:'flex-end', fontWeight:400}}>
                             {state.Config.Label}
                             {paused ? ' ('+t('task.status.paused')+')' : ''}
                             {restarting ? ' ('+t('task.status.restarting')+'...)' : ''}
@@ -76,7 +76,7 @@ class SyncTask extends React.Component {
                                 <Icon iconName={"Error"} styles={{root:{color:'red', marginRight:5}}}/> {t('task.status.paused')}
                             </Fragment>
                             }
-                        </h3>
+                        </h2>
                         <div style={{marginBottom: 10}}>
                             <div style={{display:'flex'}}>
                                 <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}}/>

@@ -10,6 +10,7 @@
   "nav.servers": "Serveurs",
   "nav.settings": "Configuration",
   "nav.logs": "Journal",
+  "nav.debugger": "Go Debugger",
   "nav.about": "A propos",
   "main.create" : "Créer une Synchro",
   "main.create.legend": "Nouvelle tâche de synchronisation",

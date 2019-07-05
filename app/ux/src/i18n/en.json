@@ -10,6 +10,7 @@
   "nav.servers": "Servers",
   "nav.settings": "Settings",
   "nav.logs": "Logs",
+  "nav.debugger": "Go Debugger",
   "nav.about": "About",
   "main.create" : "Create Sync",
   "main.create.legend": "Setup a new synchronization task",

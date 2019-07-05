@@ -1,5 +1,6 @@
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
+import {FontSizes} from "@uifabric/fluent-theme";
 import {Nav as OfficeNav} from 'office-ui-fabric-react'
 import {Translation} from "react-i18next";
 import TasksList from "../task/TasksList";
@@ -14,8 +15,9 @@ class NavMenu extends React.Component {
 
         const links = {
             '/': {label:'tasks', icon:'SyncToPC'},
-            '/servers': {label:'servers', icon:'Server'},
+//            '/servers': {label:'servers', icon:'Server'},
             '/settings': {label:'settings', icon:'Settings'},
+            '/debugger': {label:'debugger', icon:'Code'},
             '/logs': {label:'logs', icon:'CustomList'},
             '/about': {label:'about', icon:'Help'}
         };
@@ -23,25 +25,28 @@ class NavMenu extends React.Component {
         return (
             <Translation>{(t) =>
                 <Route render={({history, location}) =>
-                    <OfficeNav
-                        onLinkClick={(e, item)=>{history.push(item.key)}}
-                        selectedKey={location.pathname}
-                        styles={{
-                            root: {
-                                width: 200,
-                                height: '100%',
-                                boxSizing: 'border-box',
-                                overflowY: 'auto'
-                            }
-                        }}
-                        groups={[
-                            {
-                                links: Object.keys(links).map((k) => {
-                                    return {name:t('nav.' + links[k].label), key:k, icon: links[k].icon}
-                                })
-                            }
-                        ]}
-                    />
+                    <React.Fragment>
+                        <div style={{fontSize: FontSizes.size24, fontWeight: 300, padding: 8, paddingBottom: 0}}>{t('application.title')}</div>
+                        <OfficeNav
+                            onLinkClick={(e, item)=>{history.push(item.key)}}
+                            selectedKey={location.pathname}
+                            styles={{
+                                root: {
+                                    width: 200,
+                                    height: '100%',
+                                    boxSizing: 'border-box',
+                                    overflowY: 'auto'
+                                }
+                            }}
+                            groups={[
+                                {
+                                    links: Object.keys(links).map((k) => {
+                                        return {name:t('nav.' + links[k].label), key:k, icon: links[k].icon}
+                                    })
+                                }
+                            ]}
+                        />
+                    </React.Fragment>
                 }/>
             }</Translation>
         );

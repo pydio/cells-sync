@@ -45,7 +45,7 @@ class ActionBar extends React.Component {
         ];
 
         return (
-            <Stack horizontal horizontalAlign="end" tokens={{childrenGap:8}} styles={{root:{padding: 10, paddingTop: 20}}}>
+            <Stack horizontal horizontalAlign="end" tokens={{childrenGap:8}} styles={{root:{padding: 16, paddingTop: 20, paddingBottom: 10}}}>
                 {menu.map(({key,disabled,iconName,menu,label}) => {
                     const props = {key, disabled, iconProps:{iconName}};
                     if (menu) {

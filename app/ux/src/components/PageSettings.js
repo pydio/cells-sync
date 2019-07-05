@@ -8,16 +8,25 @@ import {
     Toggle,
     SpinButton,
     DefaultButton,
-    PrimaryButton
+    PrimaryButton, Dropdown
 } from "office-ui-fabric-react";
 import {withTranslation} from "react-i18next";
 
 class PageSettings extends React.Component {
     render() {
-        const {t} = this.props;
+        const {t, i18n} = this.props;
         return (
             <Page title={"Settings"} legend={"Global settings of the application - (TODO)"}>
-                <Separator styles={{content:{fontSize:16}}}>Application Update</Separator>
+                <Separator styles={{root:{margin: '30px 0'},content:{fontSize:16}}}>Language</Separator>
+                <Dropdown
+                    selectedKey={i18n.language}
+                    onChange={(ev, item) => {
+                        i18n.changeLanguage(item.key);
+                    }}
+                    options={[{key:'en', text:'English'}, {key:'fr', text:'Français'}]}
+                />
+
+                <Separator styles={{root:{margin: '30px 0'},content:{fontSize:16}}}>Application Update</Separator>
                 <Toggle
                     label={"Automatic Checks"}
                     defaultChecked={true}
@@ -35,7 +44,7 @@ class PageSettings extends React.Component {
                     onChange={(e, v) => {}}
                 />
 
-                <Separator styles={{content:{fontSize:16}}}>Logs</Separator>
+                <Separator styles={{root:{margin: '30px 0'},content:{fontSize:16}}}>Logs</Separator>
                 <TextField label={"Store logs in the following folder"} placeholder={"Folder location"}/>
                 <Label>Number of log files kept</Label>
                 <SpinButton placeholder={"Number"} type={"number"} value={8} onChange={(e, v) => {}}/>
