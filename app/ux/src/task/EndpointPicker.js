@@ -14,7 +14,6 @@ class EndpointPicker extends React.Component {
         super(props);
         this.state = {
             dialog: false,
-            explicitPort: '',
             pathDisabled: this.pathIsDisabled(parse(props.value, {}, true)),
         };
     }
@@ -29,12 +28,10 @@ class EndpointPicker extends React.Component {
 
     updateUrl(newUrl, startPort = false) {
         const {onChange} = this.props;
-        const explicitPort = (newUrl.protocol === 'http:' && newUrl.port === '80') || (newUrl.protocol === 'https:' && newUrl.port === '443');
         this.setState({
             pathDisabled: this.pathIsDisabled(newUrl),
-            explicitPort: explicitPort ? newUrl.port : '',
         });
-        onChange(null, newUrl.toString() + (explicitPort?':' + newUrl.port : ''));
+        onChange(null, newUrl.toString());
     }
 
     onSelect(selection){
@@ -95,13 +92,26 @@ class EndpointPicker extends React.Component {
                     <Stack.Item grow>
                         <Stack vertical tokens={{childrenGap: 8}} >
                             <Stack.Item>
-                                <TextField
-                                    placeholder={t('editor.picker.http.host')}
-                                    value={url.host}
-                                    onChange={(e, v) => {
-                                        url.set('host', v);
-                                        this.updateUrl(url);
-                                    }}/>
+                                <Stack horizontal tokens={{childrenGap: 8}} >
+                                    <Stack.Item grow>
+                                        <TextField
+                                            placeholder={t('editor.picker.http.host')}
+                                            value={url.host.split(':')[0]}
+                                            onChange={(e, v) => {
+                                                url.set('host', v);
+                                                this.updateUrl(url);
+                                            }}/>
+                                    </Stack.Item>
+                                    <Stack.Item>
+                                        <TextField
+                                            placeholder={t('editor.picker.http.port')}
+                                            value={url.port?url.port:(url.protocol === 'http:' ? 80 : 443)}
+                                            onChange={(e, v) => {
+                                                url.set('port', v);
+                                                this.updateUrl(url);
+                                            }}/>
+                                    </Stack.Item>
+                                </Stack>
                             </Stack.Item>
                             <Stack.Item>
                                 <Stack horizontal tokens={{childrenGap: 8}} >
