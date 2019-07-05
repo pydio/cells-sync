@@ -161,8 +161,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				if deferIdle {
 					go func() {
 						<-time.After(3 * time.Second)
-						state := syncer.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), model.TaskStatusIdle)
-						bus.Pub(state, TopicState)
+						stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), model.TaskStatusIdle)
 					}()
 				}
 
