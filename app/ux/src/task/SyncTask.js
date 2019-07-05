@@ -79,9 +79,9 @@ class SyncTask extends React.Component {
                         </h3>
                         <div style={{marginBottom: 10}}>
                             <div style={{display:'flex'}}>
-                                <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus} t={t} style={{flex: 1, marginRight: 5}}/>
+                                <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}}/>
                                 <div style={{padding:5}}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortDown' : 'SortUp')}/></div>
-                                <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus} t={t} style={{flex: 1, marginLeft: 5}}/>
+                                <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}}/>
                             </div>
                         </div>
                         <div>
