@@ -22,6 +22,24 @@ class NavMenu extends React.Component {
             '/about': {label:'about', icon:'Help'}
         };
 
+        const tStyles = {
+            root: {
+                width: 200,
+                height: '100%',
+                boxSizing: 'border-box',
+                overflowY: 'auto',
+            },
+            compositeLink:{
+                backgroundColor:'transparent',
+                selectors:{
+                    "&.is-selected .ms-Button":{backgroundColor:'white'},
+                }
+            },
+            link:{
+                backgroundColor:'transparent',
+            }
+        };
+
         return (
             <Translation>{(t) =>
                 <Route render={({history, location}) =>
@@ -30,14 +48,7 @@ class NavMenu extends React.Component {
                         <OfficeNav
                             onLinkClick={(e, item)=>{history.push(item.key)}}
                             selectedKey={location.pathname}
-                            styles={{
-                                root: {
-                                    width: 200,
-                                    height: '100%',
-                                    boxSizing: 'border-box',
-                                    overflowY: 'auto'
-                                }
-                            }}
+                            styles={tStyles}
                             groups={[
                                 {
                                     links: Object.keys(links).map((k) => {

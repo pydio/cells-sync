@@ -57,8 +57,8 @@ class PatchDialog extends React.Component {
         const {patches, loading, hasMore} = this.state;
         return (
             <Dialog {...dialogProps} onDismiss={onDismiss} minWidth={700} title={t('patch.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
-                <DialogContent styles={{innerContent:{minHeight: 400}, inner:{padding:0}, title:{display:'none'}}}>
-                    <ScrollablePane styles={{contentContainer:{maxHeight:400, backgroundColor:'#fafafa'}}}>
+                <DialogContent styles={{innerContent:{minHeight: 350}, inner:{padding:0}, title:{display:'none'}}}>
+                    <ScrollablePane styles={{contentContainer:{maxHeight:350, backgroundColor:'#fafafa'}}}>
                         <Sticky stickyPosition={StickyPositionType.Header}>
                             <div style={{borderBottom: '1px solid #EEEEEE', backgroundColor: '#F5F5F5', fontWeight: 'bold', display:'flex', alignItems:'center', padding:'8px 0'}}>
                                 <span style={{flex: 1, paddingLeft: 8}}>Files / Folders</span>

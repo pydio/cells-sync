@@ -46,10 +46,10 @@ class App extends React.Component{
                     />
                     <div style={{position:'absolute', top:0, left: 0, right:0, bottom: 0, overflow:'hidden', display:'flex', flexDirection:'column'}}>
                         <Stack horizontal styles={{root:{flex: 2}}}>
-                            <Stack.Item align={"stretch"} styles={{root:{boxShadow:Depths.depth4, zIndex: 2}}}>
+                            <Stack.Item align={"stretch"} styles={{root:{boxShadow:Depths.depth4, zIndex: 2, backgroundColor:'rgba(236,239,241,0.6)'}}}>
                                 <NavMenu/>
                             </Stack.Item>
-                            <Stack.Item grow={true} verticalFill styles={{root:{display:'flex', boxSizing:'border-box', overflowY: 'auto', backgroundColor: '#CFD8DC'}}}>
+                            <Stack.Item grow={true} verticalFill styles={{root:{display:'flex', boxSizing:'border-box', overflowY: 'auto', backgroundColor: '#fafafa'}}}>
                                 <NavRoutes syncTasks={syncTasks} socket={socket}/>
                             </Stack.Item>
                         </Stack>
