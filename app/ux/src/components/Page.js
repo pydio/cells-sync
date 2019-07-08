@@ -22,7 +22,7 @@ export default class Page extends React.Component{
             );
         } else {
             return (
-                <div style={mainStyle}>
+                <div style={{...mainStyle,overflowY:'auto'}}>
                     {titleBlock}
                     {children}
                 </div>

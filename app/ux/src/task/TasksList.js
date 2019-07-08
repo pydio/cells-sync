@@ -8,12 +8,19 @@ class TasksList extends Component {
 
     render() {
         const {syncTasks, socket} = this.props;
-        const tasksArray = Object.keys(syncTasks).map(k => syncTasks[k]);
+        let hasRunning = false, allPaused = true;
+        const tasksArray = Object.keys(syncTasks).map(k => {
+            const s = syncTasks[k];
+            if(s.Status === 3) hasRunning = true;
+            if(s.Status !== 1) allPaused = false;
+            return s;
+        });
         tasksArray.sort((tA, tB) => {
             const lA = tA.Config.Label.toLowerCase();
             const lB = tB.Config.Label.toLowerCase();
             return lA === lB ? 0 : (lA > lB ? 1 : -1);
         });
+
         return (
             <div style={{width:'100%'}}>
                 <Translation>{(t) =>
@@ -22,9 +29,37 @@ class TasksList extends Component {
                             return (
                                 <Fragment>
                                     <div style={{height:54, padding:'0 16px', boxSizing:'border-box', display:'flex', alignItems:'center', justifyContent:'flex-end'}}>
-                                        <DefaultButton text={"Resync all"} styles={{root:{marginRight: 10}}} iconProps={{iconName:'Sync'}}/>
-                                        <DefaultButton text={"Pause all"} styles={{root:{marginRight: 10}}} iconProps={{iconName:'Pause'}}/>
-                                        <PrimaryButton text={"Create a task"} iconProps={{iconName:'Add'}}/>
+                                        {tasksArray.length > 1 &&
+                                            <Fragment>
+                                                <DefaultButton
+                                                    text={t('main.all.resync')}
+                                                    title={t('main.all.resync.legend')}
+                                                    disabled={hasRunning}
+                                                    styles={{root:{marginRight: 10}}}
+                                                    iconProps={{iconName:'Sync'}}
+                                                    onClick={()=>{
+                                                        socket.sendMessage('CMD', {Cmd:'loop'});
+                                                    }}
+                                                />
+                                                <DefaultButton
+                                                    text={allPaused ? t('main.all.resume') : t('main.all.pause')}
+                                                    title={allPaused ? t('main.all.resume.legend') : t('main.all.pause.legend')}
+                                                    styles={{root:{marginRight: 10}}}
+                                                    iconProps={{iconName:'Pause'}}
+                                                    onClick={()=>{
+                                                        socket.sendMessage('CMD', {Cmd:allPaused ? 'resume' : 'pause'});
+                                                    }}
+                                                />
+                                            </Fragment>
+                                        }
+                                        <PrimaryButton
+                                            text={t('main.create')}
+                                            title={t('main.create.legend')}
+                                            iconProps={{iconName:'Add'}}
+                                            onClick={() => {
+                                                history.push('/create')
+                                            }}
+                                        />
                                     </div>
                                     <div style={{marginTop:-10}}>
                                         {tasksArray.map(task => <SyncTask

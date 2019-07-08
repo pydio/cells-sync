@@ -108,17 +108,6 @@ export default class Socket {
 
     deleteTask(config) {
         this.sendMessage('CONFIG', {Cmd:'delete', Config:config});
-        /*
-        const {syncTasks} = this.state;
-        if(syncTasks[config.Uuid]) {
-            delete(syncTasks[config.Uuid]);
-            this.setState({syncTasks});
-            // Reload tasks to be sure
-            window.setTimeout(()=>{
-                this.triggerTasksStatus({type:'PING'});
-            }, 1000);
-        }
-        */
     }
 
 }
