@@ -12,20 +12,27 @@ class TreeNode {
         this.onChange = onChange;
         this.collapsed = true;
     }
-    load(){
+    load(initialPath = undefined){
         this.loading = true;
         this.loaded = false;
         this.notify();
         this.loader.ls(this.name).then(children => {
+            let nextChild;
             children.forEach(child => {
                 if (child.Type === 'COLLECTION'){
-                    this.appendChild(child.Path);
+                    const treeChild = this.appendChild(child.Path);
+                    if(initialPath !== undefined && initialPath.indexOf('/' + child.Path) === 0 && initialPath !== '/' + child.Path) {
+                        nextChild = treeChild;
+                    }
                 }
             });
             this.loading = false;
             this.loaded = true;
-            if(!this.parent){
+            if(!this.parent || initialPath){
                 this.collapsed = false;
+            }
+            if(nextChild) {
+                nextChild.load(initialPath);
             }
             this.notify();
         });

@@ -49,6 +49,7 @@ class EndpointPicker extends React.Component {
         const {value, t} = this.props;
         const url = parse(value, {}, true);
         const rootUrl = parse(value, {}, true);
+        const selectedPath = rootUrl.pathname;
         rootUrl.set('pathname', '');
 
         const query = url.query || {};
@@ -158,7 +159,9 @@ class EndpointPicker extends React.Component {
                     uri={dialog ? rootUrl.toString(): ''}
                     hidden={!dialog}
                     onDismiss={()=>{this.setState({dialog: false})}}
+                    initialSelection={selectedPath}
                     onSelect={this.onSelect.bind(this)}
+                    unique={true}
                 />
             </Stack>
         )

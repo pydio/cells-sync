@@ -60,6 +60,7 @@
   "editor.picker.type.fs":"Fichiers",
   "editor.picker.type.s3":"Service S3",
   "editor.picker.http.host":"Hôte",
+  "editor.picker.http.port":"Port",
   "editor.picker.http.user":"Utilisateur",
   "editor.picker.http.password":"Mot de passe",
   "editor.picker.http.secret":"Secret (voir pydio.json)",

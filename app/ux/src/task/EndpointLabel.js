@@ -61,7 +61,7 @@ export default function ({style, uri, info, status, t}) {
                 }
             </div>
             {!Connected &&
-                <TooltipHost id={uri} content={<div style={{color:'#d32f2f'}}>{t('task.disconnected')} {moment(LastConnection).fromNow()}</div>} directionalHint={DirectionalHint.bottomCenter}>
+                <TooltipHost id={uri} content={<span style={{color:'#d32f2f'}}>{t('task.disconnected')} {moment(LastConnection).fromNow()}</span>} directionalHint={DirectionalHint.bottomCenter}>
                     <Icon aria-labelledby={uri} iconName={"Warning"} styles={{root:{color:'#d32f2f', padding: 5, cursor:'pointer'}}}/>
                 </TooltipHost>
             }

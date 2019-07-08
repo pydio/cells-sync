@@ -21,7 +21,7 @@ i18n
         lng: "fr",
 
         keySeparator: false, // we do not use keys in form messages.welcome
-        debug: true,
+        debug: false,
         interpolation: {
             escapeValue: false // react already safes from xss
         }

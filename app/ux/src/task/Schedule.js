@@ -57,7 +57,12 @@ class Schedule extends React.Component {
         if (value === '' || value.indexOf('/') === -1){
             return {frequency: 'manual'};
         }
-        const [R, d, i] = value.split('/');
+        const s = value.split('/');
+        if (s.length < 3) {
+            return {error: 'Cannot parse value ' + value};
+        }
+        const d = s[1];
+        const i = s[2];
         const startDate = new Date(d);
         if(i === 'P1M'){
             return {frequency:'monthly', monthday: startDate.getDate(), daytime: startDate};

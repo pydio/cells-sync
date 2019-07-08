@@ -13,23 +13,31 @@ class TreeDialog extends React.Component {
 
     submit(){
         const {selection} = this.state;
-        if(!selection || !selection.length) {
+        const {initialSelection} = this.props;
+        if((!selection || !selection.length) && !initialSelection) {
             window.alert('Please pick a folder')
-        } else {
-            console.log(selection);
+        } else if(selection) {
             this.props.onSelect(selection);
+            this.props.onDismiss();
+        } else {
+            this.props.onSelect(initialSelection);
             this.props.onDismiss();
         }
     }
 
     render() {
-        const {uri, t, ...dialogProps} = this.props;
+        const {uri, t, initialSelection, unique, ...dialogProps} = this.props;
         return (
             <Dialog {...dialogProps} minWidth={700} title={t('tree.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
                 <DialogContent styles={{innerContent:{minHeight: 400}, inner:{padding:0}, title:{display:'none'}}}>
                     <ScrollablePane styles={{contentContainer:{maxHeight:400, backgroundColor:'#fafafa'}}}>
                         {uri &&
-                            <TreeView uri={uri} onSelectionChanged={(sel) => {this.setState({selection: sel})}}/>
+                            <TreeView
+                                unique={unique}
+                                uri={uri}
+                                initialSelection={initialSelection}
+                                onSelectionChanged={(sel) => {this.setState({selection: sel})}}
+                            />
                         }
                     </ScrollablePane>
                 </DialogContent>
