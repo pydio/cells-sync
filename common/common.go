@@ -45,6 +45,24 @@ type SyncState struct {
 	RightInfo *EndpointInfo
 }
 
+// Used for unmarshaling
+type ConcreteSyncState struct {
+	// Sync Process
+	UUID   string
+	Config *config.Task
+
+	Status             model.TaskStatus
+	LastSyncTime       time.Time               `json:"LastSyncTime,omitempty"`
+	LastOpsTime        time.Time               `json:"LastOpsTime,omitempty"`
+	LastProcessStatus  *model.ProcessingStatus `json:"LastProcessStatus,omitempty"`
+	LeftProcessStatus  *model.ProcessingStatus `json:"LeftProcessStatus,omitempty"`
+	RightProcessStatus *model.ProcessingStatus `json:"RightProcessStatus,omitempty"`
+
+	// Endpoints Current Info
+	LeftInfo  *EndpointInfo
+	RightInfo *EndpointInfo
+}
+
 type Message struct {
 	Type    string
 	Content interface{}
@@ -77,18 +95,24 @@ func MessageFromData(d []byte) *Message {
 			var cmdContent CmdContent
 			if e := json.Unmarshal(d, &cmdContent); e == nil {
 				m.Content = &cmdContent
+			} else {
+				log.Logger(context.Background()).Error("Cannot unmarshal CmdContent: " + e.Error() + ":" + string(d))
 			}
 		} else if m.Type == "CONFIG" {
 			d, _ := json.Marshal(m.Content)
 			var configContent ConfigContent
 			if e := json.Unmarshal(d, &configContent); e == nil {
 				m.Content = &configContent
+			} else {
+				log.Logger(context.Background()).Error("Cannot unmarshal ConfigContent: " + e.Error() + ":" + string(d))
 			}
 		} else if m.Type == "STATE" {
 			d, _ := json.Marshal(m.Content)
-			var state SyncState
+			var state ConcreteSyncState
 			if e := json.Unmarshal(d, &state); e == nil {
 				m.Content = &state
+			} else {
+				log.Logger(context.Background()).Error("Cannot unmarshal ConcreteSyncState: " + e.Error() + ":" + string(d))
 			}
 		}
 		return &m

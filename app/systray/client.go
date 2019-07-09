@@ -1,17 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
-	"github.com/pydio/sync/common"
+	"github.com/gorilla/websocket"
 
 	"github.com/pydio/cells/common/log"
-	"golang.org/x/net/context"
-
-	"github.com/gorilla/websocket"
 	"github.com/pydio/cells/common/service"
+	"github.com/pydio/sync/common"
 )
 
 type StatusMessage int
@@ -26,19 +26,19 @@ type Client struct {
 	conn    *websocket.Conn
 	Status  chan StatusMessage
 	Errors  chan error
-	Tasks   chan map[string]*common.SyncState
+	Tasks   chan []*common.ConcreteSyncState
 	done    chan bool
 	closing bool
-	tasks   map[string]*common.SyncState
+	tasks   map[string]*common.ConcreteSyncState
 }
 
 func NewClient() *Client {
 	c := &Client{
 		Status: make(chan StatusMessage, 10),
 		Errors: make(chan error, 10),
-		Tasks:  make(chan map[string]*common.SyncState, 1),
+		Tasks:  make(chan []*common.ConcreteSyncState, 1),
 		done:   make(chan bool),
-		tasks:  make(map[string]*common.SyncState),
+		tasks:  make(map[string]*common.ConcreteSyncState),
 	}
 	return c
 }
@@ -85,6 +85,21 @@ func (c *Client) Close() {
 	}
 }
 
+func (c *Client) SendOrderedTasks() {
+	var tasks []*common.ConcreteSyncState
+	c.Lock()
+	for _, t := range c.tasks {
+		tasks = append(tasks, t)
+	}
+	c.Unlock()
+	sort.Slice(tasks, func(i, j int) bool {
+		t1 := tasks[i]
+		t2 := tasks[j]
+		return t1.Config.Label < t2.Config.Label
+	})
+	c.Tasks <- tasks
+}
+
 func (c *Client) bindConn(conn *websocket.Conn) {
 	c.conn = conn
 	go func() {
@@ -100,21 +115,24 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 				return
 			}
 			if messageType == websocket.TextMessage {
-				log.Logger(context.Background()).Info("MESSAGE: " + string(message))
 				m := common.MessageFromData(message)
 				switch m.Type {
 				case "STATE":
-					content, ok := m.Content.(*common.SyncState)
-					fmt.Println("Content is *config.Task", content)
-					if !ok {
+					content, ok := m.Content.(*common.ConcreteSyncState)
+					if ok {
+						log.Logger(context.Background()).Debug(fmt.Sprintf("Got state for sync %s - Status %d", content.Config.Label, content.Status))
+						c.Lock()
+						prev, hasPrev := c.tasks[content.Config.Uuid]
+						c.tasks[content.Config.Uuid] = content
+						c.Unlock()
+						if !hasPrev || prev.Status != content.Status {
+							//c.Tasks <- c.tasks
+							c.SendOrderedTasks()
+						}
 					}
-					c.Lock()
-					c.tasks[content.Config.Uuid] = content
-					c.Unlock()
-					c.Tasks <- c.tasks
 				case "PONG":
 					c.Lock()
-					c.tasks = make(map[string]*common.SyncState)
+					c.tasks = make(map[string]*common.ConcreteSyncState)
 					c.Unlock()
 				case "ERROR":
 					log.Logger(context.Background()).Error("Could not parse message")

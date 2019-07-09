@@ -96,6 +96,10 @@ func startCli() {
 }
 
 func spawnWebView(path ...string) {
+	if viewCancel != nil {
+		// It is already opened - do nothing
+		return
+	}
 	c, cancel := context.WithCancel(context.Background())
 	url := uxUrl
 	if len(path) > 0 {
