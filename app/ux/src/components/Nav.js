@@ -44,7 +44,7 @@ class NavMenu extends React.Component {
             <Translation>{(t) =>
                 <Route render={({history, location}) =>
                     <React.Fragment>
-                        <div style={{fontSize: FontSizes.size24, fontWeight: 300, padding: 8, paddingBottom: 0}}>{t('application.title')}</div>
+                        <div style={{fontSize: FontSizes.size24, fontWeight: 300, padding: 8}}>{t('application.title')}</div>
                         <OfficeNav
                             onLinkClick={(e, item)=>{history.push(item.key)}}
                             selectedKey={location.pathname}

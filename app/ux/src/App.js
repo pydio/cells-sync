@@ -49,7 +49,7 @@ class App extends React.Component{
                             <Stack.Item align={"stretch"} styles={{root:{boxShadow:Depths.depth4, zIndex: 2, backgroundColor:'rgba(236,239,241,0.6)'}}}>
                                 <NavMenu/>
                             </Stack.Item>
-                            <Stack.Item grow={true} verticalFill styles={{root:{display:'flex', boxSizing:'border-box', overflowY: 'auto', backgroundColor: '#fafafa'}}}>
+                            <Stack.Item grow={true} verticalFill styles={{root:{display:'flex', boxSizing:'border-box', overflowY: 'auto', backgroundColor: '#B0BEC5'}}}>
                                 <NavRoutes syncTasks={syncTasks} socket={socket}/>
                             </Stack.Item>
                         </Stack>
