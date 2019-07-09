@@ -89,7 +89,7 @@ class PageLogs extends React.Component {
         const newLines = [...lines, line];
         this.setState({lines: newLines}, ()=>{
             if(this.refs && this.refs.block){
-                //this.refs.block.scrollTop += 1000;
+                this.refs.block.scrollTop += 1000;
             }
         });
     }

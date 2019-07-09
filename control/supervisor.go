@@ -61,6 +61,7 @@ func NewSupervisor() *Supervisor {
 // Serve starts all services and start listening to config and bus
 // The call is blocking until all services are stopped
 func (s *Supervisor) Serve() error {
+	httpServer := NewHttpServer()
 	conf := config.Default()
 	if len(conf.Tasks) > 0 {
 		for _, t := range conf.Tasks {
@@ -75,7 +76,7 @@ func (s *Supervisor) Serve() error {
 	s.schedulerToken = s.Add(NewScheduler(conf.Tasks))
 	s.Add(&Profiler{})
 	s.Add(&StdInner{})
-	s.Add(NewHttpServer())
+	s.Add(httpServer)
 
 	go s.listenBus()
 	go s.listenConfig()

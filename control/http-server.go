@@ -44,6 +44,7 @@ func NewHttpServer() *HttpServer {
 		ctx:       httpServerCtx,
 		logWriter: w,
 	}
+	log.RegisterWriteSyncer(h)
 	go func() {
 		scanner := bufio.NewScanner(r)
 		for scanner.Scan() {
@@ -196,7 +197,6 @@ func (h *HttpServer) Serve() {
 
 	h.done = make(chan bool)
 	h.InitHandlers()
-	log.RegisterWriteSyncer(h)
 	gin.SetMode(gin.ReleaseMode)
 	gin.DisableConsoleColor()
 	Server := gin.New()

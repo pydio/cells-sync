@@ -3,7 +3,7 @@ import {CompoundButton, DefaultButton, PrimaryButton, CommandBar} from "office-u
 import {Depths, CommunicationColors} from '@uifabric/fluent-theme'
 import SyncTask from "./SyncTask";
 import {Route} from 'react-router-dom'
-import {Translation, withTranslation} from "react-i18next";
+import {withTranslation} from "react-i18next";
 
 class TasksList extends Component {
 
