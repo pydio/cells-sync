@@ -8,7 +8,8 @@ const ops = {
     2: 'Create Folder',
     3: 'Move Folder',
     4: 'Move File',
-    5: 'Delete'
+    5: 'Delete',
+    7: 'Conflict'
 };
 
 class PatchNode extends React.Component {
@@ -21,7 +22,7 @@ class PatchNode extends React.Component {
     render(){
         const {patch, level, stats} = this.props;
         const {open} = this.state;
-        if(!patch.PathOperation && !patch.DataOperation && !patch.Children.length){
+        if(!patch.PathOperation && !patch.DataOperation && !patch.Conflict && !patch.Children.length){
             return null;
         }
         const isLeaf = patch.Node.Type === 1;
@@ -51,6 +52,8 @@ class PatchNode extends React.Component {
             if (patch.DataOperation.ErrorString){
                 action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
             }
+        } else if(patch.Conflict) {
+            action = ops[patch.Conflict.OpType];
         }
         let children = patch.Children;
         let hasMore = false;

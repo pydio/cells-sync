@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"sort"
 	"time"
@@ -75,6 +76,45 @@ func (p *PatchStore) Store(patch merger.Patch) {
 	p.patches <- patch
 }
 
+func (p *PatchStore) unmarshalConflict(data []byte, op merger.Operation) (merger.Operation, error) {
+	if op.Type() != merger.OpConflict {
+		return op, nil
+	}
+	n := op.GetNode()
+	var cType merger.ConflictType
+	var leftOp, rightOp merger.Operation
+	var ii map[string]interface{}
+	if err := json.Unmarshal(data, &ii); err != nil {
+		return nil, err
+	}
+	if t, o := ii["ConflictType"]; o {
+		cType = merger.ConflictType(int(t.(float64)))
+	} else {
+		return nil, fmt.Errorf("unmarshalling conflict: missing key ConflictType")
+	}
+	if left, o := ii["LeftOp"]; o {
+		remarsh, _ := json.Marshal(left)
+		leftOp = merger.NewOpForUnmarshall()
+		if e := json.Unmarshal(remarsh, &leftOp); e != nil {
+			return nil, e
+		}
+	} else {
+		return nil, fmt.Errorf("unmarshalling conflict: missing key LeftOp")
+	}
+	if right, o := ii["RightOp"]; o {
+		remarsh, _ := json.Marshal(right)
+		rightOp = merger.NewOpForUnmarshall()
+		if e := json.Unmarshal(remarsh, &rightOp); e != nil {
+			return nil, e
+		}
+	} else {
+		return nil, fmt.Errorf("unmarshalling conflict: missing key RightOp")
+	}
+	// replace op now
+	conflict := merger.NewConflictOperation(n, cType, leftOp, rightOp)
+	return conflict, nil
+}
+
 func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 	var stamps patchSorter
 
@@ -100,6 +140,9 @@ func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 			for _, v := oc.First(); v != nil; _, v = oc.Next() {
 				operation := merger.NewOpForUnmarshall()
 				if err := json.Unmarshal(v, &operation); err == nil {
+					if operation, err = p.unmarshalConflict(v, operation); err != nil {
+						log.Logger(context.Background()).Error("Cannot unmarshall conflict operation:" + err.Error())
+					}
 					patch.Enqueue(operation)
 				} else {
 					log.Logger(context.Background()).Error("Cannot unmarshall operation:" + err.Error())

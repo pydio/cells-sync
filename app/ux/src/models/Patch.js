@@ -1,10 +1,17 @@
-
-
 class Operation {
     constructor(data){
         this.OpType = data.OpType;
         this.Dir = data.Dir;
         this.ErrorString = data.ProcessingErrorString;
+    }
+}
+
+class Conflict extends Operation {
+    constructor(data){
+        super(data)
+        this.ConflictType = data["ConflictType"];
+        this.LeftOp = new Operation(data["LeftOp"])
+        this.RightOp = new Operation(data["RightOp"]);
     }
 }
 
@@ -42,6 +49,9 @@ class PatchTreeNode {
         }
         if (data.PathOperation) {
             this.PathOperation = new Operation(data.PathOperation)
+        }
+        if (data.Conflict) {
+            this.Conflict = new Conflict(data.Conflict);
         }
     }
 }

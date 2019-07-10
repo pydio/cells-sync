@@ -317,8 +317,8 @@ func (s *Syncer) Serve() {
 		if lasts, err := s.patchStore.Load(0, 1); err == nil && len(lasts) > 0 {
 			s.lastPatch = lasts[0]
 			s.stateStore.TouchLastOpsTime(s.lastPatch.GetStamp())
-			if _, b := s.lastPatch.HasErrors(); b {
-				s.stateStore.UpdateSyncStatus(model.TaskStatusError)
+			if errs, b := s.lastPatch.HasErrors(); b {
+				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Previous sync ended on error!").SetError(errs[0]), model.TaskStatusError)
 			} else {
 				s.stateStore.UpdateSyncStatus(model.TaskStatusIdle)
 			}
