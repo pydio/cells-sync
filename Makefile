@@ -44,7 +44,7 @@ xgo:
 	-X github.com/pydio/sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/sync/app/systray
 
-	${GOPATH}/bin/xgo -go 1.12 -out noui \
+	${GOPATH}/bin/xgo -go 1.12 -out "systray-noui" \
 	--targets windows/amd64 \
 	-ldflags "-X github.com/pydio/sync/common.Version=0.2.0 \
 	-X github.com/pydio/sync/common.BuildStamp=${TODAY} \
@@ -59,7 +59,7 @@ xgo:
 	-X github.com/pydio/sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/sync
 
-	${GOPATH}/bin/xgo -go 1.12 -out noui \
+	${GOPATH}/bin/xgo -go 1.12 -out "sync-noui" \
 	--targets windows/amd64 \
 	-ldflags "-X github.com/pydio/sync/common.Version=0.2.0 \
 	-X github.com/pydio/sync/common.BuildStamp=${TODAY} \
