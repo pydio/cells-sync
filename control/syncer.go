@@ -231,6 +231,12 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusStopping), TopicState)
 			case MessageResync:
 				// Trigger a full resync
+				if s.lastPatch != nil {
+					if _, b := s.lastPatch.HasErrors(); b {
+						// Remove the lastPatch otherwise it will stick
+						s.lastPatch = nil
+					}
+				}
 				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Starting full resync"), model.TaskStatusProcessing)
 				s.task.Run(ctx, false, true)
 			case MessageResyncDry:
