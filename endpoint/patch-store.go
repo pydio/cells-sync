@@ -221,7 +221,8 @@ func (p *PatchStore) Pipe(in chan merger.Patch) chan merger.Patch {
 }
 
 func (p PatchStore) persist(patch merger.Patch) {
-	if patch.Size() == 0 {
+	_, has := patch.HasErrors()
+	if patch.Size() == 0 && !has {
 		return // Do not store empty patch!
 	}
 	p.db.Update(func(tx *bbolt.Tx) error {

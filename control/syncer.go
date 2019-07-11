@@ -121,8 +121,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 				} else {
 					log.Logger(ctx).Debug(msg)
 				}
-				state := syncer.stateStore.UpdateProcessStatus(l, status)
-				bus.Pub(state, TopicState)
+				syncer.stateStore.UpdateProcessStatus(l, status)
 
 			case data, ok := <-syncer.patchDone:
 				if !ok {
@@ -138,12 +137,12 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 					}
 					if val, ok := stats["Errors"]; ok {
 						errs := val.(map[string]int)
-						msg := fmt.Sprintf("Processing ended on error (%d errors)! Pausing task.", errs["Total"])
+						msg := fmt.Sprintf("Processing ended on error (%d errors)!", errs["Total"])
 						log.Logger(ctx).Error(msg)
 						stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), model.TaskStatusError)
 						deferIdle = false
 					} else if err, ok := patch.HasErrors(); ok {
-						msg := fmt.Sprintf("Processing ended with %d errors! Pausing task.", len(err))
+						msg := fmt.Sprintf("Processing ended with %d errors!", len(err))
 						log.Logger(ctx).Error(msg)
 						stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), model.TaskStatusError)
 						deferIdle = false

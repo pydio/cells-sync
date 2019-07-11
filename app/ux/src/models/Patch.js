@@ -8,10 +8,14 @@ class Operation {
 
 class Conflict extends Operation {
     constructor(data){
-        super(data)
+        super(data);
         this.ConflictType = data["ConflictType"];
-        this.LeftOp = new Operation(data["LeftOp"])
-        this.RightOp = new Operation(data["RightOp"]);
+        if(data["LeftOp"]){
+            this.LeftOp = new Operation(data["LeftOp"]);
+        }
+        if(data["RightOp"]){
+            this.RightOp = new Operation(data["RightOp"]);
+        }
     }
 }
 
@@ -53,7 +57,26 @@ class PatchTreeNode {
         if (data.Conflict) {
             this.Conflict = new Conflict(data.Conflict);
         }
+        if (data.MoveTargetPath) {
+            this.MoveTargetPath = data.MoveTargetPath
+        }
+        if (data.MoveSourcePath) {
+            this.MoveSourcePath = data.MoveSourcePath
+        }
     }
+
+    hasOperations() {
+        if(this.DataOperation || this.PathOperation || this.Conflict) {
+            return true
+        }
+        for (let i = 0; i < this.Children.length; i++) {
+            if(this.Children[i].hasOperations()) {
+                return true
+            }
+        }
+        return false
+    }
+
 }
 
 class Patch {

@@ -1,6 +1,7 @@
 import React from 'react'
 import {Icon, TooltipHost} from 'office-ui-fabric-react'
 import moment from 'moment'
+import basename from 'basename'
 
 const ops = {
     0: 'Transfer File',
@@ -22,7 +23,7 @@ class PatchNode extends React.Component {
     render(){
         const {patch, level, stats} = this.props;
         const {open} = this.state;
-        if(!patch.PathOperation && !patch.DataOperation && !patch.Conflict && !patch.Children.length){
+        if(!patch.hasOperations()){
             return null;
         }
         const isLeaf = patch.Node.Type === 1;
@@ -54,6 +55,7 @@ class PatchNode extends React.Component {
             }
         } else if(patch.Conflict) {
             action = ops[patch.Conflict.OpType];
+            icon = 'Warning'
         }
         let children = patch.Children;
         let hasMore = false;
@@ -68,6 +70,15 @@ class PatchNode extends React.Component {
             } else if (stats.Processed){
                 label +=  ' (' + stats.Processed.Total + ')';
             }
+        }
+        if (patch.MoveTargetPath){
+            let target = basename(patch.MoveTargetPath);
+            if(target === patch.Base) {
+                target = '/' + patch.MoveTargetPath
+            } else {
+                target = './' + target
+            }
+            label += " => " + target;
         }
         return (
             <div style={{paddingLeft:(level > 0 ? 20 : 0)}}>
