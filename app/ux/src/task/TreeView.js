@@ -85,8 +85,11 @@ export default class TreeView extends React.Component {
 
     componentDidMount(){
         const {tree} = this.state;
-        const {initialSelection} = this.props;
-        tree.load(initialSelection);
+        const {initialSelection, onError} = this.props;
+        onError(null);
+        tree.load(initialSelection).catch(e => {
+            onError(e);
+        });
     }
 
     onRenderGroup(data){

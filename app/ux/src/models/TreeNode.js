@@ -16,7 +16,7 @@ class TreeNode {
         this.loading = true;
         this.loaded = false;
         this.notify();
-        this.loader.ls(this.name).then(children => {
+        return this.loader.ls(this.name).then(children => {
             let nextChild;
             children.forEach(child => {
                 if (child.Type === 'COLLECTION'){
@@ -95,16 +95,20 @@ class Loader {
                 Path: path,
             })
         }).then(response => {
+            if (response.status === 500) {
+                console.log(response);
+                return response.json().then(data => {
+                    console.log(data);
+                    if(data && data.error) {
+                        throw new Error(data.error);
+                    }
+                });
+            }
             return response.json();
         }).then(data => {
             return data.Children || [];
         }).catch(reason => {
-            try{
-                const data = JSON.parse(reason.message);
-                if (data.error) {
-                    throw data.error;
-                }
-            }catch (e) {}
+            console.log(reason);
             throw reason;
         });
     }
