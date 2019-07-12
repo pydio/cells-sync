@@ -23,27 +23,56 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
-
-	"github.com/pydio/cells/common/sync/model"
+	"time"
 
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/thejerf/suture"
 	"github.com/zserge/webview"
 
+	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/sync/app/systray/icon"
 	"github.com/pydio/sync/common"
 )
 
 var (
 	viewCancel context.CancelFunc
-	cliCancel  context.CancelFunc
 	uxUrl      = "http://localhost:3636"
 	closing    bool
 	ws         *Client
 	stateSlots []*systray.MenuItem
+	supervisor *suture.Supervisor
 )
+
+type CliService struct {
+	cancel context.CancelFunc
+}
+
+func (c *CliService) Serve() {
+	var ctx context.Context
+	ctx, c.cancel = context.WithCancel(context.Background())
+	cmd := exec.CommandContext(ctx, processName("sync-cli"), "start")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	fmt.Println("Starting service " + processName("sync-cli"))
+	if e := cmd.Run(); e != nil {
+		fmt.Println("Error on service sync-cli")
+		c.cancel = nil
+		panic(e)
+	}
+}
+
+func (c *CliService) Stop() {
+	fmt.Println("Stopping Cli Service " + processName("sync-cli"))
+	if c.cancel != nil {
+		c.cancel()
+		c.cancel = nil
+	}
+}
 
 type WebviewLinkOpener struct{}
 
@@ -77,21 +106,8 @@ func main() {
 		})
 		w.Run()
 	default:
-		go startCli()
 		// Should be called at the very beginning of main().
 		systray.Run(onReady, onExit)
-	}
-}
-
-func startCli() {
-	c, cancel := context.WithCancel(context.Background())
-	cmd := exec.CommandContext(c, processName("sync-cli"), "start")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cliCancel = cancel
-	if e := cmd.Run(); e != nil {
-		cliCancel = nil
 	}
 }
 
@@ -141,7 +157,6 @@ func onReady() {
 		for {
 			select {
 			case s := <-ws.Status:
-				fmt.Println("Read Status Chan", s)
 				if s == StatusConnected {
 					systray.SetTitle("Cells")
 					mOpen.Enable()
@@ -206,21 +221,31 @@ func onReady() {
 		}
 	}()
 
+	pinger := http.DefaultClient
+	if r, e := pinger.Get(uxUrl); e == nil && r.StatusCode == 200 {
+		fmt.Println("Service already running on port 3636 - Skipping start")
+	} else {
+		fmt.Println("Starting cli sync")
+		supervisor = suture.New("cli", suture.Spec{})
+		supervisor.Add(&CliService{})
+		supervisor.ServeBackground()
+		<-time.After(2 * time.Second)
+	}
 	ws.Connect()
 }
 
 func beforeExit() {
 	closing = true
+	if supervisor != nil {
+		fmt.Println("Closing Supervisor")
+		supervisor.Stop()
+	}
 	if ws != nil {
 		ws.Close()
 	}
 	if viewCancel != nil {
 		viewCancel()
 		viewCancel = nil
-	}
-	if cliCancel != nil {
-		cliCancel()
-		cliCancel = nil
 	}
 }
 
