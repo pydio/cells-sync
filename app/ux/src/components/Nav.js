@@ -74,13 +74,13 @@ class NavRoutes extends React.Component {
 
         return (
             <Route render={({history, location}) =>
-                    <Switch>
-                        <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <TasksList syncTasks={syncTasks} socket={socket}/>}/>
-                        <Route path={"/settings"} component={PageSettings}/>
-                        <Route path={"/servers"} component={PageServers}/>
-                        <Route path={"/logs"} component={PageLogs}/>
-                        <Route path={"/about"} component={PageAbout}/>
-                    </Switch>
+                <Switch>
+                    <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <TasksList syncTasks={syncTasks} socket={socket}/>}/>
+                    <Route path={"/settings"} component={PageSettings}/>
+                    <Route path={"/servers"} component={PageServers}/>
+                    <Route path={"/logs"} component={PageLogs}/>
+                    <Route path={"/about"} component={PageAbout}/>
+                </Switch>
             }/>
         )
     }
