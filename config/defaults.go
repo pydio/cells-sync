@@ -20,8 +20,20 @@
 
 package config
 
+import (
+	"path/filepath"
+)
+
+const (
+	UpdateDefaultChannel   = "stable"
+	UpdateDefaultServerUrl = "https://updatecells.pydio.com/"
+	UpdateDefaultPublicKey = `-----BEGIN PUBLIC KEY-----\nMIIBCgKCAQEAwh/ofjZTITlQc4h/qDZMR3RquBxlG7UTunDKLG85JQwRtU7EL90v\nlWxamkpSQsaPeqho5Q6OGkhJvZkbWsLBJv6LZg+SBhk6ZSPxihD+Kfx8AwCcWZ46\nDTpKpw+mYnkNH1YEAedaSfJM8d1fyU1YZ+WM3P/j1wTnUGRgebK9y70dqZEo2dOK\nn98v3kBP7uEN9eP/wig63RdmChjCpPb5gK1/WKnY4NFLQ60rPAOBsXurxikc9N/3\nEvbIB/1vQNqm7yEwXk8LlOC6Fp8W/6A0DIxr2BnZAJntMuH2ulUfhJgw0yJalMNF\nDR0QNzGVktdLOEeSe8BSrASe9uZY2SDbTwIDAQAB\n-----END PUBLIC KEY-----`
+)
+
 type Global struct {
 	Tasks   []*Task
+	Logs    *Logs
+	Updates *Updates
 	changes []chan interface{}
 }
 
@@ -43,7 +55,41 @@ type Task struct {
 	HardInterval string
 }
 
-func (g *Global) Create(t *Task) error {
+type Logs struct {
+	Folder         string
+	MaxFilesNumber int
+	MaxFilesSize   int
+	MaxAgeDays     int
+}
+
+type Updates struct {
+	Frequency       string
+	DownloadAuto    bool
+	UpdateChannel   string
+	UpdateUrl       string
+	UpdatePublicKey string
+}
+
+func NewLogs() *Logs {
+	return &Logs{
+		Folder:         filepath.Join(SyncClientDataDir(), "logs"),
+		MaxFilesNumber: 8,
+		MaxAgeDays:     30,
+		MaxFilesSize:   50, // Mega Bytes
+	}
+}
+
+func NewUpdates() *Updates {
+	return &Updates{
+		Frequency:       "restart",
+		DownloadAuto:    true,
+		UpdateChannel:   UpdateDefaultChannel,
+		UpdateUrl:       UpdateDefaultServerUrl,
+		UpdatePublicKey: UpdateDefaultPublicKey,
+	}
+}
+
+func (g *Global) CreateTask(t *Task) error {
 	g.Tasks = append(g.Tasks, t)
 	e := Save()
 	if e == nil {
@@ -56,7 +102,7 @@ func (g *Global) Create(t *Task) error {
 	return e
 }
 
-func (g *Global) Remove(task *Task) error {
+func (g *Global) RemoveTask(task *Task) error {
 	var newTasks []*Task
 	for _, t := range g.Tasks {
 		if t.Uuid != task.Uuid {
@@ -75,7 +121,7 @@ func (g *Global) Remove(task *Task) error {
 	return e
 }
 
-func (g *Global) Update(task *Task) error {
+func (g *Global) UpdateTask(task *Task) error {
 	var newTasks []*Task
 	for _, t := range g.Tasks {
 		if t.Uuid == task.Uuid {
@@ -94,6 +140,16 @@ func (g *Global) Update(task *Task) error {
 		}()
 	}
 	return e
+}
+
+func (g *Global) UpdateGlobals(logs *Logs, updates *Updates) error {
+	if logs != nil {
+		g.Logs = logs
+	}
+	if updates != nil {
+		g.Updates = updates
+	}
+	return Save()
 }
 
 func (g *Global) Items() (items []string) {
@@ -117,6 +173,12 @@ func Default() *Global {
 			def = c
 		} else {
 			def = &Global{}
+		}
+		if def.Logs == nil {
+			def.Logs = NewLogs()
+		}
+		if def.Updates == nil {
+			def.Updates = NewUpdates()
 		}
 	}
 	return def

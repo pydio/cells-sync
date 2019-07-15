@@ -49,7 +49,7 @@ func NewHttpServer() *HttpServer {
 		scanner := bufio.NewScanner(r)
 		for scanner.Scan() {
 			line := scanner.Text()
-			if h.LogSocket != nil {
+			if h.LogSocket != nil && h.logSocketConnected {
 				h.LogSocket.Broadcast([]byte(line))
 			}
 			// Keep last 200 lines in memory
@@ -68,9 +68,7 @@ func (h *HttpServer) Sync() error {
 }
 
 func (h *HttpServer) Write(p []byte) (n int, err error) {
-	if h.logSocketConnected {
-		go h.logWriter.Write(p)
-	}
+	go h.logWriter.Write(p)
 	return len(p), nil
 }
 
@@ -133,11 +131,11 @@ func (h *HttpServer) InitHandlers() {
 				confs := config.Default()
 				if confContent.Cmd == "create" {
 					confContent.Config.Uuid = uuid.New()
-					confs.Create(confContent.Config)
+					confs.CreateTask(confContent.Config)
 				} else if confContent.Cmd == "edit" {
-					confs.Update(confContent.Config)
+					confs.UpdateTask(confContent.Config)
 				} else if confContent.Cmd == "delete" {
-					confs.Remove(confContent.Config)
+					confs.RemoveTask(confContent.Config)
 				}
 			}
 
@@ -217,9 +215,17 @@ func (h *HttpServer) Serve() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+	// Manage Tree
 	Server.POST("/tree", ls)
 	Server.PUT("/tree", mkdir)
+
+	// Load Patch contents
 	Server.GET("/patches/:uuid/:offset/:limit", listPatches)
+
+	// Manage global config
+	Server.GET("/config", loadConf)
+	Server.PUT("/config", updateConf)
+
 	log.Logger(h.ctx).Info("Starting HttpServer on port 3636")
 	if e := http.ListenAndServe(":3636", Server); e != nil {
 		log.Logger(h.ctx).Error("Cannot start server: " + e.Error())

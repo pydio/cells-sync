@@ -21,32 +21,29 @@
 package config
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"path/filepath"
+	"log"
+	"os"
+	"runtime"
+
+	"github.com/shibukawa/configdir"
 )
 
-func getPath() string {
-	return filepath.Join(SyncClientDataDir(), "config.json")
-}
+func SyncClientDataDir() string {
 
-func LoadFromFile() (*Global, error) {
-	data, err := ioutil.ReadFile(getPath())
-	if err != nil {
-		return nil, err
+	vendor := "Pydio"
+	if runtime.GOOS == "linux" {
+		vendor = "pydio"
 	}
-	g := Global{}
-	if e := json.Unmarshal(data, &g); e == nil {
-		return &g, nil
-	} else {
-		return nil, e
+	appName := "cells-sync"
+	configDirs := configdir.New(vendor, appName)
+	folders := configDirs.QueryFolders(configdir.Global)
+	if len(folders) == 0 {
+		folders = configDirs.QueryFolders(configdir.Local)
 	}
-}
+	f := folders[0].Path
+	if err := os.MkdirAll(f, 0777); err != nil {
+		log.Fatal("Could not create local data dir - please check that you have the correct permissions for the folder -", f)
+	}
 
-func WriteToFile(config *Global) error {
-	data, e := json.Marshal(config)
-	if e != nil {
-		return e
-	}
-	return ioutil.WriteFile(getPath(), data, 0755)
+	return f
 }

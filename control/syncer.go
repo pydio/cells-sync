@@ -9,7 +9,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	config2 "github.com/pydio/cells/common/config"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/sync/merger"
@@ -49,8 +48,7 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 	stateStore := NewMemoryStateStore(conf)
 	ctx := servicecontext.WithServiceName(context.Background(), "sync-task")
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
-	appDir := config2.ApplicationDataDir()
-	configPath := filepath.Join(appDir, "sync", conf.Uuid)
+	configPath := filepath.Join(config.SyncClientDataDir(), conf.Uuid)
 
 	syncer = &Syncer{
 		uuid:       conf.Uuid,
