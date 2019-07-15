@@ -19,13 +19,10 @@ var (
 )
 
 type EndpointInfo struct {
+	Stats          *model.EndpointRootStat
 	Connected      bool
+	WatcherActive  bool
 	LastConnection time.Time
-
-	FoldersCount   uint64
-	FilesCount     uint64
-	TotalSpace     uint64
-	AvailableSpace uint64
 }
 
 type SyncState struct {

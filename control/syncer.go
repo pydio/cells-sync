@@ -134,6 +134,14 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 					if patch.Size() > 0 {
 						syncer.lastPatch = patch
 						syncer.stateStore.TouchLastOpsTime()
+						// Update Stats from snapshots
+						if snapStats, err := syncer.task.RootStats(ctx, true); err == nil {
+							log.Logger(ctx).Info("Stats after running patch")
+							stateStore.UpdateEndpointStats(snapStats[syncer.task.Source.GetEndpointInfo().URI], syncer.task.Source.GetEndpointInfo())
+							stateStore.UpdateEndpointStats(snapStats[syncer.task.Target.GetEndpointInfo().URI], syncer.task.Target.GetEndpointInfo())
+						} else {
+							fmt.Println("Cannot compute stats", err)
+						}
 					}
 					if val, ok := stats["Errors"]; ok {
 						errs := val.(map[string]int)
@@ -282,24 +290,43 @@ func (s *Syncer) dispatch(ctx context.Context, done chan bool) {
 				state := s.stateStore.UpdateSyncStatus(model.TaskStatusDisabled)
 				bus.Pub(state, TopicState)
 			default:
-				// Received info about an Endpoint
+				// Received info about an Endpoint - TODO : move this inside StateStore
 				if status, ok := message.(*model.EndpointStatus); ok {
 					initialConnState := s.stateStore.BothConnected()
-					var epConnected bool
-					if status.WatchConnection == model.WatchConnected {
+					var connected, updateConnection, active, updateActive, updateStats bool
+					switch status.WatchConnection {
+					case model.WatchConnected:
 						log.Logger(ctx).Info(status.EndpointInfo.URI + " is now connected")
-						epConnected = true
-					} else {
+						connected = true
+						updateConnection = true
+					case model.WatchDisconnected:
 						log.Logger(ctx).Info(status.EndpointInfo.URI + " is currently disconnected")
+						connected = false
+						updateConnection = true
+					case model.WatchActive:
+						active = true
+						updateActive = true
+					case model.WatchIdle:
+						active = false
+						updateActive = true
+					case model.WatchStats:
+						updateStats = true
 					}
-					state := s.stateStore.UpdateConnection(epConnected, &status.EndpointInfo)
-					newConnState := s.stateStore.BothConnected()
-					if state.Status == model.TaskStatusIdle && newConnState && newConnState != initialConnState {
-						log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
-						s.task.Run(ctx, false, false)
+					if updateConnection {
+						state := s.stateStore.UpdateConnection(connected, status.EndpointInfo)
+						newConnState := s.stateStore.BothConnected()
+						if state.Status == model.TaskStatusIdle && newConnState && newConnState != initialConnState {
+							log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
+							s.task.Run(ctx, false, false)
+						}
+						bus.Pub(state, TopicState)
+					} else if updateActive {
+						state := s.stateStore.UpdateWatcherActivity(active, status.EndpointInfo)
+						bus.Pub(state, TopicState)
+					} else if updateStats {
+						state := s.stateStore.UpdateEndpointStats(status.Stats, status.EndpointInfo)
+						bus.Pub(state, TopicState)
 					}
-					bus.Pub(state, TopicState)
-
 				}
 				break
 			}

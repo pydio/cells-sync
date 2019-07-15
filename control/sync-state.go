@@ -40,9 +40,13 @@ func compareURI(status, config string) bool {
 
 type StateStore interface {
 	LastState() common.SyncState
-	UpdateConnection(c bool, i *model.EndpointInfo) common.SyncState
 	BothConnected() bool
 	TouchLastOpsTime(t ...time.Time)
+
+	UpdateConnection(c bool, i model.EndpointInfo) common.SyncState
+	UpdateWatcherActivity(a bool, i model.EndpointInfo) common.SyncState
+	UpdateEndpointStats(s *model.EndpointRootStat, i model.EndpointInfo) common.SyncState
+
 	UpdateSyncStatus(s model.TaskStatus) common.SyncState
 	UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState
 }
@@ -108,27 +112,51 @@ func (b *MemoryStateStore) UpdateProcessStatus(processStatus model.Status, statu
 	return b.state
 }
 
-func (b *MemoryStateStore) UpdateConnection(c bool, i *model.EndpointInfo) common.SyncState {
+func (b *MemoryStateStore) UpdateConnection(c bool, i model.EndpointInfo) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
+	if internalInfo, ok := b.internalInfoFromEndpointInfo(i); ok {
+		internalInfo.Connected = c
+		if c {
+			internalInfo.LastConnection = time.Now()
+		}
+	}
+	return b.state
+}
+
+func (b *MemoryStateStore) UpdateWatcherActivity(a bool, i model.EndpointInfo) common.SyncState {
+	b.Lock()
+	defer b.Unlock()
+	if internalInfo, ok := b.internalInfoFromEndpointInfo(i); ok {
+		internalInfo.WatcherActive = a
+	}
+	return b.state
+}
+
+func (b *MemoryStateStore) UpdateEndpointStats(s *model.EndpointRootStat, i model.EndpointInfo) common.SyncState {
+	b.Lock()
+	defer b.Unlock()
+	if internalInfo, ok := b.internalInfoFromEndpointInfo(i); ok {
+		internalInfo.Stats = s
+	}
+	return b.state
+}
+
+func (b *MemoryStateStore) internalInfoFromEndpointInfo(info model.EndpointInfo) (*common.EndpointInfo, bool) {
+
 	simpleURI := func(uri string) string {
 		u, _ := url.Parse(uri)
 		out := fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
 		return out
 	}
-	var internalInfo *common.EndpointInfo
-	if i.URI == simpleURI(b.config.LeftURI) {
-		internalInfo = b.state.LeftInfo
-	} else if i.URI == simpleURI(b.config.RightURI) {
-		internalInfo = b.state.RightInfo
-	} else {
-		return b.state
+
+	if info.URI == simpleURI(b.config.LeftURI) {
+		return b.state.LeftInfo, true
+	} else if info.URI == simpleURI(b.config.RightURI) {
+		return b.state.RightInfo, true
 	}
-	internalInfo.Connected = c
-	if c {
-		internalInfo.LastConnection = time.Now()
-	}
-	return b.state
+
+	return nil, false
 }
 
 func (b *MemoryStateStore) BothConnected() bool {
