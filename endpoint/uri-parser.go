@@ -5,17 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"path/filepath"
 	"runtime"
 	"strings"
 
-	"github.com/pydio/cells/common/sync/endpoints/memory"
-
-	"github.com/pydio/cells/common/sync/endpoints/s3"
-
-	"github.com/pydio/cells/common/sync/endpoints/filesystem"
-
 	"github.com/pydio/cells/common/sync/endpoints/cells"
-
+	"github.com/pydio/cells/common/sync/endpoints/filesystem"
+	"github.com/pydio/cells/common/sync/endpoints/memory"
+	"github.com/pydio/cells/common/sync/endpoints/s3"
 	"github.com/pydio/cells/common/sync/model"
 )
 
@@ -35,9 +32,13 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 	switch u.Scheme {
 
 	case "fs":
-		path := u.Path
+		path := string(u.Path)
 		if runtime.GOOS == `windows` && path != "" && opts.BrowseOnly {
-			path = path[1:2] + ":\\" 
+			//E://sync/left
+			path = path[1:2] + ":\\"
+			if len(u.Path) > 3 {
+				path = filepath.Join(path, u.Path[3:])
+			}
 		}
 		return filesystem.NewFSClient(path, opts)
 
