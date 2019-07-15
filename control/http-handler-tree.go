@@ -71,24 +71,16 @@ func writeError(i *gin.Context, e error) {
 	i.JSON(http.StatusInternalServerError, map[string]string{"error": e.Error()})
 }
 
-func parseRequest(c *gin.Context) (*Request, error) {
-	var request Request
-	dec := json.NewDecoder(c.Request.Body)
-	if e := dec.Decode(&request); e != nil {
-		return nil, e
-	}
-
-	prefix := ""
+func applyWindowsTransformation(request *Request) error {
 	u, e := url.Parse(request.EndpointURI)
 	if e != nil {
-		return &request, e
+		return e
 	}
 
-	// Special case for browsing windows FS
-	if u.Scheme == "fs" && runtime.GOOS == "windows" {
+	if u.Path == "" {
 		pathLen := len(request.Path)
 		if pathLen > 2 {
-			prefix = "/" + strings.ToUpper(request.Path[1:3])
+			prefix := "/" + strings.ToUpper(request.Path[1:3])
 			request.windowsDrive = prefix + "/"
 
 			builtPath := ""
@@ -97,13 +89,35 @@ func parseRequest(c *gin.Context) (*Request, error) {
 			} else {
 				request.Path = "\\"
 			}
+
+			request.EndpointURI = request.EndpointURI + prefix
 		} else {
 			request.Path = "/"
 			request.browseWinVolumes = true
 		}
+	} else {
+		request.browseWinVolumes = false
 	}
 
-	ep, e := endpoint.EndpointFromURI(request.EndpointURI+prefix, "", true)
+	return nil
+}
+
+func parseRequest(c *gin.Context) (*Request, error) {
+	var request Request
+	dec := json.NewDecoder(c.Request.Body)
+	if e := dec.Decode(&request); e != nil {
+		return nil, e
+	}
+
+	// Special case for browsing windows FS
+	if strings.HasPrefix(request.EndpointURI, "fs://") && runtime.GOOS == "windows" {
+		err := applyWindowsTransformation(&request)
+		if err != nil {
+			return &request, err
+		}
+	}
+
+	ep, e := endpoint.EndpointFromURI(request.EndpointURI, "", true)
 	if e != nil {
 		return nil, e
 	}
