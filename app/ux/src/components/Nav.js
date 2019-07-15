@@ -1,7 +1,7 @@
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
 import {FontSizes} from "@uifabric/fluent-theme";
-import {Nav as OfficeNav} from 'office-ui-fabric-react'
+import {Nav as OfficeNav, IconButton, TooltipHost, TooltipDelay, ContextualMenu, DirectionalHint} from 'office-ui-fabric-react'
 import {Translation} from "react-i18next";
 import TasksList from "../task/TasksList";
 import PageSettings from "./PageSettings";
@@ -10,6 +10,11 @@ import PageLogs from "./PageLogs";
 import PageAbout from "./PageAbout";
 
 class NavMenu extends React.Component {
+
+    static menuAs(menuProps){
+        // Customize contextual menu with menuAs
+        return <ContextualMenu {...menuProps} />;
+    };
 
     render() {
 
@@ -40,11 +45,32 @@ class NavMenu extends React.Component {
             }
         };
 
+        const languages = {'en':'English','fr':'Français'};
+        const menuItems = (i18n) => {
+            return Object.keys(languages).map(key => {
+                return {key, text:languages[key], iconProps:{iconName:i18n.language === key ?'CheckboxComposite':'Checkbox'}, onClick:()=>{
+                    i18n.changeLanguage(key).then(()=>{
+                        localStorage.setItem('language', key);
+                    })
+                }};
+            })
+        };
+
         return (
-            <Translation>{(t) =>
+            <Translation>{(t, {i18n}) =>
                 <Route render={({history, location}) =>
                     <React.Fragment>
-                        <div style={{fontSize: FontSizes.size24, fontWeight: 300, padding: 8}}>{t('application.title')}</div>
+                        <div style={{display:'flex', alignItems:'center'}}>
+                            <span style={{flex: 1, fontSize: FontSizes.size24, fontWeight: 300, padding: 8}}>{t('application.title')}</span>
+                            <TooltipHost content={"Switch language"} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
+                                <IconButton
+                                    iconProps={{iconName:'Flag'}}
+                                    styles={{root:{marginRight: 4},menuIcon:{display:'none'}}}
+                                    menuAs={NavMenu.menuAs}
+                                    menuProps={{items:menuItems(i18n)}}
+                                />
+                            </TooltipHost>
+                        </div>
                         <OfficeNav
                             onLinkClick={(e, item)=>{history.push(item.key)}}
                             selectedKey={location.pathname}
