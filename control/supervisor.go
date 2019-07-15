@@ -65,10 +65,7 @@ func (s *Supervisor) Serve() error {
 	conf := config.Default()
 	if len(conf.Tasks) > 0 {
 		for _, t := range conf.Tasks {
-			syncer, e := NewSyncer(t)
-			if e != nil {
-				return e
-			}
+			syncer := NewSyncer(t)
 			s.tasksTokens[t.Uuid] = s.Add(syncer)
 		}
 	}
@@ -96,16 +93,11 @@ func (s *Supervisor) listenConfig() {
 
 			// Start/stop sync tasks
 			if taskChange.Type == "create" {
-				syncer, e := NewSyncer(taskChange.Task)
-				if e == nil {
-					log.Logger(s.ctx).Info("Starting New Task " + taskChange.Task.Uuid)
-					t := s.Add(syncer)
-					s.Lock()
-					s.tasksTokens[taskChange.Task.Uuid] = t
-					s.Unlock()
-				} else {
-					log.Logger(s.ctx).Error("Cannot Start Task " + e.Error())
-				}
+				log.Logger(s.ctx).Info("Starting New Task " + taskChange.Task.Uuid)
+				t := s.Add(NewSyncer(taskChange.Task))
+				s.Lock()
+				s.tasksTokens[taskChange.Task.Uuid] = t
+				s.Unlock()
 			} else if taskChange.Type == "update" {
 				s.Lock()
 				token, ok := s.tasksTokens[taskChange.Task.Uuid]
@@ -117,14 +109,11 @@ func (s *Supervisor) listenConfig() {
 					log.Logger(s.ctx).Info("Removed from Supervisor" + taskChange.Task.Uuid)
 					<-time.After(5 * time.Second)
 				}
-				syncer, e := NewSyncer(taskChange.Task)
-				if e == nil {
-					log.Logger(s.ctx).Info("Starting Task " + taskChange.Task.Uuid)
-					t := s.Add(syncer)
-					s.Lock()
-					s.tasksTokens[taskChange.Task.Uuid] = t
-					s.Unlock()
-				}
+				log.Logger(s.ctx).Info("Starting Task " + taskChange.Task.Uuid)
+				t := s.Add(NewSyncer(taskChange.Task))
+				s.Lock()
+				s.tasksTokens[taskChange.Task.Uuid] = t
+				s.Unlock()
 			} else if taskChange.Type == "remove" {
 				s.Lock()
 				token, ok := s.tasksTokens[taskChange.Task.Uuid]
