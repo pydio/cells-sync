@@ -7,6 +7,7 @@ import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import {Link} from 'office-ui-fabric-react'
 import EndpointLabel from './EndpointLabel'
 import ActionBar from './ActionBar'
+import humanize from 'humanize'
 import moment from 'moment'
 import 'moment/locale/fr';
 import 'moment/locale/es';
@@ -14,6 +15,14 @@ import 'moment/locale/it';
 import {withTranslation} from 'react-i18next'
 import PatchDialog from "./PatchDialog";
 const emptyTime = "0001-01-01T00:00:00Z";
+
+const StatusIdle = 0;
+const StatusPaused = 1;
+const StatusDisabled = 2;
+const StatusProcessing = 3;
+const StatusError = 4;
+const StatusRestarting = 5;
+const StatusStopping = 6;
 
 class SyncTask extends React.Component {
 
@@ -40,21 +49,119 @@ class SyncTask extends React.Component {
         }
     }
 
+    computeStatus() {
+        const {state, t, i18n} = this.props;
+        const {LastProcessStatus, Status, LastSyncTime, LastOpsTime} = state;
+        moment.locale(i18n.language);
+
+        switch (Status) {
+            case StatusPaused:
+                return <span>{t('task.status.paused')}</span>;
+
+            case StatusRestarting:
+                return <span>{t('task.status.restarting')}</span>;
+
+            case StatusStopping:
+                return <span>{t('task.status.stopping')}</span>;
+
+            case StatusError:
+                return (
+                    <Fragment>
+                        &nbsp;
+                        <Icon iconName={"Error"} styles={{root:{color:'red', marginRight:5}}}/> {t('task.status.paused')}
+                        {LastOpsTime && LastOpsTime !== emptyTime &&
+                            <span>&nbsp;-&nbsp;<Link onClick={()=>{this.setState({lastPatch:true})}}>{"Display errors"}</Link></span>
+                        }
+                    </Fragment>
+                );
+
+            case StatusProcessing:
+                if (LastProcessStatus && LastProcessStatus.Progress) {
+                    return (
+                        <div>
+                            <ProgressIndicator label={t('task.status.processing')} description={LastProcessStatus.StatusString} percentComplete={LastProcessStatus && LastProcessStatus.Progress}/>
+                        </div>
+                    );
+                } else {
+                    return (LastProcessStatus ? <span>{LastProcessStatus.StatusString}</span> : <span>{t('task.status.processing')}</span> );
+                }
+
+            default:
+
+                return (
+                    <Fragment>
+                        {LastProcessStatus &&
+                            <span>{LastProcessStatus.StatusString}</span>
+                        }
+                        {LastSyncTime && LastSyncTime !== emptyTime &&
+                            <span> - {t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>
+                        }
+                        {LastOpsTime && LastOpsTime !== emptyTime &&
+                            <span> - {t('task.last-ops')} : <Link onClick={()=>{this.setState({lastPatch:true})}}>{moment(LastOpsTime).fromNow()}</Link></span>
+                        }
+                    </Fragment>
+                );
+        }
+    }
+
+    computeStatistics() {
+        const {state, t, i18n} = this.props;
+        const {LeftInfo, RightInfo} = state;
+        moment.locale(i18n.language);
+        let size, folders, files;
+        if(LeftInfo.Stats && LeftInfo.Stats.HasSizeInfo){
+            size = LeftInfo.Stats.Size
+        }
+        if(RightInfo.Stats && RightInfo.Stats.HasSizeInfo){
+            size = RightInfo.Stats.Size
+        }
+        if(LeftInfo.Stats && LeftInfo.Stats.HasChildrenInfo){
+            folders = LeftInfo.Stats.Folders;
+            files = LeftInfo.Stats.Files;
+        }
+        if(RightInfo.Stats && RightInfo.Stats.HasSizeInfo){
+            folders = RightInfo.Stats.Folders;
+            files = RightInfo.Stats.Files;
+        }
+        if(size === undefined && folders === undefined) {
+            return null;
+        }
+        const blocks = [];
+        if (size !== undefined) {
+            blocks.push(t('task.stats.size') + " : " + humanize.filesize(size));
+        }
+        if (folders !== undefined) {
+            blocks.push(t('task.stats.folders') + " : " + folders);
+            blocks.push(t('task.stats.files') + " : " + files);
+        }
+        return (
+            <div>{blocks.join(" - ")}</div>
+        );
+    }
+
     render() {
 
-        const {state, t, i18n} = this.props;
-        const {LastProcessStatus, LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo, LastSyncTime, LastOpsTime} = state;
+        const {state, t} = this.props;
+        const {LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo} = state;
         const {lastPatch} = this.state;
-        let pg;
-        if (LastProcessStatus && LastProcessStatus.Progress) {
-            pg = LastProcessStatus.Progress;
-        }
-        const idle = Status === 0;
-        const paused = Status === 1;
-        const error = Status === 4;
-        const restarting = Status === 5;
-        const stopping = Status === 6;
-        moment.locale(i18n.language);
+
+        const styles =  {
+            dirIcon:{
+                padding: 9,
+                fontSize: 20,
+                color: '#607D8B',
+                transform: 'rotate(90deg)',
+                width: 36,
+                height: 36,
+                boxSizing: 'border-box',
+            },
+            label:{
+                color: '#455A64',
+                marginTop: 10
+            }
+        };
+        const status = this.computeStatus();
+        const stats = this.computeStatistics();
 
         return (
             <React.Fragment>
@@ -65,39 +172,22 @@ class SyncTask extends React.Component {
                 />
                 <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
                     <div style={{padding: '0px 16px 10px'}}>
-                        <h2 style={{display:'flex', alignItems:'flex-end', fontWeight:400}}>
-                            {state.Config.Label}
-                            {paused ? ' ('+t('task.status.paused')+')' : ''}
-                            {restarting ? ' ('+t('task.status.restarting')+'...)' : ''}
-                            {stopping ? ' ('+t('task.status.stopping')+'...)' : ''}
-                            {error &&
-                            <Fragment>
-                                &nbsp;
-                                <Icon iconName={"Error"} styles={{root:{color:'red', marginRight:5}}}/> {t('task.status.paused')}
-                            </Fragment>
-                            }
-                        </h2>
-                        <div style={{marginBottom: 10}}>
+                        <h2 style={{display:'none', alignItems:'flex-end', fontWeight:400}}>{state.Config.Label}</h2>
+                        <div style={{marginBottom: 10, marginTop:30}}>
                             <div style={{display:'flex'}}>
                                 <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}}/>
-                                <div style={{padding:5}}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortDown' : 'SortUp')}/></div>
+                                <div style={styles.dirIcon}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortDown' : 'SortUp')}/></div>
                                 <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}}/>
                             </div>
                         </div>
                         <div>
-                            <Label>{t('task.status')}</Label>
-                            {!pg && LastProcessStatus && <span>{LastProcessStatus.StatusString}</span>}
-                            {!pg && idle && LastSyncTime && LastSyncTime !== emptyTime &&
-                            <span> - {t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>
-                            }
-                            {!pg && idle && LastOpsTime && LastOpsTime !== emptyTime &&
-                            <span> - {t('task.last-ops')} : <Link onClick={()=>{this.setState({lastPatch:true})}}>{moment(LastOpsTime).fromNow()}</Link></span>
-                            }
-                            {!pg && error && LastOpsTime && LastOpsTime !== emptyTime &&
-                            <span>&nbsp;-&nbsp;<Link onClick={()=>{this.setState({lastPatch:true})}}>{"Display errors"}</Link></span>
-                            }
-                            {pg &&
-                                <div><ProgressIndicator label={"Processing..."} description={LastProcessStatus.StatusString} percentComplete={pg}/></div>
+                            <Label styles={{root:styles.label}}>{t('task.status')}</Label>
+                            {status}
+                            {stats &&
+                                <Fragment>
+                                    <Label styles={{root:styles.label}}>{t('task.stats')}</Label>
+                                    {stats}
+                                </Fragment>
                             }
                         </div>
                     </div>

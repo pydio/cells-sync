@@ -21,11 +21,15 @@ const Config = {
     },
     LeftInfo:{
         Connected:false,
+        WatcherActive:false,
         LastConnection:"2019-05-03T11:54:37.772312+02:00",
+        Stats:{	HasChildrenInfo: false, HasSizeInfo:false, Size: 0, Children:0, Folders: 0, Files:0},
     },
     RightInfo:{
         Connected:false,
+        WatcherActive:false,
         LastConnection:"2019-05-03T11:54:37.772312+02:00",
+        Stats:{	HasChildrenInfo: false, HasSizeInfo:false, Size: 0, Children:0, Folders: 0, Files:0},
     }
 };
 
