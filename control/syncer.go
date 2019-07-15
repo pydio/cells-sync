@@ -140,7 +140,7 @@ func NewSyncer(conf *config.Task) (*Syncer, error) {
 							stateStore.UpdateEndpointStats(snapStats[syncer.task.Source.GetEndpointInfo().URI], syncer.task.Source.GetEndpointInfo())
 							stateStore.UpdateEndpointStats(snapStats[syncer.task.Target.GetEndpointInfo().URI], syncer.task.Target.GetEndpointInfo())
 						} else {
-							fmt.Println("Cannot compute stats", err)
+							log.Logger(ctx).Error("Cannot compute stats: " + err.Error())
 						}
 					}
 					if val, ok := stats["Errors"]; ok {
