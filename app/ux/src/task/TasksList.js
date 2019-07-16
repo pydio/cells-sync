@@ -1,6 +1,6 @@
-import React, {Component, Fragment} from 'react'
+import React, {Component} from 'react'
 import {CompoundButton, CommandBar, ScrollablePane, Sticky, StickyPositionType} from "office-ui-fabric-react";
-import {Depths, CommunicationColors} from '@uifabric/fluent-theme'
+import {Depths} from '@uifabric/fluent-theme'
 import SyncTask from "./SyncTask";
 import {Route} from 'react-router-dom'
 import {withTranslation} from "react-i18next";

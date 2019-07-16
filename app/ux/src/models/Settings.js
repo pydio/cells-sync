@@ -1,7 +1,4 @@
 // Declare keys for the sake of auto-completion
-
-import {Patch} from "./Patch";
-
 class Settings {
 
     Logs = {

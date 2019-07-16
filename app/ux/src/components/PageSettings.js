@@ -1,13 +1,11 @@
-import React, {Fragment} from 'react'
+import React from 'react'
 import Page from "./Page";
 import Settings from '../models/Settings'
 import 'observable-slim/proxy'
 import ObservableSlim from 'observable-slim'
 import {
-    Label,
     Stack,
     TextField,
-    Separator,
     Toggle,
     DefaultButton,
     PrimaryButton, Dropdown
@@ -66,7 +64,7 @@ class PageSettings extends React.Component {
 
 
     render() {
-        const {t, i18n} = this.props;
+        const {t} = this.props;
         const {settings, loading, dirty} = this.state;
 
         const titleBlock = (
@@ -75,18 +73,6 @@ class PageSettings extends React.Component {
                 <DefaultButton disabled={loading || !dirty} text={t('button.cancel')} onClick={()=>{this.revert()}}/>
                 <PrimaryButton disabled={loading || !dirty} text={t('button.save')} onClick={() => {this.save()}}/>
             </Stack>
-        );
-        const oldLanguageBlock = (
-            <Fragment>
-                <Separator styles={{root:{margin: '30px 0'},content:{fontSize:16}}}>Language</Separator>
-                <Dropdown
-                    selectedKey={i18n.language}
-                    onChange={(ev, item) => {
-                        i18n.changeLanguage(item.key);
-                    }}
-                    options={[{key:'en', text:'English'}, {key:'fr', text:'Français'}]}
-                />
-            </Fragment>
         );
 
         return (
