@@ -1,8 +1,9 @@
 package control
 
 import (
+	"encoding/json"
+
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/json"
 	"github.com/pydio/sync/config"
 )
 
