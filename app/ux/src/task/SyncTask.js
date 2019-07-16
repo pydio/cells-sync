@@ -180,7 +180,7 @@ class SyncTask extends React.Component {
                                 <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}}/>
                             </div>
                         </div>
-                        <div>
+                        <div style={{color:'#212121'}}>
                             <Label styles={{root:styles.label}}>{t('task.status')}</Label>
                             {status}
                             {stats &&

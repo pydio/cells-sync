@@ -18,10 +18,17 @@ export default function ({style, uri, info, status, t}) {
         );
     }
     const {Connected, LastConnection, WatcherActive} = info;
+    const baseBg = 'rgb(243, 245, 246)';
+    const activeColor = 'rgb(0, 120, 212)';
+    const errorColor = '#d32f2f';
+
     let styles = {
         container: {
+            backgroundColor:baseBg,
+            /*
             border: '1px solid #eceff1',
             borderLeftWidth: 0,
+            */
             borderRadius: 18,
             display:'flex',
             overflow:'hidden',
@@ -37,6 +44,7 @@ export default function ({style, uri, info, status, t}) {
             width: 36,
             height: 36,
             boxSizing: 'border-box',
+            position:'relative'
         },
         label:{
             display:'flex',
@@ -56,30 +64,49 @@ export default function ({style, uri, info, status, t}) {
             position:'absolute',
             height: 10,
             bottom: 0,
-            left: -18,
+            left: 0,
             right: 0
+        },
+        statusIcon:  {
+            position: 'absolute',
+            height: 7,
+            width: 7,
+            backgroundColor: '#4CAF50',
+            borderRadius: '50%',
+            border: '2px solid ' + baseBg,
+            bottom: -1,
+            right: 1,
+        },
+        statusString :  {
+            opacity: 0.7,
+            fontSize: 15,
+        },
+        errorIcon: {
+            color:errorColor,
+            padding: '11px',
+            cursor:'pointer'
         }
     };
     if (!Connected){
-        styles.container.border = '1px solid #d32f2f';
-        styles.container.backgroundColor = '#fde7e9';
-        styles.type.backgroundColor = '#d32f2f';
-        styles.labelInt.color = '#d32e30';
-    } else if(WatcherActive) {
-        styles.type.backgroundColor = '#CFD8DC';
+        styles.statusIcon.backgroundColor = errorColor;
+    } else if(WatcherActive || status.Progress > 0 || status.StatusString) {
+        styles.statusIcon.backgroundColor = activeColor;
     }
     return (
         <div style={{...styles.container, ...style}}>
-            <span style={styles.type}><Icon iconName={eType.icon}/></span>
+            <span style={styles.type}>
+                <Icon iconName={eType.icon}/>
+                <div style={styles.statusIcon}/>
+            </span>
             <div style={styles.label}>
-                <span style={styles.labelInt}>{data.host}{data.pathname}{status.StatusString && <span style={{color:'rgba(0,0,0,.5)'}}> ({status.StatusString.toLowerCase()})</span>}</span>
+                <span style={styles.labelInt}>{data.host}{data.pathname}{status.StatusString && <span style={styles.statusString}> ({status.StatusString.toLowerCase()})</span>}</span>
                 {status.Progress > 0 &&
                     <ProgressIndicator percentComplete={status.Progress} styles={{root:styles.pg, progressTrack:{backgroundColor:'transparent'}}}/>
                 }
             </div>
             {!Connected &&
-                <TooltipHost id={uri} content={<span style={{color:'#d32f2f'}}>{t('task.disconnected')} {moment(LastConnection).fromNow()}</span>} directionalHint={DirectionalHint.bottomCenter}>
-                    <Icon aria-labelledby={uri} iconName={"Warning"} styles={{root:{color:'#d32f2f', padding: '11px', cursor:'pointer'}}}/>
+                <TooltipHost id={uri} content={<span style={{color:errorColor}}>{t('task.disconnected')} {moment(LastConnection).fromNow()}</span>} directionalHint={DirectionalHint.bottomCenter}>
+                    <Icon aria-labelledby={uri} iconName={"Warning"} styles={{root:styles.errorIcon}}/>
                 </TooltipHost>
             }
         </div>
