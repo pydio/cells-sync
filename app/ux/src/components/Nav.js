@@ -22,9 +22,9 @@ class NavMenu extends React.Component {
             '/': {label:'tasks', icon:'SyncToPC'},
 //            '/servers': {label:'servers', icon:'Server'},
             '/settings': {label:'settings', icon:'Settings'},
-            '/debugger': {label:'debugger', icon:'Code'},
             '/logs': {label:'logs', icon:'CustomList'},
-            '/about': {label:'about', icon:'Help'}
+            '/about': {label:'about', icon:'Help'},
+            '/debugger': {label:'debugger', icon:'Code'}
         };
 
         const tStyles = {
@@ -105,7 +105,7 @@ class NavRoutes extends React.Component {
                     <Route path={"/settings"} component={PageSettings}/>
                     <Route path={"/servers"} component={PageServers}/>
                     <Route path={"/logs"} component={PageLogs}/>
-                    <Route path={"/about"} component={PageAbout}/>
+                    <Route path={"/about"} render={() => <PageAbout socket={socket}/>}/>
                 </Switch>
             }/>
         )

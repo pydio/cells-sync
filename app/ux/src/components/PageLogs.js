@@ -1,8 +1,9 @@
 import React from 'react'
-import Page from "./Page";
+import {Page} from "./Page";
 import Sockette from "sockette";
 import AnsiUp from 'ansi_up'
 import {List} from 'office-ui-fabric-react'
+import {withTranslation} from "react-i18next";
 
 class PageLogs extends React.Component {
 
@@ -99,6 +100,7 @@ class PageLogs extends React.Component {
     }
 
     render() {
+        const {t} = this.props;
         const {lines} = this.state;
         const preStyle = {
             backgroundColor:'black',
@@ -113,7 +115,7 @@ class PageLogs extends React.Component {
             lineHeight: '1.3em'
         };
         return (
-            <Page title={"Logs"} legend={"Application logs"} flex={true}>
+            <Page title={t('nav.logs')} flex={true}>
                 <div ref={"block"} style={preStyle}>
                     <List items={lines} onRenderCell={this._onRenderCell.bind(this)} />
                 </div>
@@ -122,4 +124,4 @@ class PageLogs extends React.Component {
     }
 }
 
-export default PageLogs
+export default withTranslation()(PageLogs)

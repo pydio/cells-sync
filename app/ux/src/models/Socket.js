@@ -5,11 +5,12 @@ export default class Socket {
     constructor(onStatus, onTasks) {
         this.onStatus = onStatus;
         this.onTasks = onTasks;
+        this.onUpdate = [];
 
         this.state = {
             syncTasks: {},
             connected: false,
-            connecting: false,
+            connecting: true,
             maxAttemptsReached: false
         }
     }
@@ -22,6 +23,14 @@ export default class Socket {
         if(data.syncTasks && this.onTasks) {
             this.onTasks(this.state.syncTasks)
         }
+    }
+
+    listenUpdates(callback){
+        this.onUpdate.push(callback);
+    }
+
+    stopListeningUpdates(callback){
+        this.onUpdate = this.onUpdate.filter(cb => cb !== callback);
     }
 
     read(msg){
@@ -84,22 +93,35 @@ export default class Socket {
         const data = this.read(msg);
         if (data.Type === 'PONG'){
             console.log('Correctly connected!', data)
-        } else if(data.Type === 'STATE'){
+        } else if(data.Type === 'STATE') {
             const {syncTasks} = this.state;
             const {UUID, Status} = data.Content;
-            if (Status === 7 && syncTasks[UUID]){
+            if (Status === 7 && syncTasks[UUID]) {
                 delete(syncTasks[UUID]);
             } else {
                 syncTasks[UUID] = data.Content;
             }
             this.setState({syncTasks});
+        } else if(data.Type === 'UPDATE') {
+            this.onUpdate.forEach(cb => {
+                cb(data.Content);
+            })
         } else {
             console.log(data)
         }
     }
 
-    sendMessage(type, content = '') {
-        this.ws.json({Type: type, Content: content});
+    sendMessage(type, content = '', retry = 0) {
+        if(this.state.connected){
+            this.ws.json({Type: type, Content: content});
+        } else if(retry < 4){
+            console.warn('websocket not connected yet, retry in 2 seconds');
+            setTimeout(()=>{
+                this.sendMessage(type, content, retry + 1)
+            }, 2000)
+        } else {
+            console.error('websocket not connected yet, cannot send message!');
+        }
     }
 
     triggerTasksStatus() {

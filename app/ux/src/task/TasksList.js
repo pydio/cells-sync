@@ -1,9 +1,9 @@
 import React, {Component} from 'react'
-import {CompoundButton, CommandBar, ScrollablePane, Sticky, StickyPositionType} from "office-ui-fabric-react";
-import {Depths} from '@uifabric/fluent-theme'
+import {CompoundButton, ScrollablePane, Sticky, StickyPositionType} from "office-ui-fabric-react";
 import SyncTask from "./SyncTask";
 import {Route} from 'react-router-dom'
 import {withTranslation} from "react-i18next";
+import {CmdBar, PageStyles} from "../components/Page";
 
 class TasksList extends Component {
 
@@ -30,14 +30,12 @@ class TasksList extends Component {
                 title:t('main.all.resync.legend'),
                 disabled:hasRunning,
                 iconProps:{iconName:'Sync'},
-                buttonStyles:{root:{backgroundColor:'transparent'}},
                 onClick:()=>socket.sendMessage('CMD', {Cmd:'loop'})
             }, {
                 key:'resume',
                 text:allPaused ? t('main.all.resume') : t('main.all.pause'),
                 title:allPaused ? t('main.all.resume.legend') : t('main.all.pause.legend'),
                 iconProps:{iconName:(allPaused?'Play':'Pause')},
-                buttonStyles:{root:{backgroundColor:'transparent'}},
                 onClick:()=>socket.sendMessage('CMD', {Cmd:allPaused ? 'resume' : 'pause'})
             })
         }
@@ -58,13 +56,7 @@ class TasksList extends Component {
                         return (
                             <ScrollablePane>
                                 <Sticky stickyPosition={StickyPositionType.Header}>
-                                    <CommandBar
-                                        items={[]}
-                                        farItems={cmdBarItems}
-                                        styles={{
-                                            root:{zIndex: 10, margin: '0 10px', backgroundColor:'#ECEFF1', padding:'0 16px', boxShadow:Depths.depth8}
-                                        }}
-                                    />
+                                    <div style={{...PageStyles.header, display:'block'}}><CmdBar items={cmdBarItems}/></div>
                                 </Sticky>
                                 <div>
                                     {tasksArray.map(task => <SyncTask

@@ -1,32 +1,101 @@
-import React, {Fragment} from 'react'
+import React from 'react'
 import {Depths} from "@uifabric/fluent-theme";
+import {CommandBar, ScrollablePane, Sticky, StickyPositionType} from "office-ui-fabric-react";
 
-export default class Page extends React.Component{
+const styles={
+    header:{
+        zIndex: 10,
+        margin: '0 10px',
+        backgroundColor:'#ECEFF1',
+        padding:'3px 16px',
+        boxShadow:Depths.depth8,
+        display:'flex',
+        alignItems:'center',
+        fontSize: 18,
+        color: '#607D8B',
+    },
+    block:{
+        backgroundColor:'white',
+        boxShadow:Depths.depth4,
+        margin: 10,
+        padding: 16
+    },
+    cmdBarStyle:{
+        root:{backgroundColor:'transparent'}
+    },
+    buttonStyle:{
+        root:{
+            backgroundColor:'transparent',
+            selectors:{
+                "&.is-disabled":{backgroundColor:'transparent'},
+            }
+        },
+        rootHovered:{
+            backgroundColor:'rgba(255,255,255,0.5)',
+        }
+    }
+};
+
+class PageBlock extends React.Component{
     render() {
-        const {children, title, legend, flex} = this.props;
-        const titleBlock = (
-            <Fragment>
-                <h2 style={{fontWeight: 400, fontSize:30}}>{title}</h2>
-                {legend && <legend style={{color:"darkgrey", marginTop: -20, marginBottom: 20}}>{legend}</legend>}
-            </Fragment>
-        );
-        const mainStyle = {width:'100%', margin:10, padding: 20, paddingTop: 0, boxShadow: Depths.depth4, backgroundColor:'white', boxSizing:'border-box'};
-        if (flex) {
+        const {children, style} = this.props;
+        return <div style={{...styles.block, ...style}}>{children}</div>
+    }
+}
+
+class CmdBar extends React.Component {
+    render() {
+        let items;
+        if(this.props.items){
+            items = this.props.items.map(item => {
+                return {...item, buttonStyles: styles.buttonStyle}
+            });
+        }
+        return <CommandBar styles={styles.cmdBarStyle} farItems={items} items={[]}/>
+    }
+}
+
+class Page extends React.Component{
+
+    render() {
+
+        const {children, title, flex, barItems} = this.props;
+
+        if(flex) {
             return (
-                <div style={{...mainStyle, display:'flex', flexDirection:'column'}}>
-                    {titleBlock}
-                    <div style={{flex: 1, overflow:'hidden'}}>
+                <div style={{width:'100%', height: '100%', position:'relative'}}>
+                    <div style={{...styles.header,height: 44}}>
+                        <span>{title}</span>
+                        {barItems && <span style={{flex:1}}><CmdBar items={barItems}/></span>}
+                    </div>
+                    <div style={{boxShadow:Depths.depth4, overflow: 'hidden',position: 'absolute',left: 10, right: 10, top: 60, bottom: 10}}>
                         {children}
                     </div>
                 </div>
+
             );
         } else {
+
             return (
-                <div style={{...mainStyle,overflowY:'auto'}}>
-                    {titleBlock}
-                    {children}
+                <div style={{width:'100%', position:'relative'}}>
+                    <ScrollablePane>
+                        <Sticky stickyPosition={StickyPositionType.Header}>
+                            <div style={styles.header}>
+                                <span>{title}</span>
+                                {barItems && <span style={{flex:1}}><CmdBar items={barItems}/></span>}
+                            </div>
+                        </Sticky>
+                        <div>
+                            {children}
+                        </div>
+                    </ScrollablePane>
                 </div>
+
             );
+
         }
+
     }
 }
+
+export {Page, PageBlock, CmdBar, styles as PageStyles}
