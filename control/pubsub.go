@@ -16,6 +16,7 @@ const (
 	TopicSync_   = "sync-"
 	TopicState   = "state"
 	TopicStore_  = "store"
+	TopicUpdate  = "update"
 )
 
 type CommandMessage int

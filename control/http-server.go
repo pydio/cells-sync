@@ -139,9 +139,28 @@ func (h *HttpServer) InitHandlers() {
 				}
 			}
 
+		case "UPDATE":
+
+			if req, ok := data.Content.(*common.UpdateCheckRequest); ok {
+				if req.Check {
+					go GetBus().Pub(req, TopicUpdate)
+				} else if req.Version {
+					// Just publish version back to client
+					message := &common.Message{Type: "UPDATE", Content: &common.UpdateVersion{
+						PackageName: common.PackageType,
+						Version:     common.Version,
+						Revision:    common.BuildRevision,
+						BuildStamp:  common.BuildStamp,
+					}}
+					session.Write(message.Bytes())
+				}
+			} else if req, ok := data.Content.(*common.UpdateApplyRequest); ok {
+				go GetBus().Pub(req, TopicUpdate)
+			}
+
 		default:
 
-			log.Logger(h.ctx).Error("Cannot read message" + string(bytes))
+			log.Logger(h.ctx).Error("Cannot read message " + string(bytes))
 
 		}
 	})
@@ -172,18 +191,25 @@ func (h *HttpServer) drop(s common.SyncState) bool {
 }
 
 func (h *HttpServer) ListenStatus() {
-	statuses := GetBus().Sub(TopicState)
+	statuses := GetBus().Sub(TopicState, TopicUpdate)
 	for {
 		select {
 		case <-h.done:
-			GetBus().Unsub(statuses, TopicState)
+			GetBus().Unsub(statuses, TopicState, TopicUpdate)
 			return
 		case s := <-statuses:
-			state := s.(common.SyncState)
-			if !h.drop(state) {
+			if state, ok := s.(common.SyncState); ok {
+				if !h.drop(state) {
+					m := &common.Message{
+						Type:    "STATE",
+						Content: s,
+					}
+					h.WebSocket.Broadcast(m.Bytes())
+				}
+			} else if update, ok := s.(common.UpdateMessage); ok {
 				m := &common.Message{
-					Type:    "STATE",
-					Content: s,
+					Type:    "UPDATE",
+					Content: update,
 				}
 				h.WebSocket.Broadcast(m.Bytes())
 			}

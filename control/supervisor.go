@@ -74,6 +74,7 @@ func (s *Supervisor) Serve() error {
 	s.Add(&Profiler{})
 	s.Add(&StdInner{})
 	s.Add(httpServer)
+	s.Add(NewUpdater())
 
 	go s.listenBus()
 	go s.listenConfig()

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pydio/cells/common/proto/update"
+
 	"github.com/pydio/cells/common/sync/model"
 
 	"github.com/pydio/cells/common/log"
@@ -13,9 +15,10 @@ import (
 )
 
 var (
-	Version       = "0.0.0"
+	Version       = "0.1.0"
 	BuildStamp    = ""
 	BuildRevision = ""
+	PackageType   = "CellsSync"
 )
 
 type EndpointInfo struct {
@@ -75,6 +78,42 @@ type ConfigContent struct {
 	Config *config.Task
 }
 
+// Various messages for communicating with service
+type UpdateMessage interface {
+	UpdateMessage()
+}
+type UpdateCheckRequest struct {
+	Check   bool
+	Version bool
+}
+type UpdateVersion struct {
+	PackageName string
+	Version     string
+	Revision    string
+	BuildStamp  string
+}
+type UpdateCheckStatus struct {
+	CheckStatus string
+	Binaries    []*update.Package
+	Error       string `json:"error,omitempty"`
+}
+type UpdateApplyRequest struct {
+	Package *update.Package
+	DryRun  bool
+}
+type UpdateApplyStatus struct {
+	ApplyStatus string
+	Package     *update.Package
+	Progress    float32
+	Error       string
+}
+
+// Detect message type
+func (u *UpdateCheckRequest) UpdateMessage() {}
+func (u *UpdateCheckStatus) UpdateMessage()  {}
+func (u *UpdateApplyRequest) UpdateMessage() {}
+func (u *UpdateApplyStatus) UpdateMessage()  {}
+
 func (m *Message) Bytes() []byte {
 	d, e := json.Marshal(m)
 	if e != nil {
@@ -110,6 +149,17 @@ func MessageFromData(d []byte) *Message {
 				m.Content = &state
 			} else {
 				log.Logger(context.Background()).Error("Cannot unmarshal ConcreteSyncState: " + e.Error() + ":" + string(d))
+			}
+		} else if m.Type == "UPDATE" {
+			d, _ := json.Marshal(m.Content)
+			var checkRequest UpdateCheckRequest
+			var applyRequest UpdateApplyRequest
+			if e := json.Unmarshal(d, &checkRequest); e == nil && (checkRequest.Check || checkRequest.Version) {
+				m.Content = &checkRequest
+			} else if e := json.Unmarshal(d, &applyRequest); e == nil && applyRequest.Package != nil {
+				m.Content = &applyRequest
+			} else {
+				log.Logger(context.Background()).Error("Cannot unmarshal Update Request:" + string(d))
 			}
 		}
 		return &m
