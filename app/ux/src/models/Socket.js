@@ -111,14 +111,14 @@ export default class Socket {
         }
     }
 
-    sendMessage(type, content = '', retry = 0) {
+    sendMessage(type, content = '', retry = 1) {
         if(this.state.connected){
             this.ws.json({Type: type, Content: content});
-        } else if(retry < 4){
-            console.warn('websocket not connected yet, retry in 2 seconds');
+        } else if(retry < 10){
+            console.warn('websocket not connected yet, retry in 0.5 seconds');
             setTimeout(()=>{
                 this.sendMessage(type, content, retry + 1)
-            }, 2000)
+            }, 50 * retry)
         } else {
             console.error('websocket not connected yet, cannot send message!');
         }

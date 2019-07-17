@@ -3,7 +3,7 @@ import {Route, Switch} from 'react-router-dom'
 import {FontSizes} from "@uifabric/fluent-theme";
 import {Nav as OfficeNav, IconButton, TooltipHost, TooltipDelay, ContextualMenu, DirectionalHint} from 'office-ui-fabric-react'
 import {Translation} from "react-i18next";
-import TasksList from "../task/TasksList";
+import PageTasks from "./PageTasks";
 import PageSettings from "./PageSettings";
 import PageServers from "./PageServers";
 import PageLogs from "./PageLogs";
@@ -101,7 +101,7 @@ class NavRoutes extends React.Component {
         return (
             <Route render={({history, location}) =>
                 <Switch>
-                    <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <TasksList syncTasks={syncTasks} socket={socket}/>}/>
+                    <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <PageTasks syncTasks={syncTasks} socket={socket}/>}/>
                     <Route path={"/settings"} component={PageSettings}/>
                     <Route path={"/servers"} component={PageServers}/>
                     <Route path={"/logs"} component={PageLogs}/>
