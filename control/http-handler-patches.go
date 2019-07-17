@@ -23,7 +23,7 @@ type PatchesResponse struct {
 	Patches []merger.Patch
 }
 
-func parsePatchRequest(c *gin.Context) (*PatchesRequest, error) {
+func (h *HttpServer) parsePatchRequest(c *gin.Context) (*PatchesRequest, error) {
 	pR := &PatchesRequest{
 		SyncUUID: c.Param("uuid"),
 		Limit:    10,
@@ -41,7 +41,7 @@ func parsePatchRequest(c *gin.Context) (*PatchesRequest, error) {
 }
 
 // reqRespStore uses a Pub/Sub model to synchronously retrieve a pointer to the PatchStore of a sync.
-func reqRespStore(syncUUID string) *endpoint.PatchStore {
+func (h *HttpServer) reqRespStore(syncUUID string) *endpoint.PatchStore {
 
 	var store *endpoint.PatchStore
 	wg := sync.WaitGroup{}
@@ -69,20 +69,20 @@ func reqRespStore(syncUUID string) *endpoint.PatchStore {
 }
 
 // listPatches loads patches from store
-func listPatches(c *gin.Context) {
-	request, e := parsePatchRequest(c)
+func (h *HttpServer) listPatches(c *gin.Context) {
+	request, e := h.parsePatchRequest(c)
 	if e != nil {
-		c.JSON(http.StatusInternalServerError, map[string]string{"error": e.Error()})
+		h.writeError(c, e)
 		return
 	}
-	store := reqRespStore(request.SyncUUID)
+	store := h.reqRespStore(request.SyncUUID)
 	if store == nil {
-		c.JSON(http.StatusInternalServerError, map[string]string{"error": "cannot load store"})
+		h.writeError(c, fmt.Errorf("cannot load store"))
 		return
 	}
 	patches, err := store.Load(request.Offset, request.Limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		h.writeError(c, err)
 		return
 	}
 

@@ -2,28 +2,29 @@ package control
 
 import (
 	"encoding/json"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pydio/sync/config"
 )
 
-func loadConf(i *gin.Context) {
+func (h *HttpServer) loadConf(i *gin.Context) {
 	conf := config.Default()
-	i.JSON(200, conf)
+	i.JSON(http.StatusOK, conf)
 }
 
-func updateConf(i *gin.Context) {
+func (h *HttpServer) updateConf(i *gin.Context) {
 	var glob *config.Global
 	dec := json.NewDecoder(i.Request.Body)
 	if e := dec.Decode(&glob); e != nil {
-		i.JSON(500, map[string]interface{}{"error": e.Error()})
+		h.writeError(i, e)
 		return
 	}
 
 	if er := config.Default().UpdateGlobals(glob.Logs, glob.Updates); er != nil {
-		i.JSON(500, map[string]interface{}{"error": er.Error()})
+		h.writeError(i, er)
 	} else {
-		i.JSON(200, config.Default())
+		i.JSON(http.StatusOK, config.Default())
 	}
 
 }

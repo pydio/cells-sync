@@ -216,15 +216,15 @@ func (h *HttpServer) Serve() {
 		MaxAge:           12 * time.Hour,
 	}))
 	// Manage Tree
-	Server.POST("/tree", ls)
-	Server.PUT("/tree", mkdir)
+	Server.POST("/tree", h.ls)
+	Server.PUT("/tree", h.mkdir)
 
 	// Load Patch contents
-	Server.GET("/patches/:uuid/:offset/:limit", listPatches)
+	Server.GET("/patches/:uuid/:offset/:limit", h.listPatches)
 
 	// Manage global config
-	Server.GET("/config", loadConf)
-	Server.PUT("/config", updateConf)
+	Server.GET("/config", h.loadConf)
+	Server.PUT("/config", h.updateConf)
 
 	log.Logger(h.ctx).Info("Starting HttpServer on port 3636")
 	if e := http.ListenAndServe(":3636", Server); e != nil {

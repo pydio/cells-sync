@@ -41,7 +41,7 @@ import (
 	"github.com/pydio/sync/endpoint"
 )
 
-type Request struct {
+type TreeRequest struct {
 	EndpointURI      string
 	Path             string
 	windowsDrive     string
@@ -49,29 +49,29 @@ type Request struct {
 	endpoint         model.Endpoint
 }
 
-type Response struct {
+type TreeResponse struct {
 	Node     *tree.Node
 	Children []*tree.Node
 }
 
-func (l *Response) ProtoMessage() {}
-func (l *Response) Reset()        {}
-func (l *Response) String() string {
+func (l *TreeResponse) ProtoMessage() {}
+func (l *TreeResponse) Reset()        {}
+func (l *TreeResponse) String() string {
 	return ""
 }
 
-func (l *Response) MarshalJSON() ([]byte, error) {
+func (l *TreeResponse) MarshalJSON() ([]byte, error) {
 	encoder := jsonpb.Marshaler{}
 	buffer := bytes.NewBuffer(nil)
 	e := encoder.Marshal(buffer, l)
 	return buffer.Bytes(), e
 }
 
-func writeError(i *gin.Context, e error) {
+func (h *HttpServer) writeError(i *gin.Context, e error) {
 	i.JSON(http.StatusInternalServerError, map[string]string{"error": e.Error()})
 }
 
-func applyWindowsTransformation(request *Request) error {
+func (h *HttpServer) applyWindowsTransformation(request *TreeRequest) error {
 	u, e := url.Parse(request.EndpointURI)
 	if e != nil {
 		return e
@@ -102,8 +102,8 @@ func applyWindowsTransformation(request *Request) error {
 	return nil
 }
 
-func parseRequest(c *gin.Context) (*Request, error) {
-	var request Request
+func (h *HttpServer) parseTreeRequest(c *gin.Context) (*TreeRequest, error) {
+	var request TreeRequest
 	dec := json.NewDecoder(c.Request.Body)
 	if e := dec.Decode(&request); e != nil {
 		return nil, e
@@ -111,7 +111,7 @@ func parseRequest(c *gin.Context) (*Request, error) {
 
 	// Special case for browsing windows FS
 	if strings.HasPrefix(request.EndpointURI, "fs://") && runtime.GOOS == "windows" {
-		err := applyWindowsTransformation(&request)
+		err := h.applyWindowsTransformation(&request)
 		if err != nil {
 			return &request, err
 		}
@@ -125,18 +125,18 @@ func parseRequest(c *gin.Context) (*Request, error) {
 	return &request, nil
 }
 
-func ls(c *gin.Context) {
+func (h *HttpServer) ls(c *gin.Context) {
 	ctx := context.Background()
-	request, e := parseRequest(c)
+	request, e := h.parseTreeRequest(c)
 	if e != nil {
 		log.Logger(ctx).Error("Failed to parse request: " + e.Error())
-		writeError(c, e)
+		h.writeError(c, e)
 		return
 	}
 
 	log.Logger(context.Background()).Info("Browsing " + request.endpoint.GetEndpointInfo().URI + " on path " + request.Path)
 
-	response := &Response{}
+	response := &TreeResponse{}
 
 	if request.browseWinVolumes {
 		response.Node = &tree.Node{}
@@ -166,21 +166,21 @@ func ls(c *gin.Context) {
 			}
 		}
 	} else {
-		writeError(c, err)
+		h.writeError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, response)
 }
 
-func mkdir(c *gin.Context) {
-	request, e := parseRequest(c)
+func (h *HttpServer) mkdir(c *gin.Context) {
+	request, e := h.parseTreeRequest(c)
 	if e != nil {
-		writeError(c, e)
+		h.writeError(c, e)
 		return
 	}
 	target, ok := model.AsPathSyncTarget(request.endpoint)
 	if !ok {
-		writeError(c, fmt.Errorf("cannot.write"))
+		h.writeError(c, fmt.Errorf("cannot.write"))
 		return
 	}
 	newNode := &tree.Node{
@@ -188,10 +188,10 @@ func mkdir(c *gin.Context) {
 		Type: tree.NodeType_COLLECTION,
 	}
 	if e := target.CreateNode(context.Background(), newNode, false); e != nil {
-		writeError(c, e)
+		h.writeError(c, e)
 		return
 	}
 
 	log.Logger(context.Background()).Info("Created folder on " + request.endpoint.GetEndpointInfo().URI + " at path " + request.Path)
-	c.JSON(http.StatusOK, &Response{Node: newNode})
+	c.JSON(http.StatusOK, &TreeResponse{Node: newNode})
 }
