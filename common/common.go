@@ -159,7 +159,7 @@ func MessageFromData(d []byte) *Message {
 			} else if e := json.Unmarshal(d, &applyRequest); e == nil && applyRequest.Package != nil {
 				m.Content = &applyRequest
 			} else {
-				log.Logger(context.Background()).Error("Cannot unmarshal Update Request:" + string(d))
+				log.Logger(context.Background()).Debug("Ignoring Update Message (probably a response):" + string(d))
 			}
 		}
 		return &m

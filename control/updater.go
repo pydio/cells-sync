@@ -321,7 +321,7 @@ func (u *Updater) Serve() {
 	if config.Default().Updates.Frequency == "restart" {
 		go func() {
 			<-time.After(3 * time.Second)
-			GetBus().Pub(&common.UpdateCheckRequest{}, TopicUpdate)
+			u.LoadUpdates(u.ctx, TopicUpdate)
 		}()
 	}
 	<-u.done
