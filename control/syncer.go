@@ -111,7 +111,8 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 
 	if patchStore, err := endpoint.NewPatchStore(configPath, leftEndpoint, rightEndpoint); err == nil {
 		syncer.patchStore = patchStore
-		syncTask.SetPatchPiper(syncer.patchStore)
+		syncTask.SetPatchListener(syncer.patchStore)
+
 	} else {
 		log.Logger(ctx).Error("Cannot open patch store: " + err.Error())
 	}
@@ -145,6 +146,10 @@ func (s *Syncer) dispatchStatus(ctx context.Context) {
 			if !ok {
 				return
 			}
+			var idleStatus = model.TaskStatusIdle
+			if s.taskPaused {
+				idleStatus = model.TaskStatusPaused
+			}
 			deferIdle := true
 			stateStore := s.stateStore
 			if patch, ok := data.(merger.Patch); ok {
@@ -176,9 +181,9 @@ func (s *Syncer) dispatchStatus(ctx context.Context) {
 					processed := val.(map[string]int)
 					msg := fmt.Sprintf("Finished Processing %d files and folders", processed["Total"])
 					log.Logger(ctx).Info(msg)
-					stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), model.TaskStatusIdle)
+					stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), idleStatus)
 				} else {
-					stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), model.TaskStatusIdle)
+					stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), idleStatus)
 					deferIdle = false
 				}
 				if s.patchStore != nil {
@@ -188,7 +193,7 @@ func (s *Syncer) dispatchStatus(ctx context.Context) {
 			if deferIdle {
 				go func() {
 					<-time.After(3 * time.Second)
-					stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), model.TaskStatusIdle)
+					stateStore.UpdateProcessStatus(model.NewProcessingStatus("Idle"), idleStatus)
 				}()
 			}
 
@@ -234,7 +239,12 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 			}
 			if s.cleanAllAfterStop {
 				log.Logger(ctx).Info("-- Cleaning all data for service")
-				os.RemoveAll(s.configPath)
+				er := model.Retry(func() error {
+					return os.RemoveAll(s.configPath)
+				}, 2*time.Second, 15*time.Second)
+				if er != nil {
+					log.Logger(ctx).Error("Could not remove folder " + s.configPath + " : " + er.Error())
+				}
 				// Publish that this task has been removed
 				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusRemoved), TopicState)
 			}

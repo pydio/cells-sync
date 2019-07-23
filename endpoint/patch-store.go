@@ -202,22 +202,9 @@ func (p *PatchStore) Stop() {
 	p.db.Close()
 }
 
-func (p *PatchStore) Pipe(in chan merger.Patch) chan merger.Patch {
-	out := make(chan merger.Patch)
-	p.pipeDone = make(chan bool, 1)
-	go func() {
-		defer close(out)
-		for {
-			select {
-			case patch := <-out:
-				p.patches <- patch
-				in <- patch
-			case <-p.pipeDone:
-				return
-			}
-		}
-	}()
-	return out
+// PublishPatch pushes patch to the persist queue
+func (p *PatchStore) PublishPatch(patch merger.Patch) {
+	p.patches <- patch
 }
 
 func (p PatchStore) persist(patch merger.Patch) {
@@ -225,6 +212,7 @@ func (p PatchStore) persist(patch merger.Patch) {
 	if patch.Size() == 0 && !has {
 		return // Do not store empty patch!
 	}
+	fmt.Println("STORING PATCH", patch.Stats())
 	p.db.Update(func(tx *bbolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(patchBucket)
 		if err != nil {
