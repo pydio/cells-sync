@@ -212,7 +212,6 @@ func (p PatchStore) persist(patch merger.Patch) {
 	if patch.Size() == 0 && !has {
 		return // Do not store empty patch!
 	}
-	fmt.Println("STORING PATCH", patch.Stats())
 	p.db.Update(func(tx *bbolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(patchBucket)
 		if err != nil {
