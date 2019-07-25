@@ -61,8 +61,8 @@ class PatchDialog extends React.Component {
                     <ScrollablePane styles={{contentContainer:{maxHeight:350, backgroundColor:'#fafafa'}}}>
                         <Sticky stickyPosition={StickyPositionType.Header}>
                             <div style={{borderBottom: '1px solid #EEEEEE', backgroundColor: '#F5F5F5', fontWeight: 'bold', display:'flex', alignItems:'center', padding:'8px 0'}}>
-                                <span style={{flex: 1, paddingLeft: 8}}>Files / Folders</span>
-                                <span style={{width: 130, marginRight: 8, textAlign:'center'}}>Operations</span>
+                                <span style={{flex: 1, paddingLeft: 8}}>{t('patch.header.nodes')}</span>
+                                <span style={{width: 130, marginRight: 8, textAlign:'center'}}>{t('patch.header.operations')}</span>
                             </div>
                         </Sticky>
                         {patches &&
@@ -75,7 +75,7 @@ class PatchDialog extends React.Component {
                             })
                         }
                         {!loading && hasMore &&
-                            <div style={{padding: 10, textAlign:'center'}}><Link onClick={() => {this.loadMore()}}>Load more...</Link></div>
+                            <div style={{padding: 10, textAlign:'center'}}><Link onClick={() => {this.loadMore()}}>{t('patch.more.load')}</Link></div>
                         }
                         {loading &&
                         <div style={{height:(patches && patches.length?50:400), display:'flex', alignItems:'center', justifyContent:'center'}}>

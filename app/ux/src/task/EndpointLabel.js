@@ -3,6 +3,7 @@ import EndpointTypes from '../models/EndpointTypes'
 import parse from 'url-parse'
 import {Icon, TooltipHost, DirectionalHint, ProgressIndicator} from 'office-ui-fabric-react'
 import moment from 'moment'
+const emptyTime = "0001-01-01T00:00:00Z";
 
 export default class EndpointLabel extends React.Component {
 
@@ -141,7 +142,7 @@ export default class EndpointLabel extends React.Component {
                 </div>
                 {!Connected &&
                 <TooltipHost id={uri} content={<span
-                    style={{color: errorColor}}>{t('task.disconnected')} {moment(LastConnection).fromNow()}</span>}
+                    style={{color: errorColor}}>{t('task.disconnected')} {LastConnection && LastConnection !== emptyTime ? t('task.disconnected.last') +  moment(LastConnection).fromNow() : ''}</span>}
                              directionalHint={DirectionalHint.bottomCenter}>
                     <Icon aria-labelledby={uri} iconName={"Warning"} styles={{root: styles.errorIcon}}/>
                 </TooltipHost>

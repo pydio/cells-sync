@@ -62,7 +62,7 @@ class NavMenu extends React.Component {
                     <React.Fragment>
                         <div style={{display:'flex', alignItems:'center'}}>
                             <span style={{flex: 1, fontSize: FontSizes.size24, fontWeight: 300, padding: 8}}>{t('application.title')}</span>
-                            <TooltipHost content={"Switch language"} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
+                            <TooltipHost content={t("language.switch")} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
                                 <IconButton
                                     iconProps={{iconName:'Flag'}}
                                     styles={{root:{marginRight: 4},menuIcon:{display:'none'}}}

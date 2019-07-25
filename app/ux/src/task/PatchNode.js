@@ -2,15 +2,16 @@ import React from 'react'
 import {Icon, TooltipHost, Link} from 'office-ui-fabric-react'
 import moment from 'moment'
 import basename from 'basename'
+import {withTranslation} from 'react-i18next'
 
 const ops = {
-    0: 'Transfer File',
-    1: 'Update File',
-    2: 'Create Folder',
-    3: 'Move Folder',
-    4: 'Move File',
-    5: 'Delete',
-    7: 'Conflict'
+    0: 'transfer',
+    1: 'update',
+    2: 'mkdir',
+    3: 'mvdir',
+    4: 'mvfile',
+    5: 'delete',
+    7: 'conflict'
 };
 
 class PatchNode extends React.Component {
@@ -21,7 +22,7 @@ class PatchNode extends React.Component {
     }
 
     render(){
-        const {patch, level, stats, openPath} = this.props;
+        const {patch, level, stats, openPath, t} = this.props;
         const {open} = this.state;
         if(!patch.hasOperations()){
             return null;
@@ -37,7 +38,7 @@ class PatchNode extends React.Component {
         }
         let action;
         if (patch.PathOperation){
-            action = ops[patch.PathOperation.OpType];
+            action = t('patch.operation.' + ops[patch.PathOperation.OpType]);
             if (patch.PathOperation.OpType === 5) {
                 icon = 'Delete';
             } else if(patch.PathOperation.OpType === 2) {
@@ -46,15 +47,15 @@ class PatchNode extends React.Component {
                 icon = 'MoveToFolder'
             }
             if (patch.PathOperation.ErrorString){
-                action += <TooltipHost content={patch.PathOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
+                action = <TooltipHost content={patch.PathOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
             }
         } else if(patch.DataOperation) {
-            action = ops[patch.DataOperation.OpType];
+            action = t('patch.operation.' + ops[patch.DataOperation.OpType]);
             if (patch.DataOperation.ErrorString){
                 action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
             }
         } else if(patch.Conflict) {
-            action = ops[patch.Conflict.OpType];
+            action = t('patch.operation.' + ops[patch.Conflict.OpType]);
             icon = 'Warning'
         }
         let children = patch.Children;
@@ -66,7 +67,7 @@ class PatchNode extends React.Component {
         let label = patch.Stamp ? moment(patch.Stamp).fromNow() : patch.Base;
         if (stats) {
             if(stats.Errors){
-                label +=  ' (' + stats.Errors.Total + ' errors)';
+                label +=  ' (' + stats.Errors.Total + ' '+t('patch.errors.' + (stats.Errors.Total > 1 ? 'multiple': 'one'))+')';
             } else if (stats.Processed){
                 label +=  ' (' + stats.Processed.Total + ')';
             }
@@ -78,7 +79,7 @@ class PatchNode extends React.Component {
             } else {
                 target = './' + target
             }
-            label += " => " + target;
+            label = <span>{label} &rarr; {target}</span>;
         }
         let openLink;
         if(openPath && patch.Node && patch.Node.Path && ( patch.DataOperation || patch.PathOperation) ){
@@ -106,9 +107,9 @@ class PatchNode extends React.Component {
                 {open &&
                     <div>
                         {children.map((child) => {
-                            return <PatchNode key={child.Base} patch={child} level={level + 1} openPath={openPath}/>
+                            return <PatchNode key={child.Base} patch={child} level={level + 1} openPath={openPath} t={t}/>
                         })}
-                        {hasMore > 0 && <div style={{padding: 5, paddingLeft: 50, fontStyle: 'italic', color: '#757575'}}>...showing 20 out of {hasMore} operations.</div>}
+                        {hasMore > 0 && <div style={{padding: 5, paddingLeft: 50, fontStyle: 'italic', color: '#757575'}}>{t('patch.more.limit').replace('%s', hasMore)}.</div>}
                     </div>
                 }
             </div>
@@ -117,4 +118,5 @@ class PatchNode extends React.Component {
 
 }
 
+PatchNode = withTranslation()(PatchNode);
 export default PatchNode
