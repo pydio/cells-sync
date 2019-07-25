@@ -53,7 +53,7 @@ class PatchDialog extends React.Component {
     }
 
     render() {
-        const {onDismiss, t, ...dialogProps} = this.props;
+        const {onDismiss, t, openPath, ...dialogProps} = this.props;
         const {patches, loading, hasMore} = this.state;
         return (
             <Dialog {...dialogProps} onDismiss={onDismiss} minWidth={700} title={t('patch.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
@@ -69,7 +69,7 @@ class PatchDialog extends React.Component {
                             patches.map((patch, k) => {
                                 return (
                                     <div key={k} style={{paddingBottom: 2, borderTop: k > 0 ? '1px solid #e0e0e0' : null}}>
-                                        <PatchNode patch={patch.Root} stats={patch.Stats} level={0} open={k === 0}/>
+                                        <PatchNode patch={patch.Root} stats={patch.Stats} level={0} open={k === 0} openPath={openPath}/>
                                     </div>
                                 );
                             })

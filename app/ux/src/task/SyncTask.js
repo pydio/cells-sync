@@ -14,11 +14,13 @@ import 'moment/locale/es';
 import 'moment/locale/it';
 import {withTranslation} from 'react-i18next'
 import PatchDialog from "./PatchDialog";
+import parse from 'url-parse'
+
 const emptyTime = "0001-01-01T00:00:00Z";
 
-const StatusIdle = 0;
+//const StatusIdle = 0;
 const StatusPaused = 1;
-const StatusDisabled = 2;
+//const StatusDisabled = 2;
 const StatusProcessing = 3;
 const StatusError = 4;
 const StatusRestarting = 5;
@@ -47,6 +49,54 @@ class SyncTask extends React.Component {
                 socket.sendMessage('CMD', {UUID:state.UUID, Cmd:key});
                 break
         }
+    }
+
+    openEndpointRoot(lnk) {
+        this.openPath(lnk, true)
+    }
+
+    uriToOpenLink(uri){
+        let data = parse(uri);
+        data.query = {};
+        if (data.protocol === 'fs:') {
+            return {url: data.toString().replace('fs://', ''), isFs: true}
+        } else if(data.protocol.indexOf('http') === 0) {
+            return {url: data.toString(), isFs: false}
+        }
+        return {};
+    }
+
+    bestRootForOpen() {
+        const {state} = this.props;
+        const {url, isFs} = this.uriToOpenLink(state.Config.LeftURI);
+        if (url && isFs){
+            return url;
+        } else {
+            const {url:url2} = this.uriToOpenLink(state.Config.RightURI);
+            if (url2) {
+                return url2
+            }
+        }
+        return "";
+    }
+
+    openPath(path, isURI = false){
+        let lnk = path;
+        if (!isURI) {
+            // Detect best option: if FS, use FS, otherwise use HTTP
+            let root = this.bestRootForOpen();
+            if (!root) {
+                return;
+            }
+            lnk = root + '/' + path;
+        }
+        console.log('opening link', lnk);
+        if (window.linkOpener) {
+            window.linkOpener.open(lnk);
+        } else {
+            window.open(lnk);
+        }
+
     }
 
     computeStatus() {
@@ -169,15 +219,16 @@ class SyncTask extends React.Component {
                     syncUUID={lastPatch ? state.Config.Uuid : ''}
                     hidden={!lastPatch}
                     onDismiss={()=>{this.setState({lastPatch: false})}}
+                    openPath={(path)=>{this.openPath(path, false)}}
                 />
                 <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
                     <div style={{padding: '0px 16px 10px'}}>
                         <h2 style={{display:'none', alignItems:'flex-end', fontWeight:400}}>{state.Config.Label}</h2>
                         <div style={{marginBottom: 10, marginTop:30}}>
                             <div style={{display:'flex'}}>
-                                <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}}/>
+                                <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
                                 <div style={styles.dirIcon}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortDown' : 'SortUp')}/></div>
-                                <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}}/>
+                                <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
                             </div>
                         </div>
                         <div style={{color:'#212121'}}>

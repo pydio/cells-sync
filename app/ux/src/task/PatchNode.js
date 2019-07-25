@@ -1,5 +1,5 @@
 import React from 'react'
-import {Icon, TooltipHost} from 'office-ui-fabric-react'
+import {Icon, TooltipHost, Link} from 'office-ui-fabric-react'
 import moment from 'moment'
 import basename from 'basename'
 
@@ -21,7 +21,7 @@ class PatchNode extends React.Component {
     }
 
     render(){
-        const {patch, level, stats} = this.props;
+        const {patch, level, stats, openPath} = this.props;
         const {open} = this.state;
         if(!patch.hasOperations()){
             return null;
@@ -80,6 +80,15 @@ class PatchNode extends React.Component {
             }
             label += " => " + target;
         }
+        let openLink;
+        if(openPath && patch.Node && patch.Node.Path && ( patch.DataOperation || patch.PathOperation) ){
+            openLink = patch.Node.Path;
+            if(patch.PathOperation && patch.PathOperation.OpType === 5) {
+                openLink = null;
+            } else if(patch.MoveTargetPath) {
+                openLink = patch.MoveTargetPath;
+            }
+        }
         return (
             <div style={{paddingLeft:(level > 0 ? 20 : 0)}}>
                 <div onClick={()=>{this.setState({open:!open})}} style={{display:'flex', alignItems:'center', fontSize:15, paddingTop: 8, paddingBottom: 8}}>
@@ -90,13 +99,14 @@ class PatchNode extends React.Component {
                         <span style={{width: 25}}>&nbsp;</span>
                     }
                     <Icon iconName={icon} styles={{root:{margin:'0 5px'}}}/>
-                    <span style={{flex: 1}}>{label}</span>
+                    {openLink && <Link styles={{root:{flex: 1}}} onClick={()=>{openPath(openLink)}}>{label}</Link>}
+                    {!openLink && <span style={{flex: 1}}>{label}</span>}
                     <span style={{width: 130, marginRight: 8, fontSize: 12, textAlign:'center'}}>{action}</span>
                 </div>
                 {open &&
                     <div>
                         {children.map((child) => {
-                            return <PatchNode key={child.Base} patch={child} level={level + 1}/>
+                            return <PatchNode key={child.Base} patch={child} level={level + 1} openPath={openPath}/>
                         })}
                         {hasMore > 0 && <div style={{padding: 5, paddingLeft: 50, fontStyle: 'italic', color: '#757575'}}>...showing 20 out of {hasMore} operations.</div>}
                     </div>
