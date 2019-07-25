@@ -94,8 +94,8 @@ func main() {
 			uxUrl = os.Args[2]
 		}
 		w := webview.New(webview.Settings{
-			Width:     779,
-			Height:    536,
+			Width:     900,
+			Height:    600,
 			Resizable: true,
 			Title:     "Cells Sync",
 			URL:       uxUrl,
