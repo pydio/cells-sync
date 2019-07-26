@@ -1,4 +1,4 @@
-// +build windows
+// +build app
 
 /*
  * Copyright (c) 2019. Abstrium SAS <team (at) pydio.com>
@@ -20,18 +20,43 @@
  * The latest code can be found at <https://pydio.com>.
  */
 
-package main
+package cmd
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
+	"github.com/skratchdot/open-golang/open"
+	"github.com/spf13/cobra"
+	"github.com/zserge/webview"
 )
 
-func processName(name string) string {
-	dir, _ := os.Getwd()
-	if !strings.HasSuffix(name, ".exe") {
-		name += ".exe"
-	}
-	return filepath.Join(dir, name)
+var url string
+
+type LinkOpener struct{}
+
+func (w *LinkOpener) Open(url string) {
+	open.Run(url)
+}
+
+var WebviewCmd = &cobra.Command{
+	Use:   "webview",
+	Short: "Launch WebView",
+	Run: func(cmd *cobra.Command, args []string) {
+		w := webview.New(webview.Settings{
+			Width:     900,
+			Height:    600,
+			Resizable: true,
+			Title:     "Cells Sync",
+			URL:       url,
+			Debug:     true, // Enable JS Debugger
+		})
+		w.Dispatch(func() {
+			w.Bind("linkOpener", &LinkOpener{})
+		})
+		w.Run()
+	},
+}
+
+func init() {
+	WebviewCmd.PersistentFlags().StringVar(&url, "url", "http://localhost:3636", "Open webview")
+
+	RootCmd.AddCommand(WebviewCmd)
 }

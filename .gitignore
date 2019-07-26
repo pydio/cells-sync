@@ -1,5 +1,6 @@
 sync-*
 csync
+cells-sync*
 sync.exe*
 .vscode
 debug

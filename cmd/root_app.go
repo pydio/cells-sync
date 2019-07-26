@@ -1,4 +1,4 @@
-// +build !app
+// +build app
 
 package cmd
 
@@ -10,12 +10,12 @@ import (
 
 var RootCmd = &cobra.Command{
 	Use:   os.Args[0],
-	Short: "Cells Sync desktop client",
-	Long:  `Cells Sync Desktop Client`,
+	Short: "Cells Sync Desktop Client",
+	Long:  `Opens system tray by default`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		handleSignals()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
+		SystrayCmd.Run(cmd, args)
 	},
 }

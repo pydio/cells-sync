@@ -18,7 +18,7 @@
  * The latest code can be found at <https://pydio.com>.
  */
 
-package main
+package tray
 
 import (
 	"context"
@@ -28,14 +28,13 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/pydio/sync/control"
+
 	"github.com/getlantern/systray"
+	"github.com/pydio/cells/common/sync/model"
+	"github.com/pydio/sync/app/tray/icon"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/thejerf/suture"
-	"github.com/zserge/webview"
-
-	"github.com/pydio/cells/common/sync/model"
-	"github.com/pydio/sync/app/systray/icon"
-	"github.com/pydio/sync/common"
 )
 
 var (
@@ -47,68 +46,8 @@ var (
 	supervisor *suture.Supervisor
 )
 
-type CliService struct {
-	cancel context.CancelFunc
-}
-
-func (c *CliService) Serve() {
-	var ctx context.Context
-	ctx, c.cancel = context.WithCancel(context.Background())
-	cmd := exec.CommandContext(ctx, processName("sync-cli"), "start")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	fmt.Println("Starting service " + processName("sync-cli"))
-	if e := cmd.Run(); e != nil {
-		fmt.Println("Error on service sync-cli")
-		c.cancel = nil
-		panic(e)
-	}
-}
-
-func (c *CliService) Stop() {
-	fmt.Println("Stopping Cli Service " + processName("sync-cli"))
-	if c.cancel != nil {
-		c.cancel()
-		c.cancel = nil
-	}
-}
-
-type WebviewLinkOpener struct{}
-
-func (w *WebviewLinkOpener) Open(url string) {
-	open.Run(url)
-}
-
-func main() {
-	var arg1 string
-	if len(os.Args) > 1 {
-		arg1 = os.Args[1]
-	}
-	switch arg1 {
-	case "version":
-		common.PrintVersion("Cells Sync System Tray")
-		os.Exit(0)
-	case "webview":
-		if len(os.Args) > 2 {
-			uxUrl = os.Args[2]
-		}
-		w := webview.New(webview.Settings{
-			Width:     900,
-			Height:    600,
-			Resizable: true,
-			Title:     "Cells Sync",
-			URL:       uxUrl,
-			Debug:     true, // Enable JS Debugger
-		})
-		w.Dispatch(func() {
-			w.Bind("linkOpener", &WebviewLinkOpener{})
-		})
-		w.Run()
-	default:
-		// Should be called at the very beginning of main().
-		systray.Run(onReady, onExit)
-	}
+func Run() {
+	systray.Run(onReady, onExit)
 }
 
 func spawnWebView(path ...string) {
@@ -121,7 +60,9 @@ func spawnWebView(path ...string) {
 	if len(path) > 0 {
 		url += path[0]
 	}
-	cmd := exec.CommandContext(c, processName(os.Args[0]), "webview", url)
+	cmd := exec.CommandContext(c, processName(os.Args[0]), "webview", "--url", url)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 	viewCancel = cancel
 	if e := cmd.Run(); e != nil {
 		if !closing {
@@ -214,6 +155,17 @@ func onReady() {
 				go spawnWebView("/about")
 			case <-mQuit.ClickedCh:
 				fmt.Println("Quitting now...")
+				beforeExit()
+				systray.Quit()
+				return
+			}
+		}
+	}()
+
+	ctrlChan := control.GetBus().SubOnce(control.TopicGlobal)
+	go func() {
+		for msg := range ctrlChan {
+			if msg == control.MessageHalt {
 				beforeExit()
 				systray.Quit()
 				return
