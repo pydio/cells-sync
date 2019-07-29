@@ -116,6 +116,9 @@ export default class EndpointLabel extends React.Component {
             lStyle.display = 'block';
         }
         data.query = {};
+        data.username = '';
+        data.password = '';
+        data.hash = '';
         if ( data.protocol === 'fs:' && window.linkOpener ){
             OpenLink = data.toString();
             OpenLink = OpenLink.replace('fs://', '');
