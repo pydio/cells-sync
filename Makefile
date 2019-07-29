@@ -2,7 +2,7 @@ ENV=env
 TODAY=`date -u +%Y-%m-%dT%H:%M:%S`
 GITREV=`git rev-parse HEAD`
 
-all: clean pack ui cli
+all: clean pack ui
 
 ui:
 	go build \
@@ -11,12 +11,8 @@ ui:
 	-X github.com/pydio/sync/common.BuildRevision=${GITREV}" \
 	--tags app -o cells-sync main.go
 
-cli:
-	go build \
-	-ldflags "-X github.com/pydio/sync/common.Version=0.2.0 \
-	-X github.com/pydio/sync/common.BuildStamp=${TODAY} \
-	-X github.com/pydio/sync/common.BuildRevision=${GITREV}" \
-	-o cells-sync-cli main.go
+dev:
+	go run main.go start
 
 pack:
 	${GOPATH}/bin/packr
@@ -49,5 +45,5 @@ xgo:
 
 
 clean:
-	rm -f cells-sync-*
+	rm -f cells-sync*
 	${GOPATH}/bin/packr clean
