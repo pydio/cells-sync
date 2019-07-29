@@ -1,6 +1,13 @@
-# sync
+![Cells Sync](https://github.com/pydio/sync/blob/master/logo.png?raw=true)
 
-[Work In Progress]
+# Cells Sync
+
+Cells Sync is a desktop synchronization client for keeping files offline with Pydio Cells server. 
+
+ - 100% GO - Tested on Linux, MacOSX and Windows.
+ - Realtime propagation of changes
+ - Configurable sync direction (bi-directional / unidirectional)
+
 
 ## Specification
 
