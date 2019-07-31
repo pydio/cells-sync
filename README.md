@@ -6,7 +6,7 @@
 [![License Badge](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![GoDoc](https://godoc.org/github.com/pydio/cells?status.svg)](https://godoc.org/github.com/pydio/sync)
 [![Build Status](https://travis-ci.org/pydio/sync.svg?branch=master)](https://travis-ci.org/pydio/sync)
-[![Go Report Card](https://goreportcard.com/badge/github.com/pydio/sync?rand=1)](https://goreportcard.com/report/github.com/pydio/sync)
+[![Go Report Card](https://goreportcard.com/badge/github.com/pydio/sync?rand=2)](https://goreportcard.com/report/github.com/pydio/sync)
 
 Cells Sync is a desktop synchronization client for Pydio Cells server.  
 
