@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+// Package endpoint provides some specific factories to provide Endpoints to the sync library
 package endpoint
 
 import (

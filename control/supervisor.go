@@ -16,6 +16,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+// Package control provides a set of Services (in the Supervisor terminology) that are started
+// by the main sync process.
 package control
 
 import (

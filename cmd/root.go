@@ -19,6 +19,8 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Package cmd registers cobra commands for CLI tool. Some commands use an "app" build tag
+// to speed up compilation while developing by ignoring UX specific dependencies (systray, webview)
 package cmd
 
 import (

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2019 Abstrium SAS
  *
  *  This file is part of Cells Sync.
@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+// Package common exposes package variables that are updated via ldflags compilation
 package common
 
 import (
