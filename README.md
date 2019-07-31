@@ -1,3 +1,5 @@
+![Cells Sync](https://github.com/pydio/sync/blob/master/logo.png?raw=true)
+
 [Homepage](https://pydio.com/) | [Dev Guide](https://pydio.com/en/docs/developer-guide) | [GitHub-Repository](https://github.com/pydio/sync) |
 [Issue-Tracker](https://github.com/pydio/sync/issues)
 
@@ -8,13 +10,20 @@
 
 Cells Sync is a desktop synchronization client for keeping files offline with Pydio Cells server. 
 
-![Cells Sync](https://github.com/pydio/sync/blob/master/logo.png?raw=true)
-
 ## Features
 
- - 100% GO - Tested on Linux, MacOSX and Windows.
+ - 100% GO 
+ - Windows, MacOSX, Linux
  - Realtime propagation of changes
  - Configurable sync direction (bi-directional / unidirectional)
+ - Selective Folders synchronization
+ - Supports various types of Endpoints for syncing (any source/target can be combined): 
+   * Cells Server (over HTTP/HTTPS)
+   * Local Folder
+   * Local Cells server (accessed directy if deployed inside the microservices mesh)
+   * S3-compatible storage service (including AWS S3 and Minio)
+   * BoltDB storage (used for storing tree snapshots)
+   * Cells GRPC indexation services (implementing NodeProvider/NodeReceiver grpc endpoints).
 
 ## Getting Started
 
@@ -42,7 +51,13 @@ TODO: list and links to the pre-compiled binaries download server
 
 ### Running cells-sync
 
-Once you have downloaded or compiled cells-sync for your platform, simply run `cells-sync`, it should start the system tray icon, and start the synchronization agent in background. If you want to simply run the agent without any UX, run `cells-sync start`
+Once you have downloaded or compiled cells-sync for your platform, simply run:
+
+```
+$ ./cells-sync
+```
+
+This should start the system tray icon, and start the synchronization agent in background. If you want to simply run the agent without any UX, run `cells-sync start`
 
 ### Other available commands
 
