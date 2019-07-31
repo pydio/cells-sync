@@ -9,7 +9,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/pydio/sync?rand=1)](https://goreportcard.com/report/github.com/pydio/sync)
 
 Cells Sync is a desktop synchronization client for Pydio Cells server.  
-It keeps a local copy of a subpart of your repository: your document accessible even when you are off-line and get actualised as soon as you go back on-line.
 
 ## Features
 
