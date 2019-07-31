@@ -1,23 +1,21 @@
-/*
- * Copyright 2007-2019 Charles du Jeu - Abstrium SAS <team (at) pyd.io>
- * This file is part of Pydio.
+/**
+ * Copyright 2019 Abstrium SAS
  *
- * Pydio is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *  This file is part of Cells Sync.
  *
- * Pydio is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ *  Cells Sync is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * You should have received a copy of the GNU Affero General Public License
- * along with Pydio.  If not, see <http://www.gnu.org/licenses/>.
+ *  Cells Sync is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- * The latest code can be found at <https://pydio.com>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 import React, {Fragment} from 'react'
 import moment from 'moment'
 import {withTranslation} from 'react-i18next'
