@@ -8,22 +8,23 @@
 [![Build Status](https://travis-ci.org/pydio/sync.svg?branch=master)](https://travis-ci.org/pydio/sync)
 [![Go Report Card](https://goreportcard.com/badge/github.com/pydio/sync?rand=1)](https://goreportcard.com/report/github.com/pydio/sync)
 
-Cells Sync is a desktop synchronization client for keeping files offline with Pydio Cells server. 
+Cells Sync is a desktop synchronization client for Pydio Cells server.  
+It keeps a local copy of a subpart of your repository: your document accessible even when you are off-line and get actualised as soon as you go back on-line.
 
 ## Features
 
- - 100% GO 
- - Windows, MacOSX, Linux
- - Realtime propagation of changes
- - Configurable sync direction (bi-directional / unidirectional)
- - Selective Folders synchronization
- - Supports various types of Endpoints for syncing (any source/target can be combined): 
-   * Cells Server (over HTTP/HTTPS)
-   * Local Folder
-   * Local Cells server (accessed directy if deployed inside the microservices mesh)
-   * S3-compatible storage service (including AWS S3 and Minio)
-   * BoltDB storage (used for storing tree snapshots)
-   * Cells GRPC indexation services (implementing NodeProvider/NodeReceiver grpc endpoints).
+- 100% GO
+- Windows, MacOSX, Linux
+- Realtime propagation of changes _(only when your local machine can connect to your server)_
+- Configurable sync direction (bi-directional / unidirectional)
+- Selective Folders synchronization
+- Supports various types of end points for syncing (any source/target can be combined):
+  - Cells Server (over HTTP/HTTPS)
+  - Local Folder
+  - Local Cells server (accessed directly if deployed inside the microservices mesh)
+  - S3-compatible storage service (including AWS S3 and Minio)
+  - BoltDB storage (used for storing tree snapshots)
+  - Cells GRPC indexation services (implementing NodeProvider/NodeReceiver grpc endpoints).
 
 ## Getting Started
 
@@ -31,10 +32,10 @@ Cells Sync is a desktop synchronization client for keeping files offline with Py
 
 #### Pre-requisites
 
-In order to compile and run the Cells-Sync client, you must fulfill the following requirements : 
+In order to compile and run the Cells-Sync client, you must fulfill the following requirements:
 
- - GOLANG developement toolchain properly installed (tested with 1.12 and higher)
- - NodeJS/NPM environment in order to compile the frontend, you need an up-to-date version of NPM (tested with node version 12.X)
+- GOLANG developement toolchain properly installed (tested with 1.12 and higher)
+- NodeJS/NPM environment in order to compile the frontend, you need an up-to-date version of NPM (tested with node version 12.X)
 
 #### Compilation instructions
 
@@ -43,7 +44,7 @@ In order to compile and run the Cells-Sync client, you must fulfill the followin
 - To pack the frontend inside the binary (not mandatory if you are running on the same machine where $GOPATH is available), install github.com/gobufallo/packr/packr tool and run `make clean pack` at the root of the repository.
 - Compile binary by running `make ui`
 
-The resulting cells-sync binary should be good to go.
+The resulting `cells-sync` binary should be good to go.
 
 ### Using pre-compiled binaries
 
@@ -53,17 +54,17 @@ TODO: list and links to the pre-compiled binaries download server
 
 Once you have downloaded or compiled cells-sync for your platform, simply run:
 
-```
-$ ./cells-sync
+```sh
+./cells-sync
 ```
 
-This should start the system tray icon, and start the synchronization agent in background. If you want to simply run the agent without any UX, run `cells-sync start`
+This both starts the system tray icon and the synchronization agent in background. If you want to simply run the agent without any UX, run `cells-sync start`.
 
 ### Other available commands
 
-Use help to display the available commands: 
+Use help to display the available commands:
 
-```
+```sh
 $ ./cells-sync --help
 Opens system tray by default
 
@@ -86,12 +87,11 @@ Flags:
   -h, --help   help for ./cells-sync
 
 Use "./cells-sync [command] --help" for more information about a command.
-
 ```
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/pydio/cells/blob/master/CONTRIBUTING.md) in the Pydio Cells project for details on our code of conduct, and the process for submitting pull requests to us. You ca find a comprehensive [Developer Guide](https://pydio.com/en/docs/developer-guide) on our web site. Our online docs are open source as well, feel free to improve them by contributing!
+Please read [CONTRIBUTING.md](https://github.com/pydio/cells/blob/master/CONTRIBUTING.md) in the Pydio Cells project for details on our code of conduct, and the process for submitting pull requests to us. You can find a comprehensive [Developer Guide](https://pydio.com/en/docs/developer-guide) on our web site. Our online docs are open source as well, feel free to improve them by contributing!
 
 ## Versioning
 
