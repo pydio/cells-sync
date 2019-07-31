@@ -1,8 +1,13 @@
 language: go
 
+os:
+  - "linux"
+  - "windows"
+  - "osx"
+
 go:
-- "1.12"
+  - "1.12"
 
 script:
-- go get -u github.com/pydio/sync
-- go build main.go
+  - go get -u github.com/pydio/sync
+  - go build main.go
