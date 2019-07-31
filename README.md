@@ -3,9 +3,9 @@
 [Homepage](https://pydio.com/) | [Dev Guide](https://pydio.com/en/docs/developer-guide) | [GitHub-Repository](https://github.com/pydio/sync) |
 [Issue-Tracker](https://github.com/pydio/sync/issues)
 
-[![License Badge](https://img.shields.io/badge/License-AGPL%203%2B-blue.svg)](LICENSE)
+[![License Badge](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![GoDoc](https://godoc.org/github.com/pydio/cells?status.svg)](https://godoc.org/github.com/pydio/sync)
-[![Build Status](https://travis-ci.org/pydio/cells.svg?branch=master)](https://travis-ci.org/pydio/sync)
+[![Build Status](https://travis-ci.org/pydio/sync.svg?branch=master)](https://travis-ci.org/pydio/sync)
 [![Go Report Card](https://goreportcard.com/badge/github.com/pydio/sync?rand=1)](https://goreportcard.com/report/github.com/pydio/sync)
 
 Cells Sync is a desktop synchronization client for keeping files offline with Pydio Cells server. 
