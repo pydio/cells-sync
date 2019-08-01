@@ -11,3 +11,4 @@ go:
 script:
   - go get -u github.com/pydio/sync
   - go build main.go
+  - go run main.go autotest
