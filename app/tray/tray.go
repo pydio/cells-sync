@@ -28,13 +28,14 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/pydio/sync/control"
-
 	"github.com/getlantern/systray"
-	"github.com/pydio/cells/common/sync/model"
-	"github.com/pydio/sync/app/tray/icon"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/thejerf/suture"
+
+	"github.com/pydio/cells/common/sync/model"
+
+	"github.com/pydio/cells-sync/app/tray/icon"
+	"github.com/pydio/cells-sync/control"
 )
 
 var (

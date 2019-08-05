@@ -1,12 +1,12 @@
-![Cells Sync](https://github.com/pydio/sync/blob/master/logo.png?raw=true)
+![Cells Sync](https://github.com/pydio/cells-sync/blob/master/logo.png?raw=true)
 
-[Homepage](https://pydio.com/) | [Dev Guide](https://pydio.com/en/docs/developer-guide) | [GitHub-Repository](https://github.com/pydio/sync) |
-[Issue-Tracker](https://github.com/pydio/sync/issues)
+[Homepage](https://pydio.com/) | [Dev Guide](https://pydio.com/en/docs/developer-guide) | [GitHub-Repository](https://github.com/pydio/cells-sync) |
+[Issue-Tracker](https://github.com/pydio/cells-sync/issues)
 
 [![License Badge](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![GoDoc](https://godoc.org/github.com/pydio/cells?status.svg)](https://godoc.org/github.com/pydio/sync)
-[![Build Status](https://travis-ci.org/pydio/sync.svg?branch=master)](https://travis-ci.org/pydio/sync)
-[![Go Report Card](https://goreportcard.com/badge/github.com/pydio/sync?rand=2)](https://goreportcard.com/report/github.com/pydio/sync)
+[![GoDoc](https://godoc.org/github.com/pydio/cells?status.svg)](https://godoc.org/github.com/pydio/cells-sync)
+[![Build Status](https://travis-ci.org/pydio/cells-sync.svg?branch=master)](https://travis-ci.org/pydio/cells-sync)
+[![Go Report Card](https://goreportcard.com/badge/github.com/pydio/cells-sync?rand=2)](https://goreportcard.com/report/github.com/pydio/cells-sync)
 
 Cells Sync is a desktop synchronization client for Pydio Cells server.  
 
@@ -38,7 +38,7 @@ In order to compile and run the Cells-Sync client, you must fulfill the followin
 
 #### Compilation instructions
 
-- Get the code: `go get -u github.com/pydio/sync`
+- Get the code: `go get -u github.com/pydio/cells-sync`
 - To compile the frontend, enter the `app/` folder and run `npm run build`
 - To pack the frontend inside the binary (not mandatory if you are running on the same machine where $GOPATH is available), install github.com/gobufallo/packr/packr tool and run `make clean pack` at the root of the repository.
 - Compile binary by running `make ui`
@@ -94,11 +94,11 @@ Please read [CONTRIBUTING.md](https://github.com/pydio/cells/blob/master/CONTRIB
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/pydio/sync/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/pydio/cells-sync/tags).
 
 ## Authors
 
-See the list of [contributors](https://github.com/pydio/sync/graphs/contributors) who participated in this project.
+See the list of [contributors](https://github.com/pydio/cells-sync/graphs/contributors) who participated in this project.
 
 ## License
 

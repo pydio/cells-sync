@@ -25,10 +25,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pydio/sync/common"
-
 	"github.com/pydio/cells/common/sync/model"
-	"github.com/pydio/sync/config"
+
+	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/config"
 )
 
 func compareURI(status, config string) bool {

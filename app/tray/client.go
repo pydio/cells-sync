@@ -11,7 +11,7 @@ import (
 
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service"
-	"github.com/pydio/sync/common"
+	"github.com/pydio/cells-sync/common"
 )
 
 type StatusMessage int

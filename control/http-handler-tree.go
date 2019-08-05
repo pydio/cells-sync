@@ -37,7 +37,7 @@ import (
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/proto/tree"
 	"github.com/pydio/cells/common/sync/model"
-	"github.com/pydio/sync/endpoint"
+	"github.com/pydio/cells-sync/endpoint"
 )
 
 type TreeRequest struct {

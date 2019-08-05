@@ -30,7 +30,7 @@ import (
 
 	"github.com/pydio/cells/common/log"
 	servicecontext "github.com/pydio/cells/common/service/context"
-	"github.com/pydio/sync/config"
+	"github.com/pydio/cells-sync/config"
 )
 
 // Supervisor is a service manager for starting syncs and other services and restarting them if necessary

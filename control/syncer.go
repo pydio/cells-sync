@@ -33,8 +33,8 @@ import (
 	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/cells/common/sync/task"
-	"github.com/pydio/sync/config"
-	"github.com/pydio/sync/endpoint"
+	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells-sync/endpoint"
 )
 
 type Syncer struct {

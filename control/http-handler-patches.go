@@ -29,7 +29,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/pydio/cells/common/sync/merger"
-	"github.com/pydio/sync/endpoint"
+	"github.com/pydio/cells-sync/endpoint"
 )
 
 type PatchesRequest struct {

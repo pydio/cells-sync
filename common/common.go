@@ -26,12 +26,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/proto/update"
-
 	"github.com/pydio/cells/common/sync/model"
 
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/sync/config"
+	"github.com/pydio/cells-sync/config"
 )
 
 var (

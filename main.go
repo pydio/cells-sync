@@ -19,7 +19,7 @@
 
 package main
 
-import "github.com/pydio/sync/cmd"
+import "github.com/pydio/cells-sync/cmd"
 
 func main() {
 	cmd.RootCmd.Execute()

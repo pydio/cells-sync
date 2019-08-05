@@ -37,9 +37,9 @@ import (
 	"gopkg.in/olahol/melody.v1"
 
 	"github.com/pydio/cells/common/log"
-	"github.com/pydio/sync/app/ux"
-	"github.com/pydio/sync/common"
-	"github.com/pydio/sync/config"
+	"github.com/pydio/cells-sync/app/ux"
+	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/config"
 )
 
 type HttpServer struct {

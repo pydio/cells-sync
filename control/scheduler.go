@@ -25,7 +25,7 @@ import (
 	"github.com/pydio/cells/common/log"
 	servicecontext "github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/utils/schedule"
-	"github.com/pydio/sync/config"
+	"github.com/pydio/cells-sync/config"
 )
 
 type Scheduler struct {

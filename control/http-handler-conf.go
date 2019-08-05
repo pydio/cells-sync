@@ -24,7 +24,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pydio/sync/config"
+	"github.com/pydio/cells-sync/config"
 )
 
 func (h *HttpServer) loadConf(i *gin.Context) {

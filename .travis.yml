@@ -9,6 +9,6 @@ go:
   - "1.12"
 
 script:
-  - go get -u github.com/pydio/sync
+  - go get -u github.com/pydio/cells-sync
   - go build main.go
   - go run main.go autotest

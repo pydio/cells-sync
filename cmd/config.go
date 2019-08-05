@@ -25,9 +25,11 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/pborman/uuid"
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/sync/config"
 	"github.com/spf13/cobra"
+
+	"github.com/pydio/cells/common/log"
+
+	"github.com/pydio/cells-sync/config"
 )
 
 func exit(err error) {

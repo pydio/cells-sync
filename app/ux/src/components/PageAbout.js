@@ -147,7 +147,7 @@ class PageAbout extends React.Component {
                     </p>
 
                     <h3>Licensing</h3>
-                    <p>CellsSync code is licensed under GPL v3. You can find the source code <Link href={"https://github.com/pydio/sync"}/>.</p>
+                    <p>CellsSync code is licensed under GPL v3. You can find the source code <Link href={"https://github.com/pydio/cells-sync"}/>.</p>
 
                 </PageBlock>
                 <PageBlock>

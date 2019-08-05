@@ -44,8 +44,8 @@ import (
 	"github.com/pydio/cells/common/proto/update"
 	servicecontext "github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/utils/net"
-	"github.com/pydio/sync/common"
-	"github.com/pydio/sync/config"
+	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/config"
 )
 
 type Updater struct {

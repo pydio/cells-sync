@@ -28,8 +28,8 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/pydio/cells/common/log"
-	"github.com/pydio/sync/config"
-	"github.com/pydio/sync/control"
+	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells-sync/control"
 )
 
 var StartCmd = &cobra.Command{

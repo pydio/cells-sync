@@ -20,7 +20,7 @@
 package cmd
 
 import (
-	"github.com/pydio/sync/common"
+	"github.com/pydio/cells-sync/common"
 	"github.com/spf13/cobra"
 )
 

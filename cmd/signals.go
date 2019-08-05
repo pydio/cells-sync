@@ -24,7 +24,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/pydio/sync/control"
+	"github.com/pydio/cells-sync/control"
 )
 
 func handleSignals() {

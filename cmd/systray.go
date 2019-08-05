@@ -22,7 +22,7 @@
 package cmd
 
 import (
-	"github.com/pydio/sync/app/tray"
+	"github.com/pydio/cells-sync/app/tray"
 	"github.com/spf13/cobra"
 )
 
