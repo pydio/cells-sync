@@ -1,0 +1,10 @@
+files:
+  - source: /app/ux/src/i18n/en.json
+    translation: /app/ux/src/i18n/%locale%.json
+    languages_mapping:
+      locale:
+        fr: fr
+        de: de
+        pt-BR: pt-br
+        es-ES: es-es
+        it: it
