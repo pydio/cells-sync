@@ -19,6 +19,7 @@
 import i18n from "i18next";
 import en from "./i18n/en"
 import fr from "./i18n/fr"
+import de from "./i18n/de"
 import { initReactI18next } from "react-i18next";
 
 // the translations
@@ -29,10 +30,13 @@ const resources = {
     },
     fr: {
         translation: fr
+    },
+    de: {
+        translation: de
     }
 };
 let local = localStorage.getItem('language');
-if(!local || (local !== 'fr' && local !== 'en')){
+if(!local || (local !== 'fr' && local !== 'en' && local !== 'de')){
     local = 'en'
 }
 i18n
