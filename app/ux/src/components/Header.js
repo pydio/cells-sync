@@ -44,6 +44,7 @@ class Header extends React.Component {
                         <Link styles={{root: {color: 'white'}}} href={"http://localhost:6060/debug/pprof"} target={"_blank"}>Debugger</Link>
                         &nbsp;|&nbsp;<Link styles={{root: {color: 'white', textDecoration:lng==='en'?'underline':'none'}}} onClick={()=>{i18n.changeLanguage('en')}}>EN</Link>
                         &nbsp;|&nbsp;<Link styles={{root: {color: 'white', textDecoration:lng==='fr'?'underline':'none'}}} onClick={()=>{i18n.changeLanguage('fr')}}>FR</Link>
+                        &nbsp;|&nbsp;<Link styles={{root: {color: 'white', textDecoration:lng==='de'?'underline':'none'}}} onClick={()=>{i18n.changeLanguage('de')}}>DE</Link>
                     </div>
                 </div>
             }</Translation>
