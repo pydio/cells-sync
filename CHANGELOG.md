@@ -1,0 +1,212 @@
+# Changes between v0.0.1 and v0.2.0
+
+[See Full Changelog](https://github.com/pydio/cells-sync/compare/v0.0.1...v0.2.0)
+
+- [#9f45c06](https://github.com/pydio/cells-sync/commit/9f45c06872a064e36875bbd23d7ebb9c76d13e2d): Add German translations
+- [#6c1829f](https://github.com/pydio/cells-sync/commit/6c1829f693c1286f0a02f9c8e3ea9c5198ec41c1): Add German version
+- [#b6d6e7d](https://github.com/pydio/cells-sync/commit/b6d6e7dcc1e9f0d377f062b797d72b817e6040e7): Add forgotten trigger
+- [#34ed19c](https://github.com/pydio/cells-sync/commit/34ed19c83c3efa70cd4450d12c73c0c2ef8aa5fe): Add support for german version in React app
+- [#382895e](https://github.com/pydio/cells-sync/commit/382895e2366c2144e8a591fc724130db108aa405): Add German version
+- [#b8ee75a](https://github.com/pydio/cells-sync/commit/b8ee75ab04dc8785e9f6ae3137263110a545de3c): Make version configurable
+- [#4f756db](https://github.com/pydio/cells-sync/commit/4f756dbf5fcac41c25cdac3cc210a115e1b86a3b): Finalise integration w. i18n tool, add default languages and FR translation
+- [#54a8152](https://github.com/pydio/cells-sync/commit/54a81525da5b9ecce3b35fb860fc1c93df4bbb02): Finalise integration, add default language and FR translation
+- [#34660c0](https://github.com/pydio/cells-sync/commit/34660c025be8bc38d53c35c0d4c33836eea770d7): Configure integration with translation tool
+- [#2d5af17](https://github.com/pydio/cells-sync/commit/2d5af17fd35a884316d061606e6f1783ee1a858f): Adapt after repository rename
+- [#a5f207e](https://github.com/pydio/cells-sync/commit/a5f207e027649c955ab6458e6a61eefe6df1c698): Add a basic autotest command running a unidirectional sync between two temporary folders. Add this to Travis build to check it's running on all OS
+- [#b37822a](https://github.com/pydio/cells-sync/commit/b37822a6c45bcaf409f15ccb80fd6d6e09c3d2b9): Merge remote-tracking branch 'origin/master'
+- [#cee398b](https://github.com/pydio/cells-sync/commit/cee398b51d79e7f3b8d3459c82f84ac1f007b84d): Try adding more OS to Travis
+- [#b8efbf9](https://github.com/pydio/cells-sync/commit/b8efbf973ddf3c4be9fbfade696359c633132244): Refresh goreport card
+- [#8937c4d](https://github.com/pydio/cells-sync/commit/8937c4d79ae3888011f40e50364b794b1da74b6c): Merge remote-tracking branch 'origin/master'
+- [#9f566c4](https://github.com/pydio/cells-sync/commit/9f566c4d2eff63ff385d40da3f4d2d2a026c1b21): Add go get to travis build
+- [#fbceca2](https://github.com/pydio/cells-sync/commit/fbceca2e799657e372490cdcafea5f61437aaedb): Update README.md
+- [#81a2233](https://github.com/pydio/cells-sync/commit/81a22333b271d5ff767dcdd4ee99cef144930d1e): Fix a few typos + make linter happy
+- [#4b54ffa](https://github.com/pydio/cells-sync/commit/4b54ffa346823f4762628693c7881f128c1f40d5): Update README.md
+- [#8df1538](https://github.com/pydio/cells-sync/commit/8df153806439acbd69b54997094a461545c643d1): Update README.md
+- [#f1735e7](https://github.com/pydio/cells-sync/commit/f1735e75e284be204e38c1bd00ceb044d328897c): Update README.md
+- [#8cd3d71](https://github.com/pydio/cells-sync/commit/8cd3d71db077a313c51ca3913d11abaf514dede1): Merge remote-tracking branch 'origin/master'
+- [#d35577d](https://github.com/pydio/cells-sync/commit/d35577d2ae643092269552e93888b9e38a82058e): Fix Copyright: one line before package name
+- [#c5c3632](https://github.com/pydio/cells-sync/commit/c5c3632c34fbcaf3b45df4acc8d0c92b1841de02): Update README.md
+- [#da90c95](https://github.com/pydio/cells-sync/commit/da90c95469f0aafa1fc4c2ac79bb70a5a3800889): Update README.md
+- [#3402fae](https://github.com/pydio/cells-sync/commit/3402faed70d5acdc95b3d5babd93029620fc9628): Update README.md
+- [#421efc8](https://github.com/pydio/cells-sync/commit/421efc894181de46217907e1b9012a149d6a31a0): Add copyright to all Go files
+- [#a0f79f0](https://github.com/pydio/cells-sync/commit/a0f79f0f0bc4de57c5969dcd1a333c39cfb05313): Update Copyright in JS files
+- [#e516828](https://github.com/pydio/cells-sync/commit/e5168284468caf0e94ae0982909e9cc26f596e39): Merge remote-tracking branch 'origin/master'
+- [#ec9757a](https://github.com/pydio/cells-sync/commit/ec9757af8cef9f62f8ff399f4a48f75a878f8537): reverse n
+- [#332388e](https://github.com/pydio/cells-sync/commit/332388e274b8787a7b60e9ab5c9a11118cfc6dfe): Create LICENSE
+- [#5826265](https://github.com/pydio/cells-sync/commit/5826265c6f8bfa9ccdaa970f2341c52f9a6a0181): Update README.md
+- [#69fe183](https://github.com/pydio/cells-sync/commit/69fe1831d0253e9cf2d4435e80da7c046bad1e36): logo
+- [#9a5c192](https://github.com/pydio/cells-sync/commit/9a5c192b15228702817ab6a0c3ff671d5275eff5): Remove make cli
+- [#0eb67ff](https://github.com/pydio/cells-sync/commit/0eb67ffa299bc76e4673d2196e35a4948dafc3f5): clean url before OpenLink
+- [#84843cf](https://github.com/pydio/cells-sync/commit/84843cf37c228ab5ff93959de8953ead8558c2fd): Merge cli and ui mains and use build tags (app) to build systray and webview or not.
+- [#e67d8a3](https://github.com/pydio/cells-sync/commit/e67d8a39da71cb91f53bcdb4f47ad52b296da7e0): Make webview a bit bigger
+- [#7a243fb](https://github.com/pydio/cells-sync/commit/7a243fb7345ae25b73bac8652e8a6c68229d3075): i18n and patch display
+- [#bf3a6d0](https://github.com/pydio/cells-sync/commit/bf3a6d068299753cc7b565bd785d05f6cffcfb68): use window.linkOpener to open files and Endpoint Roots
+- [#f398ca3](https://github.com/pydio/cells-sync/commit/f398ca32ecb65ef92d1397c2cb48e67da8095fe6): Replace html title and favicon
+- [#5750233](https://github.com/pydio/cells-sync/commit/5750233131e71825d6cdab722fabfe7ca3e7e61a): Forgotten fmt.Println
+- [#b23af33](https://github.com/pydio/cells-sync/commit/b23af3352a4c7b51300d0bdfa856b217b54c3262): Change PatchPiper to PatchListener to re-adapt to delayed filtering. Retries on deleting resources for removed sync tasks
+- [#f7285bc](https://github.com/pydio/cells-sync/commit/f7285bc9b3ced93c01eee206fa4850301f5fb6a9): Ignore Update responses parsing
+- [#06a0be7](https://github.com/pydio/cells-sync/commit/06a0be7984d0072736dacf5f2142cc8f86fbe286): Finally use move TasksList to use same PageXXX naming
+- [#d598a29](https://github.com/pydio/cells-sync/commit/d598a2991c85e0d33e0146948f0f85872bedca55): Add a new Updater Service using same protos as in Cells
+- [#57baac5](https://github.com/pydio/cells-sync/commit/57baac5477cd2aa7852bf4d2994f6196e56acea0): UX - Rework Page for harmonization - Wire update in About page
+- [#79e421d](https://github.com/pydio/cells-sync/commit/79e421d2bea0f8efabf5fbf0519bbb06ed297807): Refactor http-server to avoid polluting package namespace
+- [#160a85c](https://github.com/pydio/cells-sync/commit/160a85ca43cfa8b5be3b310df6133de503888702): Ux again
+- [#4908c4c](https://github.com/pydio/cells-sync/commit/4908c4c0aeec7473c6caf4e05953768b98732a1b): Fix wrong import
+- [#b3efdc0](https://github.com/pydio/cells-sync/commit/b3efdc0d642d0a75294e098c5d985f44c3d2d4e1): Update About page
+- [#937870e](https://github.com/pydio/cells-sync/commit/937870ebf82eeaeff248db8162ccc8dc26df53ed): Remove unused JS code
+- [#525f660](https://github.com/pydio/cells-sync/commit/525f66063fdfe04b45bfc0c8962614dc3c2f3e92): Merge remote-tracking branch 'origin/master'
+- [#96fe541](https://github.com/pydio/cells-sync/commit/96fe541798a0ea3c74dc85f16bc5eb75039d7b04): Store Global Configs for Logs and Updates
+- [#1d661f9](https://github.com/pydio/cells-sync/commit/1d661f9805ef5a46c3910feb2539f17578686998): Set up configs in Ux
+- [#2be3fd2](https://github.com/pydio/cells-sync/commit/2be3fd2828ada4773c0e7bfdde6045f74354829d): Fix tree browsing
+- [#d5f9aaf](https://github.com/pydio/cells-sync/commit/d5f9aaf84b962ba531c358c21810bd3a21f748c2): Fix tree browsing
+- [#26f653b](https://github.com/pydio/cells-sync/commit/26f653b432784cc6ab90651c69a0fa778618e1bb): Handle failed start on syncer
+- [#0ef93d6](https://github.com/pydio/cells-sync/commit/0ef93d690e6f9e4f00991b3d14a060abb1c3906d): Remove fmt
+- [#20dd950](https://github.com/pydio/cells-sync/commit/20dd950c186f8412a9d47e1874de2174e5513698): Rework statuses, send Statistics
+- [#24d4117](https://github.com/pydio/cells-sync/commit/24d41176f5e5ea7c87ab2ca9d9e3aa302aec3a68): Rework ux
+- [#a82e381](https://github.com/pydio/cells-sync/commit/a82e3818a99f50f3d6505a507828ec8fe2c409c3): Sync-ui: run sync-cli subprocess in a supervisor to restart on error
+- [#6646650](https://github.com/pydio/cells-sync/commit/664665003e08151ae1f6bb8483fb74342a80c586): Display load error in TreeDialog
+- [#8785526](https://github.com/pydio/cells-sync/commit/87855260ad884f42306875ed6793a2db58f79a23): on force resync, remove lastPatch if it was on error
+- [#b8ff2a3](https://github.com/pydio/cells-sync/commit/b8ff2a33b7c6c762f5df0792cc270104048b3653): Flag MoveTarget nodes to detect conflicts
+- [#c35543b](https://github.com/pydio/cells-sync/commit/c35543b3651f85796825c4c22da2a1eb66bf1526): Refactoring for conflicts management
+- [#5aa11e7](https://github.com/pydio/cells-sync/commit/5aa11e70555761f3d43e52313a22cb09282d6696): Create builds for windows with and without windowsui ldflag (3)
+- [#3cc2416](https://github.com/pydio/cells-sync/commit/3cc2416947789910d9af067ef974826e8372e86b): Create builds for windows with and without windowsui ldflag (2)
+- [#a0876f1](https://github.com/pydio/cells-sync/commit/a0876f178bc1a8c1af216afdafa149874a66e657): Create builds for windows with and without windowsui ldflag
+- [#ffa13ae](https://github.com/pydio/cells-sync/commit/ffa13ae085d175608ec0eb1f9560738940bada24): Register logWriter sooner
+- [#4cc7c15](https://github.com/pydio/cells-sync/commit/4cc7c155c7d18f98a0d6970ad46c578ec659b9fb): Other try to UX
+- [#32cef1f](https://github.com/pydio/cells-sync/commit/32cef1f37c33e511b3b8414304780f8eab3c7cde): Fix systray (unmarshalling SyncState)
+- [#2c34ac0](https://github.com/pydio/cells-sync/commit/2c34ac0b6a9cf0128512bc805217688c18f91fe1): Fix Tree : pass default value - fix single node selection
+- [#3c77f15](https://github.com/pydio/cells-sync/commit/3c77f15f16aa725b537f0fc6c62bd1f3f5925383): Top bar buttons (all tasks + create task)
+- [#79c3c74](https://github.com/pydio/cells-sync/commit/79c3c74b599950d02b2a6d33480324671ae726f5): Work on UI
+- [#fee6089](https://github.com/pydio/cells-sync/commit/fee60897b20dff24c07d9217a4fa7ef7d7a4c8d0): Try alternative design (remove header)
+- [#22f171d](https://github.com/pydio/cells-sync/commit/22f171dcb2bbf0ecd61df0daac60db6a5f5584f5): Sort TasksList
+- [#6f0b4a6](https://github.com/pydio/cells-sync/commit/6f0b4a6723fafe35d89a845fbdffa1132e2a73d8): Set port in a separate field to avoid strange stuff with default port (80/443) being stripped out
+- [#f0e9872](https://github.com/pydio/cells-sync/commit/f0e98728529c78e3c7716aa2c912d3329c8b7bc4): Display errors - Publish event after task is fully removed to update UX.
+- [#ab2b5f4](https://github.com/pydio/cells-sync/commit/ab2b5f430212755d1cd7c4a42ff4ac6eb4e455cb): Split const to make sure to reset iota
+- [#850efea](https://github.com/pydio/cells-sync/commit/850efea9b3696998e0d6279381e14c533e78b91a): UX: Left/RightProcessStatus can now be empty
+- [#4ff28ab](https://github.com/pydio/cells-sync/commit/4ff28ab0fa0d4414861685da5f51ad2f77f83297): Change ProcessStatus struct to an interface Status
+- [#6bb0409](https://github.com/pydio/cells-sync/commit/6bb040969b61c8d6e03f15eb7d8b07c5b71be5d3): Move ProcessStatus to model package
+- [#f4059e8](https://github.com/pydio/cells-sync/commit/f4059e8c7bfcb4780c5d943aaf5ada4b94ad2fd7): Work on errors and cancels
+- [#ae36444](https://github.com/pydio/cells-sync/commit/ae36444518e517dd121f7acc7ed5525b8428e993): Logs writer - skipping writing if socket is not connected FsDebouncer - add a ticker to make sure it never gets locked
+- [#1aea5c8](https://github.com/pydio/cells-sync/commit/1aea5c838a1d1fc627c4a67b5023b44f0c999501): PageLogs: use virtual list
+- [#dd37adf](https://github.com/pydio/cells-sync/commit/dd37adf18bb6ba75a34980547f3125581fe16c2f): UX - Optimize rendering for massive patches
+- [#d8560cd](https://github.com/pydio/cells-sync/commit/d8560cdd66752c8f00233b5fe2e9ab604f0ba480): Init config path in one place Replace deferred resource deletion by specific messages (clean snapshots on edit, remove all on delete)
+- [#e001efb](https://github.com/pydio/cells-sync/commit/e001efb69645c58d83545d5b28f1273f66337071): Clean fmt.Println, send patches, scan logs to send line by line.
+- [#ece3a07](https://github.com/pydio/cells-sync/commit/ece3a07e956ff35bce595bdc36bd37a377f3bd1f): List last processed patches, display stats better display
+- [#47359a9](https://github.com/pydio/cells-sync/commit/47359a9cd4261193ba66055d736930032c93275a): Access to the last operations via the PatchStore
+- [#9634d84](https://github.com/pydio/cells-sync/commit/9634d84d230773338cd5724c613bcc60df023250): Fix patchStore after task restart
+- [#b45a5cf](https://github.com/pydio/cells-sync/commit/b45a5cfa2d9480663877e45fd774c05d2fb40a62): Try setting .git/ and .pydio as default filters
+- [#af21281](https://github.com/pydio/cells-sync/commit/af212811975809a3d9acd92f8efabb8aa38eaed8): Remove logs in patch-store - TODO : do something with stored patches!
+- [#b2d8521](https://github.com/pydio/cells-sync/commit/b2d85212fe0a154fb4edcea3d875e5df5d9399d7): add a timestamp on patch
+- [#b943097](https://github.com/pydio/cells-sync/commit/b943097738b214b2a67946a857c744f0e246df0a): Prepare a store for patches
+- [#2111dec](https://github.com/pydio/cells-sync/commit/2111decf792607238cc51a54c7b61e26d9823406): Handle Interrupt command
+- [#f976394](https://github.com/pydio/cells-sync/commit/f9763948f011fbef538af8cc0e6c40bcc31175f1): Split ActionBar from SyncTask to avoid over-rerendering
+- [#95ab53f](https://github.com/pydio/cells-sync/commit/95ab53f7e1bd3c3333708885eefe6d13b79dfd60): Fix status reporting
+- [#3802674](https://github.com/pydio/cells-sync/commit/3802674fdc3d30de38f0a82363fdedb434f8d930): Integrate progress bar to endpoint widget
+- [#725a42c](https://github.com/pydio/cells-sync/commit/725a42cbb6710f0596133267d485c385b61893af): Fix HasTransfers
+- [#8fd3e75](https://github.com/pydio/cells-sync/commit/8fd3e75318aa3cf17e6bbd1632d2a63a8772ec8b): Do not printout full trees to log. Hook snapshot on first run Cells client: prevent send on close
+- [#f17f873](https://github.com/pydio/cells-sync/commit/f17f87386663e6335fcc63e5209ddec921eecdee): Fix possible recursion inside websocket
+- [#67d0c93](https://github.com/pydio/cells-sync/commit/67d0c93e053524ad033bd85bacee23887a3f2974): Add Realtime, LoopInterval and HardInterval parameters - Spin a scheduler to trigger loop or resync events.
+- [#7f1f876](https://github.com/pydio/cells-sync/commit/7f1f8765e57eec03dca9559a2d3a3c94c8aee59f): Handle new parameters for triggers
+- [#b5e2b80](https://github.com/pydio/cells-sync/commit/b5e2b80bd16ac945b07d61949bb3ba3f38a06584): Additional ldflag for windows gui
+- [#7f9f1a1](https://github.com/pydio/cells-sync/commit/7f9f1a182ecb2d90c46da87a15b219188ee4cd7b): Promise polyfill
+- [#13be63b](https://github.com/pydio/cells-sync/commit/13be63bef04edc55a73e6e629b61d4ddcb62eccc): Wire MenuItems to websocket
+- [#226c410](https://github.com/pydio/cells-sync/commit/226c41067967740f8e20b20a633d8178c9b7d297): Enable debugger in WebView
+- [#06ff64c](https://github.com/pydio/cells-sync/commit/06ff64c2e194718bc660998878715b3a57f439b4): Sync zap logs to a dedicated websocket - try to bind an object in JS to open links
+- [#2d809cc](https://github.com/pydio/cells-sync/commit/2d809ccf8c640b507de13ff83d23a378aca504e3): Wire ux to logs websocket - Init new pages
+- [#3d803c7](https://github.com/pydio/cells-sync/commit/3d803c7dedd3a969e1181c6efc5dcf6b444cbe84): Grab general stats from endpoints roots and monitor diff progress if possible
+- [#e97c369](https://github.com/pydio/cells-sync/commit/e97c369f8bbf6584af752e0b144452164047e365): Regroup bidir patches for multiple roots into one. Base layout for detecting errors on patch after processing and requeuing it on resume.
+- [#a98302d](https://github.com/pydio/cells-sync/commit/a98302d77f139c7d6fa8abf2b735418e78ad626c): BuildMenu in separate function
+- [#87530da](https://github.com/pydio/cells-sync/commit/87530dacf20a5b152ad22482d22e2d48b55df254): Merge webiew and systray
+- [#4188571](https://github.com/pydio/cells-sync/commit/4188571983d65d7a1cec205f83fbc0d5c5981b66): Refactor App
+- [#01bdb5c](https://github.com/pydio/cells-sync/commit/01bdb5c48f7a9c934da80dcbb23bd297af38c3e8): Recheck router2router case
+- [#4d6475c](https://github.com/pydio/cells-sync/commit/4d6475c23bc020fb00d5e1c2907dab2d8c915e64): Reorg App
+- [#9c0e39e](https://github.com/pydio/cells-sync/commit/9c0e39e27761b87af2be6cb1da0795a49abcda77): Use Router to for managing editor state
+- [#9a8578f](https://github.com/pydio/cells-sync/commit/9a8578f5818d1e75d3bd7c620c3c217c0ce5d87f): Fix typo
+- [#4dd3ea3](https://github.com/pydio/cells-sync/commit/4dd3ea3636ed37449daf049b85089772c200ad01): Os specific browseWinVolumes function
+- [#94bb2d1](https://github.com/pydio/cells-sync/commit/94bb2d15f01c79e0e5810995f5b08f4d39aa953c): merge last changes from reboot
+- [#71fef90](https://github.com/pydio/cells-sync/commit/71fef90da9c696e58061f4c773dcd0da1d24a227): add win related resources to gitignore
+- [#dc091c6](https://github.com/pydio/cells-sync/commit/dc091c637d9cc9e0576493e50276ca81d088227b): browse files on windows
+- [#756f1f5](https://github.com/pydio/cells-sync/commit/756f1f5e2d2d3c1f090b91a811e94d24187e6677): Try adding proxy polyfill for IE11
+- [#3f0a18e](https://github.com/pydio/cells-sync/commit/3f0a18eb7faef9c026f29bfb95be5d1fee7e63e1): UX i18n using react-i18next
+- [#6ec8d35](https://github.com/pydio/cells-sync/commit/6ec8d353c0e33c3f7956fd7209c28309ac855f8a): Create config dir
+- [#18f983f](https://github.com/pydio/cells-sync/commit/18f983f0aef5dc793e0c13eb3c09ea9b6d7bb332): clean xgo stuff
+- [#259916f](https://github.com/pydio/cells-sync/commit/259916f5eece4c13e40e420e03ca8a4e217ac932): Minor JS warnings
+- [#24bfded](https://github.com/pydio/cells-sync/commit/24bfdedcdf042032b8774691b99c824f460db734): Xgo compile sync
+- [#2171ecd](https://github.com/pydio/cells-sync/commit/2171ecdae8bc29ccc02cc96f472905938c2921eb): Prepend path to xgo
+- [#722da96](https://github.com/pydio/cells-sync/commit/722da9667f41519443ff96a0103512650e7a68bc): Add xgo instruction Fix args length check
+- [#18889fd](https://github.com/pydio/cells-sync/commit/18889fdd7df5ef0b311a0c2330b799cfd54a2059): Makefile
+- [#8dc1782](https://github.com/pydio/cells-sync/commit/8dc17825d250478824bcda66604671f65adecfa2): Basic sync-tray/sync-webview/sync-cli flow
+- [#4fb0364](https://github.com/pydio/cells-sync/commit/4fb03642170d2c801ffe93765135cc56dd898d05): Package statics with Packr
+- [#7d6f961](https://github.com/pydio/cells-sync/commit/7d6f961481ae6f6a182c9769604d27319b83baa2): Update README.md
+- [#d9a945b](https://github.com/pydio/cells-sync/commit/d9a945b64781d61e272065ed07d3bf31f4c09c9f): start/stop watchers independently and wire to Pause/Resume
+- [#3e24601](https://github.com/pydio/cells-sync/commit/3e24601355d4f72e68f78329ec2683e15e6ef6cc): Add Travis File
+- [#462f8a0](https://github.com/pydio/cells-sync/commit/462f8a0b8ed1677afacb39a8c7177a117b421d9a): Change remote signature (do not use an SdkConfig)
+- [#70e3a01](https://github.com/pydio/cells-sync/commit/70e3a01b8deb512674e21eb9d1c6f77b345bd02b): Tests with ui components
+- [#75cfda3](https://github.com/pydio/cells-sync/commit/75cfda30e9457856b80bd038b861625a9daf7c30): Test gin statics to serve built UX
+- [#f94fe91](https://github.com/pydio/cells-sync/commit/f94fe91af755887960f1806eaabb2d9b8b3119df): Enable ServiceWorker
+- [#edc3936](https://github.com/pydio/cells-sync/commit/edc3936c6dab87698f1a9a2aacb071088f92bccb): Switch to TreePatch instead of Flat Cells client: update snapshot even when skipping event
+- [#5d1ce33](https://github.com/pydio/cells-sync/commit/5d1ce33685f281428860dee720fbff033bb4af39): Fix progress
+- [#8633e62](https://github.com/pydio/cells-sync/commit/8633e62b4e70a82387c4ff2c1f85d8a27a9664a6): FS Browse Root.
+- [#af3ecf7](https://github.com/pydio/cells-sync/commit/af3ecf7e9244c591f71d71fead7203b600afaf93): Tree View
+- [#4d30f89](https://github.com/pydio/cells-sync/commit/4d30f894fae00257d05bbbb3d81591d798e5048a): TreeView for selecting nodes
+- [#90a7b01](https://github.com/pydio/cells-sync/commit/90a7b01db8abefed13a119bd487809826ef35e61): Pass a BrowseOnly option to endpoints when used for picking a folder: should prevent creating .pydio hidden files everywhere.
+- [#7f422c0](https://github.com/pydio/cells-sync/commit/7f422c0ed3c37f5f3c8d6530fecf19f0804cb492): Simple rest api for browsing folders on endpoint
+- [#20ac24d](https://github.com/pydio/cells-sync/commit/20ac24dffb305715904290e0e88fbed418cdb051): Ux: reload tasks on delete
+- [#53796ec](https://github.com/pydio/cells-sync/commit/53796eccf9e3cbba59b2d26e2dd752acc74ef334): Pass an option to cells.Local client to init registry or not.
+- [#ca1cdfd](https://github.com/pydio/cells-sync/commit/ca1cdfd61c9352984460400a6e180d3ac5f514db): Better handle reconnection
+- [#ab4b605](https://github.com/pydio/cells-sync/commit/ab4b60570ad539ba9c1bbd215cd37280646baa37): Fix URI comparison
+- [#ce90628](https://github.com/pydio/cells-sync/commit/ce90628e9913eaba630766fb57276551957288b9): Support new cells remote client
+- [#1ce1180](https://github.com/pydio/cells-sync/commit/1ce11806fa2627f2b5c771ef2d88bdd9b5eb260e): Change how we pass WatchConnection Status - Manage this status for left and right endpoints
+- [#ddb368b](https://github.com/pydio/cells-sync/commit/ddb368ba5e15d44adc7f1f5f628f236c5e7abe7e): Update Status
+- [#03c0123](https://github.com/pydio/cells-sync/commit/03c01239e0eec53ce241380cc2ca9535e0e0da75): Listen to configs changes to stop/start/restart services - Split supervisor code in dedicated file. UX CRUD configs
+- [#6d9bc8a](https://github.com/pydio/cells-sync/commit/6d9bc8abbab4dda06fef12e16945086f98449535): Code clean for better control of event flux, clean stop of sync task, also split simple processor from connected processor
+- [#150144f](https://github.com/pydio/cells-sync/commit/150144fbda1bfa37c0bf9c4d657eb9a18963e8c3): Selective Sync
+- [#3b0e72d](https://github.com/pydio/cells-sync/commit/3b0e72d8f60676b2bf4c079e17b01e797f0ef07f): Update internal snapshot by applying same Patch to target and to snapshot. FS: Keep a ref to an internal HashStore reference, to avoid recomputing etags on fs all the time. Router: Read X-Pydio-Client-Uuid from server to skip echo events Move MemDB in model package as its used in many tests, avoid import cycles Patch: Fix moves to boost files with same Base. Update Event.Type value when transforming a Create to a Move.
+- [#7ba05c6](https://github.com/pydio/cells-sync/commit/7ba05c6373e7ee6914cb11c7431ef27d50c910a5): Lock on bus.Pub
+- [#6c3fa58](https://github.com/pydio/cells-sync/commit/6c3fa58d61404b3f8fa780a1b847395a9aef9b5e): Basic UX
+- [#8798467](https://github.com/pydio/cells-sync/commit/87984671374315d2121409009e143b535cb6e8fa): Use office UI components
+- [#f1a6012](https://github.com/pydio/cells-sync/commit/f1a601247f6fc79ba354e3c190ff85eb19c08602): Basic http UX
+- [#c363089](https://github.com/pydio/cells-sync/commit/c363089871f8fc8605680579d10b07fcec948969): Moved endpoints to lib
+- [#e95fe1c](https://github.com/pydio/cells-sync/commit/e95fe1c159fdd5dc1784faab279059ed5a030ce3): Refactor to extract interfaces
+- [#3eb3ffc](https://github.com/pydio/cells-sync/commit/3eb3ffc947daead2bb9203e972cddd1ce737bcf6): Router: Make sure mkdirs are finished before further write operations
+- [#67e11e6](https://github.com/pydio/cells-sync/commit/67e11e675849bd55f142c9ff3521f4f959296d39): Router endpoint: move waits for sync
+- [#1c3b10e](https://github.com/pydio/cells-sync/commit/1c3b10ef401180770028768d3939393f60570b4f): Fix race condition - Clean router endpoint
+- [#665c7f6](https://github.com/pydio/cells-sync/commit/665c7f6063b36ec4f8c065e942977ea93abc91bf): Batch Progress reporting
+- [#bbf1608](https://github.com/pydio/cells-sync/commit/bbf1608079f2506d5d9fa123ad2958cdeddfa8ad): Document commands, add pause/resume
+- [#7de386d](https://github.com/pydio/cells-sync/commit/7de386ddf1dea5b8dbdf42fc90eb79571330af45): Basic config management and commands
+- [#91cdff6](https://github.com/pydio/cells-sync/commit/91cdff615087daf3d25c2425bd9314e9e68858bc): Split handlers sync-cache and sync-tasks
+- [#2fa9ef7](https://github.com/pydio/cells-sync/commit/2fa9ef742ad43bca2b9fba3d15bca94f60654e7f): Use MoveEvent when it's surely a move (emitted by server) Create fake Creates when moving a folder outside of the filter path
+- [#f030f46](https://github.com/pydio/cells-sync/commit/f030f4641acf62a7df6c394f89713d580cd02a6a): Setup internal chan per-sync
+- [#e9ab91e](https://github.com/pydio/cells-sync/commit/e9ab91e6aef6fac5198a12e90c13487955ddbd12): Setup control structures for running a clean binary
+- [#8bf49fe](https://github.com/pydio/cells-sync/commit/8bf49fedd3ef6bacec7945bb814f6ef553b76aa6): CreateFile : pass correct targetSize and prevent 0-size upload (to be handled) Syncrouter / DeleteNodes: handle folder deletes correctly
+- [#b5775a3](https://github.com/pydio/cells-sync/commit/b5775a391b967096fb3fd8299a515c5b4a71b25b): Poc with timely snapshot
+- [#8a37c00](https://github.com/pydio/cells-sync/commit/8a37c00f99c31756088aedc68f3c608dff20822c): Reboot sync
+- [#9296662](https://github.com/pydio/cells-sync/commit/92966629744d574bff4bc34e4bf6e2146fd8e70d): freeze
+- [#f94d705](https://github.com/pydio/cells-sync/commit/f94d705b706b4ddfdf0d208ceb2c5d05bc772b83): fixed deadlock in batcher
+- [#895b776](https://github.com/pydio/cells-sync/commit/895b776e8c2514d77fa070e21e901a27ead6d00f): export NewTarget (formerly newTarget) and move to sync.go
+- [#3032e05](https://github.com/pydio/cells-sync/commit/3032e05abe8243eb459ba1dd66d6162c5fd971d2): fixed deadlock in watcher, simplified batcher Serve method
+- [#9eafa6b](https://github.com/pydio/cells-sync/commit/9eafa6bdec79933f821048236ef700b76a3c3aa4): fixed log message
+- [#48a2600](https://github.com/pydio/cells-sync/commit/48a26007e716c17515fae880c5a70e520f05464c): bugfix: s/initBatch/init
+- [#be2ce53](https://github.com/pydio/cells-sync/commit/be2ce5369849b07263ea1af5eba688333140a841): bugfix: recursive path in Watch
+- [#45cbd38](https://github.com/pydio/cells-sync/commit/45cbd38e50200266f4598c45b0657ad8da0e10df): Logging & bugfixes in watcher
+- [#ba8cd14](https://github.com/pydio/cells-sync/commit/ba8cd14a5ebe7ac0edce6e8dcc44c441ae95e5df): log successful start
+- [#8e52fc8](https://github.com/pydio/cells-sync/commit/8e52fc89babc29d95f38c794477e7ea712fd24e1): MergeStrategy.Merge now accepts variable parameters
+- [#cd751fa](https://github.com/pydio/cells-sync/commit/cd751fad2459595fbe6a3718f72a52e6b1deacb2): bugfix: initialize newTarget when err is *NOT* nil
+- [#cd12012](https://github.com/pydio/cells-sync/commit/cd120122885cb5299d907f57a7aaf1643f23b650): call b.initBatch() when the service starts
+- [#257ab9d](https://github.com/pydio/cells-sync/commit/257ab9d06013a812b1f67622356f73ce61f3d157): freeze for debug
+- [#5107489](https://github.com/pydio/cells-sync/commit/51074899c972115d03aac42a81d8325e158e069e): implementing filesystem endpoint
+- [#941f649](https://github.com/pydio/cells-sync/commit/941f649408cd25949f452f0d5569b5e9fd6b134b): bugfix: improper enforcement of two-way merger
+- [#b7425ea](https://github.com/pydio/cells-sync/commit/b7425ea205511c70b3d3f80bcaf14e07e47227a2): finished first-pass implementation
+- [#e10c19c](https://github.com/pydio/cells-sync/commit/e10c19c33ed925868aa8f7098c94b5c463051a13): Skeleton implementation of naive merge strategy
+- [#61d56c7](https://github.com/pydio/cells-sync/commit/61d56c79216eef6ee0967c26056b19c91629de68): Simplify merger-target interaction. Isolate mergestrategy from target.
+- [#f283344](https://github.com/pydio/cells-sync/commit/f2833443c15d7125eff6dbe0311e652f2a5432a2): implemented watcher & integrated Endpoint -> Batcher link
+- [#b45ed4b](https://github.com/pydio/cells-sync/commit/b45ed4b1b31d629add31c8686663c269bf804c2f): batcher implementation
+- [#5e2374b](https://github.com/pydio/cells-sync/commit/5e2374b59c91abcbb5c142d1a139f6654796de1f): Repalce Batcher interface with batcher struct in order to access event input function without exposing it to the Target.
+- [#f16da7d](https://github.com/pydio/cells-sync/commit/f16da7d98ea1b189f08378ae92e5afab28579601): restructure exports
+- [#2789672](https://github.com/pydio/cells-sync/commit/2789672826d457857dac64dbb5e0440309af477e): implemented filter
+- [#80f0c90](https://github.com/pydio/cells-sync/commit/80f0c9083c54c3698dab85ce2a93c84313c7060f): renamed merger to job
+- [#69f21ca](https://github.com/pydio/cells-sync/commit/69f21cacb9650c3ec56b54fc0ebc8e8d3ba872b1): supervise sync targets
+- [#e46f991](https://github.com/pydio/cells-sync/commit/e46f991da032452135c3c077d6999c5bb6e1b323): basic architectural layout
+- [#73f7ae5](https://github.com/pydio/cells-sync/commit/73f7ae554e62c1388be7e9b932f7464badc2b0d3): Update README.md
+- [#ca2a13d](https://github.com/pydio/cells-sync/commit/ca2a13dfe3d5bffd356b5fdedc247bb6ce4456c6): Update README.md
+- [#90ca464](https://github.com/pydio/cells-sync/commit/90ca464f88f1759f0d4d81f793419bb07a42724f): Update README.md
+- [#6400eda](https://github.com/pydio/cells-sync/commit/6400eda5adba9eee5a39e3663ef3a5d14c0c647d): Update README.md
