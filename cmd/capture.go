@@ -23,14 +23,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
+	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells-sync/endpoint"
 	"github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/cells/common/sync/task"
-	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells-sync/endpoint"
 )
 
 var (
@@ -75,7 +76,8 @@ var CaptureCmd = &cobra.Command{
 				}
 
 				syncTask := task.NewSync(leftEndpoint, rightEndpoint, dir)
-				syncTask.SetSnapshotFactory(endpoint.NewSnapshotFactory(t.Uuid, leftEndpoint, rightEndpoint))
+				configPath := filepath.Join(config.SyncClientDataDir(), t.Uuid)
+				syncTask.SetSnapshotFactory(endpoint.NewSnapshotFactory(configPath, leftEndpoint, rightEndpoint))
 				e := syncTask.Capture(ctx, captureTarget)
 				if e != nil {
 					log.Fatal(e)
