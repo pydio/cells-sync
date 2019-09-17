@@ -32,6 +32,7 @@ import { DefaultButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button'
 import {withTranslation} from 'react-i18next'
 import {Toggle} from "office-ui-fabric-react";
 import Schedule from './Schedule'
+import Storage from "../oidc/Storage";
 
 class Editor extends React.Component {
 
@@ -46,6 +47,13 @@ class Editor extends React.Component {
             isNew = false;
             t = task;
         }
+        if(localStorage.getItem("Editor.SavedState")) {
+            const saved = JSON.parse(localStorage.getItem("Editor.SavedState"));
+            if(saved && saved.task) {
+                t = saved.task;
+            }
+            localStorage.removeItem("Editor.SavedState");
+        }
         t = JSON.parse(JSON.stringify(t));
         const proxy = ObservableSlim.create(t, true, () => {
             this.setState({task: proxy});
@@ -53,23 +61,37 @@ class Editor extends React.Component {
         this.state = {task: proxy, isNew};
     }
 
-    componentWillReceiveProps(){
-
-    }
-
     save(){
         const {task, isNew} = this.state;
         const {socket, onDismiss} = this.props;
         const config = task.__getTarget;
         const cmd = isNew ? "create" : "edit";
-        socket.sendMessage('CONFIG', {Cmd:cmd, Config: config.Config});
+        socket.sendMessage('CONFIG', {Cmd:cmd, Task: config.Config});
         onDismiss();
+    }
+
+    onCreateServer(loginUrl, position) {
+        const {task, isNew} = this.state;
+        let editState;
+        if(isNew){
+            editState = {create: true}
+        } else {
+            editState = {edit: task.Config.Uuid};
+        }
+        const saveTask = task.__getTarget;
+        if(position === "left") {
+            saveTask.Config.LeftURI = loginUrl;
+        } else if(position === "right") {
+            saveTask.Config.RightURI = loginUrl;
+        }
+        localStorage.setItem("Editor.SavedState", JSON.stringify({task: saveTask}));
+        Storage.newManager(loginUrl, editState).signinRedirect();
     }
 
 
     render() {
         const {task, isNew} = this.state;
-        const {onDismiss, t} = this.props;
+        const {onDismiss, t, socket} = this.props;
         return (
             <div>
                 {!isNew &&
@@ -80,9 +102,9 @@ class Editor extends React.Component {
                 }
                 <TextField label={t('editor.label')} placeholder={t('editor.label.placeholder')} value={task.Config.Label} onChange={(e, v) => {task.Config.Label = v}}/>
                 <Label htmlFor={"left"}>{t('editor.source')}</Label>
-                <EndpointPicker value={task.Config.LeftURI} onChange={(e, v) => {task.Config.LeftURI = v}}/>
+                <EndpointPicker value={task.Config.LeftURI} onChange={(e, v) => {task.Config.LeftURI = v}} socket={socket} onCreateServer={(url) => this.onCreateServer(url, "left")}/>
                 <Label htmlFor={"right"}>{t('editor.target')}</Label>
-                <EndpointPicker value={task.Config.RightURI} onChange={(e, v) => {task.Config.RightURI = v}}/>
+                <EndpointPicker value={task.Config.RightURI} onChange={(e, v) => {task.Config.RightURI = v}} socket={socket} onCreateServer={(url) => this.onCreateServer(url, "right")}/>
                 <Dropdown
                     label={t('editor.direction')}
                     selectedKey={task.Config.Direction}

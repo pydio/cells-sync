@@ -24,6 +24,7 @@ export default class Socket {
         this.onStatus = onStatus;
         this.onTasks = onTasks;
         this.onUpdate = [];
+        this.onAuthorities = [];
 
         this.state = {
             syncTasks: {},
@@ -49,6 +50,14 @@ export default class Socket {
 
     stopListeningUpdates(callback){
         this.onUpdate = this.onUpdate.filter(cb => cb !== callback);
+    }
+
+    listenAuthorities(callback){
+        this.onAuthorities.push(callback);
+    }
+
+    stopListeningAuthorities(callback){
+        this.onAuthorities = this.onAuthorities.filter(cb => cb !== callback);
     }
 
     read(msg){
@@ -124,6 +133,10 @@ export default class Socket {
             this.onUpdate.forEach(cb => {
                 cb(data.Content);
             })
+        }else if(data.Type === 'AUTHORITIES') {
+            this.onAuthorities.forEach(cb => {
+                cb(data.Content);
+            })
         } else {
             console.log(data)
         }
@@ -147,7 +160,7 @@ export default class Socket {
     }
 
     deleteTask(config) {
-        this.sendMessage('CONFIG', {Cmd:'delete', Config:config});
+        this.sendMessage('CONFIG', {Cmd:'delete', Task:config});
     }
 
 }

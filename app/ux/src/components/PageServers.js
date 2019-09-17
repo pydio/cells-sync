@@ -16,15 +16,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
-import React from 'react'
-import {Page} from "./Page";
+import React, {Component} from 'react'
+import Routes from '../oidc/Routes.js'
 
-class PageServers extends React.Component {
+class PageServers extends Component {
     render() {
         return (
-            <Page title={"Servers"} legend={"Servers List & OAuth management"}>
-
-            </Page>
+            <Routes {...this.props} />
         );
     }
 }

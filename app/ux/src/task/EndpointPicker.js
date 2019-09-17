@@ -20,26 +20,43 @@ import React from 'react'
 import {Stack} from "office-ui-fabric-react/lib/Stack"
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
+import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownRender";
 import parse from 'url-parse'
 import TreeDialog from './TreeDialog'
 import {withTranslation} from 'react-i18next'
 import EndpointTypes from '../models/EndpointTypes'
+import Storage from "../oidc/Storage";
 
 class EndpointPicker extends React.Component {
 
     constructor(props){
         super(props);
         this.state = {
+            auths:[],
             dialog: false,
             pathDisabled: this.pathIsDisabled(parse(props.value, {}, true)),
         };
     }
 
+    componentDidMount(){
+        const {socket} = this.props;
+        this._listener = (auths) => {
+            this.setState({auths: auths || []});
+        };
+        socket.listenAuthorities(this._listener);
+        Storage.getInstance(socket).listServers();
+    }
+
+    componentWillUnmount(){
+        const {socket} = this.props;
+        socket.stopListeningAuthorities(this._listener)
+    }
+
     pathIsDisabled(url){
         let pathDisabled = false;
         if(url.protocol && url.protocol.indexOf('http') === 0) {
-            pathDisabled = !(url.host && url.username && url.password && url.query && url.query.clientSecret);
+            pathDisabled = !url.host;
         }
         return pathDisabled
     }
@@ -61,17 +78,20 @@ class EndpointPicker extends React.Component {
         }
     }
 
+    createAuthority(){
+        const {onCreateServer} = this.props;
+        const {loginUrl} = this.state;
+        onCreateServer(loginUrl);
+    }
+
 
     render(){
-        const {dialog, pathDisabled} = this.state;
+        const {dialog, pathDisabled, auths, createServer, loginUrl} = this.state;
         const {value, t} = this.props;
         const url = parse(value, {}, true);
         const rootUrl = parse(value, {}, true);
         const selectedPath = rootUrl.pathname;
         rootUrl.set('pathname', '');
-
-        const query = url.query || {};
-
 
         const pathField = (
             <TextField
@@ -88,10 +108,16 @@ class EndpointPicker extends React.Component {
             />
         );
 
+        const authValues = auths.map(({uri}) => {
+            const parsed = parse(uri, {}, true);
+            return { key: parsed.host, text: uri, data:{uri}}
+        });
+        authValues.push({key:'__CREATE__', text:'Add new server...'});
+
         return (
             <Stack horizontal tokens={{childrenGap: 8}} >
                 <Dropdown
-                    selectedKey={url.protocol}
+                    selectedKey={url.protocol === 'https:' ? 'http:' : url.protocol}
                     onChange={(ev, item) => {
                         url.set('protocol', item.key);
                         this.updateUrl(url);
@@ -112,64 +138,40 @@ class EndpointPicker extends React.Component {
                         <Stack vertical tokens={{childrenGap: 8}} >
                             <Stack.Item>
                                 <Stack horizontal tokens={{childrenGap: 8}} >
-                                    <Stack.Item grow>
-                                        <TextField
-                                            placeholder={t('editor.picker.http.host')}
-                                            value={url.host.split(':')[0]}
-                                            onChange={(e, v) => {
-                                                url.set('host', v);
-                                                this.updateUrl(url);
-                                            }}/>
-                                    </Stack.Item>
                                     <Stack.Item>
-                                        <TextField
-                                            placeholder={t('editor.picker.http.port')}
-                                            value={url.port?url.port:(url.protocol === 'http:' ? 80 : 443)}
-                                            onChange={(e, v) => {
-                                                url.set('port', v);
+                                        <Dropdown
+                                            selectedKey={createServer ? '__CREATE__' : url.host}
+                                            onChange={(ev, item) => {
+                                                if(item.key === '__CREATE__'){
+                                                    this.setState({createServer: true});
+                                                    return;
+                                                }
+                                                const parsed = parse(item.data.uri, {}, true);
+                                                url.set('host', parsed.host);
+                                                url.set('protocol', parsed.protocol);
                                                 this.updateUrl(url);
-                                            }}/>
+                                            }}
+                                            placeholder={t('editor.picker.auth')}
+                                            options={authValues}
+                                        />
                                     </Stack.Item>
+                                    {createServer &&
+                                        <React.Fragment>
+                                            <Stack.Item grow>
+                                                <TextField placeholder={"Enter server URL"} value={loginUrl} onChange={(e,v)=>{this.setState({loginUrl: v})}}/>
+                                            </Stack.Item>
+                                            <Stack.Item>
+                                                <PrimaryButton text={"Login"} onClick={() => {this.createAuthority()}} disabled={!loginUrl}/>
+                                            </Stack.Item>
+                                        </React.Fragment>
+                                    }
+                                    {url.host && !createServer &&
+                                    <Stack.Item grow>
+                                        {pathField}
+                                    </Stack.Item>
+                                    }
                                 </Stack>
                             </Stack.Item>
-                            <Stack.Item>
-                                <Stack horizontal tokens={{childrenGap: 8}} >
-                                    <Stack.Item grow>
-                                        <TextField
-                                            autoComplete={"off"}
-                                            placeholder={t('editor.picker.http.user')}
-                                            value={url.username}
-                                            onChange={(e, v) => {
-                                               url.set('username', v);
-                                               this.updateUrl(url);
-                                            }}
-                                        />
-                                    </Stack.Item>
-                                    <Stack.Item grow>
-                                        <TextField
-                                            autoComplete={"off"}
-                                            placeholder={t('editor.picker.http.password')}
-                                            value={url.password}
-                                            onChange={(e, v) => {
-                                                url.set('password', v);
-                                                this.updateUrl(url);
-                                            }}
-                                        />
-                                    </Stack.Item>
-                                    <Stack.Item grow>
-                                        <TextField
-                                            autoComplete={"off"}
-                                            placeholder={t('editor.picker.http.secret')}
-                                            value={query.clientSecret}
-                                            onChange={(e, v) => {
-                                                url.set('query', {clientSecret:v});
-                                                this.updateUrl(url);
-                                            }}
-                                        />
-                                    </Stack.Item>
-                                </Stack>
-                            </Stack.Item>
-                            <Stack.Item>{pathField}</Stack.Item>
                         </Stack>
                     </Stack.Item>
                 }

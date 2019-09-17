@@ -17,9 +17,8 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 export default [
-    { key: 'https', icon: 'Server'},
     { key: 'http', icon: 'Server'},
-    { key: 'router', icon: 'ServerEnviroment'},
     { key: 'fs', icon : 'SyncFolder'},
-    { key: 's3', icon: 'SplitObject'}
+    { key: 's3', icon: 'SplitObject'},
+    { key: 'router', icon: 'ServerEnviroment'}
 ];

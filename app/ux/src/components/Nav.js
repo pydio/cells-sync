@@ -38,7 +38,7 @@ class NavMenu extends React.Component {
 
         const links = {
             '/': {label:'tasks', icon:'SyncToPC'},
-//            '/servers': {label:'servers', icon:'Server'},
+            '/servers': {label:'servers', icon:'Server'},
             '/settings': {label:'settings', icon:'Settings'},
             '/logs': {label:'logs', icon:'CustomList'},
             '/about': {label:'about', icon:'Help'},
@@ -121,7 +121,7 @@ class NavRoutes extends React.Component {
                 <Switch>
                     <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <PageTasks syncTasks={syncTasks} socket={socket}/>}/>
                     <Route path={"/settings"} component={PageSettings}/>
-                    <Route path={"/servers"} component={PageServers}/>
+                    <Route path={"/servers"} render={(p) => <PageServers {...p} socket={socket}/>}/>
                     <Route path={"/logs"} component={PageLogs}/>
                     <Route path={"/about"} render={() => <PageAbout socket={socket}/>}/>
                 </Switch>
