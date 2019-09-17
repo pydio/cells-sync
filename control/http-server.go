@@ -36,10 +36,10 @@ import (
 	"github.com/pborman/uuid"
 	"gopkg.in/olahol/melody.v1"
 
-	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells-sync/app/ux"
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells/common/log"
 )
 
 type HttpServer struct {
@@ -148,13 +148,27 @@ func (h *HttpServer) InitHandlers() {
 
 			if confContent, ok := data.Content.(*common.ConfigContent); ok {
 				confs := config.Default()
-				if confContent.Cmd == "create" {
-					confContent.Config.Uuid = uuid.New()
-					confs.CreateTask(confContent.Config)
-				} else if confContent.Cmd == "edit" {
-					confs.UpdateTask(confContent.Config)
-				} else if confContent.Cmd == "delete" {
-					confs.RemoveTask(confContent.Config)
+				if confContent.Task != nil {
+					if confContent.Cmd == "create" {
+						confContent.Task.Uuid = uuid.New()
+						confs.CreateTask(confContent.Task)
+					} else if confContent.Cmd == "edit" {
+						confs.UpdateTask(confContent.Task)
+					} else if confContent.Cmd == "delete" {
+						confs.RemoveTask(confContent.Task)
+					}
+				} else if confContent.Authority != nil {
+					if confContent.Cmd == "create" {
+						confs.CreateAuthority(confContent.Authority)
+					} else if confContent.Cmd == "edit" {
+						confs.UpdateAuthority(confContent.Authority)
+					} else if confContent.Cmd == "delete" {
+						confs.RemoveAuthority(confContent.Authority)
+					} else if confContent.Cmd == "list" {
+						message := &common.Message{Type: "AUTHORITIES", Content: confs.PublicAuthorities()}
+						session.Write(message.Bytes())
+					}
+
 				}
 			}
 
@@ -185,6 +199,7 @@ func (h *HttpServer) InitHandlers() {
 	})
 
 	go h.ListenStatus()
+	go h.ListenAuthorities()
 
 }
 
@@ -236,6 +251,17 @@ func (h *HttpServer) ListenStatus() {
 	}
 }
 
+func (h *HttpServer) ListenAuthorities() {
+	watches := config.Watch()
+	for w := range watches {
+		if _, ok := w.(*config.AuthChange); ok {
+			// Broadcast servers list to all clients
+			message := &common.Message{Type: "AUTHORITIES", Content: config.Default().PublicAuthorities()}
+			h.WebSocket.Broadcast(message.Bytes())
+		}
+	}
+}
+
 func (h *HttpServer) Serve() {
 
 	h.done = make(chan bool)
@@ -243,6 +269,10 @@ func (h *HttpServer) Serve() {
 	gin.SetMode(gin.ReleaseMode)
 	gin.DisableConsoleColor()
 	Server := gin.New()
+	Server.NoRoute(func(i *gin.Context) {
+		ux.Box.Bytes("index.html")
+		i.Data(http.StatusOK, "text/html; charset=utf-8", ux.Box.Bytes("index.html"))
+	})
 	Server.Use(gin.Recovery())
 	Server.Use(static.Serve("/", ux.Box))
 	Server.GET("/status", func(c *gin.Context) {

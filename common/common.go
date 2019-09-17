@@ -93,8 +93,9 @@ type CmdContent struct {
 }
 
 type ConfigContent struct {
-	Cmd    string
-	Config *config.Task
+	Cmd       string
+	Task      *config.Task
+	Authority *config.Authority
 }
 
 // Various messages for communicating with service

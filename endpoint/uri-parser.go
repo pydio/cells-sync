@@ -28,6 +28,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/pydio/cells-sync/config"
+
 	"github.com/pydio/cells/common/sync/endpoints/cells"
 	"github.com/pydio/cells/common/sync/endpoints/filesystem"
 	"github.com/pydio/cells/common/sync/endpoints/memory"
@@ -76,32 +78,49 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 
 	case "http", "https":
 
-		if u.User == nil {
-			return nil, errors.New("please provide user credentials in URL")
+		var auth *config.Authority
+		for _, a := range config.Default().Authorities {
+			authUrl, _ := url.Parse(a.URI)
+			if authUrl.Scheme == u.Scheme && authUrl.Host == u.Host {
+				auth = a
+				break
+			}
 		}
-		values := u.Query()
-		clientId := "cells-front"
-		clientSecret := ""
-		if values.Get("clientSecret") == "" {
-			return nil, errors.New("please provide at least the client secret using a ?clientSecret parameter")
-		} else {
-			clientSecret = values.Get("clientSecret")
+		if auth == nil {
+			return nil, fmt.Errorf("cannot find authority")
 		}
-		if values.Get("clientId") != "" {
-			clientId = values.Get("clientId")
-		}
-		pass, _ := u.User.Password()
-		config := cells.RemoteConfig{
+		conf := cells.RemoteConfig{
 			Url:          fmt.Sprintf("%s://%s", u.Scheme, u.Host),
-			User:         u.User.Username(),
-			Password:     pass,
-			ClientKey:    clientId,
-			ClientSecret: clientSecret,
+			IdToken:      auth.IdToken,
+			RefreshToken: auth.RefreshToken,
+			ExpiresAt:    auth.ExpiresAt,
 		}
 		options := cells.Options{
 			EndpointOptions: opts,
 		}
-		return cells.NewRemote(config, strings.TrimLeft(u.Path, "/"), options), nil
+		ep := cells.NewRemote(conf, strings.TrimLeft(u.Path, "/"), options)
+		if !opts.BrowseOnly {
+			watcher := config.Watch()
+			go func() {
+				for change := range watcher {
+					if aC, ok := change.(*config.AuthChange); ok {
+						acUrl, _ := url.Parse(aC.Authority.URI)
+						if acUrl.Scheme == u.Scheme && acUrl.Host == u.Host {
+							if aC.Type == "delete" {
+								return
+							} else {
+								fmt.Println("Refreshing client config")
+								conf.IdToken = aC.Authority.IdToken
+								conf.RefreshToken = aC.Authority.RefreshToken
+								conf.ExpiresAt = aC.Authority.ExpiresAt
+								ep.RefreshRemoteConfig(conf)
+							}
+						}
+					}
+				}
+			}()
+		}
+		return ep, nil
 
 	case "s3":
 		fullPath := u.Path

@@ -31,10 +31,11 @@ const (
 )
 
 type Global struct {
-	Tasks   []*Task
-	Logs    *Logs
-	Updates *Updates
-	changes []chan interface{}
+	Tasks       []*Task
+	Authorities []*Authority
+	Logs        *Logs
+	Updates     *Updates
+	changes     []chan interface{}
 }
 
 type TaskChange struct {
@@ -179,6 +180,11 @@ func Default() *Global {
 		}
 		if def.Updates == nil {
 			def.Updates = NewUpdates()
+		}
+		if len(def.Authorities) > 0 {
+			for _, a := range def.Authorities {
+				go monitorToken(a)
+			}
 		}
 	}
 	return def
