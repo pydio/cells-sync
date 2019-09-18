@@ -109,7 +109,6 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 							if aC.Type == "delete" {
 								return
 							} else {
-								fmt.Println("Refreshing client config")
 								conf.IdToken = aC.Authority.IdToken
 								conf.RefreshToken = aC.Authority.RefreshToken
 								conf.ExpiresAt = aC.Authority.ExpiresAt
