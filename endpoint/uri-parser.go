@@ -80,8 +80,9 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 
 		var auth *config.Authority
 		for _, a := range config.Default().Authorities {
-			authUrl, _ := url.Parse(a.URI)
-			if authUrl.Scheme == u.Scheme && authUrl.Host == u.Host {
+			newU := *u
+			newU.Path = ""
+			if a.Id == newU.String() {
 				auth = a
 				break
 			}

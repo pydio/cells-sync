@@ -161,7 +161,7 @@ func (h *HttpServer) InitHandlers() {
 					if confContent.Cmd == "create" {
 						confs.CreateAuthority(confContent.Authority)
 					} else if confContent.Cmd == "edit" {
-						confs.UpdateAuthority(confContent.Authority)
+						confs.UpdateAuthority(confContent.Authority, false)
 					} else if confContent.Cmd == "delete" {
 						confs.RemoveAuthority(confContent.Authority)
 					} else if confContent.Cmd == "list" {

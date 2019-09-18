@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 func init() {
@@ -22,7 +24,15 @@ var (
 )
 
 type Authority struct {
-	URI          string `json:"uri"`
+	Id  string `json:"id"`
+	URI string `json:"uri"`
+
+	ServerLabel string    `json:"serverLabel"`
+	Username    string    `json:"username"`
+	LoginDate   time.Time `json:"loginDate"`
+	RefreshDate time.Time `json:"refreshDate"`
+	TokenStatus string    `json:"tokenStatus"`
+
 	IdToken      string `json:"id_token"`
 	RefreshToken string `json:"refresh_token"`
 	ExpiresAt    int    `json:"expires_at"`
@@ -84,20 +94,63 @@ func (a *Authority) Refresh() error {
 	a.ExpiresAt = int(time.Now().Unix()) + respMap.Exp
 	fmt.Println("Got new token, will expire in ", respMap.Exp, " thus expiresAt ", a.ExpiresAt)
 
-	Default().UpdateAuthority(a)
+	Default().UpdateAuthority(a, true)
 
 	return nil
+}
+
+func (a *Authority) LoadInfo() {
+	a.ServerLabel = a.URI
+	if r, e := http.Get(strings.TrimRight(a.URI, "/") + "/a/frontend/bootconf"); e == nil {
+		var confSample struct {
+			Wording struct {
+				Title      string `json:"title"`
+				Icon       string `json:"icon"`
+				IconBinary string `json:"iconBinary"`
+			} `json:"customWording"`
+			Backend struct {
+				PackageLabel string `json:"packageLabel"`
+			} `json:"backend"`
+		}
+		bb, _ := ioutil.ReadAll(r.Body)
+		if e := json.Unmarshal(bb, &confSample); e == nil {
+			if confSample.Wording.Title != "" {
+				a.ServerLabel = confSample.Wording.Title
+			}
+		}
+	}
+	// decode JWT token without verifying the signature
+	token, _ := jwt.ParseSigned(a.IdToken)
+	var claims map[string]interface{} // generic map to store parsed token
+	_ = token.UnsafeClaimsWithoutVerification(&claims)
+	if name, ok := claims["name"]; ok {
+		a.Username = name.(string)
+	}
+	parsed, _ := url.Parse(a.URI)
+	parsed.User = url.User(a.Username)
+	a.Id = parsed.String()
+}
+
+func (a *Authority) key() string {
+	if a.Id == "" {
+		a.LoadInfo()
+	}
+	return a.Id
+}
+
+func (a *Authority) is(a2 *Authority) bool {
+	return a.key() == a2.key()
 }
 
 func monitorToken(a *Authority) {
 
 	var done chan bool
 	monitorsLock.Lock()
-	if d, ok := monitors[a.URI]; ok {
+	if d, ok := monitors[a.key()]; ok {
 		done = d
 	} else {
 		done = make(chan bool, 1)
-		monitors[a.URI] = done
+		monitors[a.key()] = done
 	}
 	monitorsLock.Unlock()
 	d, _ := a.RefreshRequired()
@@ -106,23 +159,23 @@ func monitorToken(a *Authority) {
 		case <-time.After(d):
 			if e := a.Refresh(); e != nil {
 				fmt.Println(e)
-				stopMonitoringToken(a.URI)
+				stopMonitoringToken(a.key())
 			} else {
 				monitorToken(a)
 			}
 			return
 		case <-done:
-			fmt.Println("Stopping monitor on " + a.URI)
+			fmt.Println("Stopping monitor on " + a.key())
 			return
 		}
 	}
 }
 
-func stopMonitoringToken(uri string) {
+func stopMonitoringToken(key string) {
 	monitorsLock.Lock()
-	if done, ok := monitors[uri]; ok {
+	if done, ok := monitors[key]; ok {
 		close(done)
-		delete(monitors, uri)
+		delete(monitors, key)
 	}
 	monitorsLock.Unlock()
 }
@@ -131,19 +184,27 @@ func (g *Global) PublicAuthorities() []*Authority {
 	var p []*Authority
 	for _, a := range g.Authorities {
 		p = append(p, &Authority{
-			URI:       a.URI,
-			ExpiresAt: a.ExpiresAt,
+			Id:          a.key(),
+			URI:         a.URI,
+			ServerLabel: a.ServerLabel,
+			Username:    a.Username,
+			RefreshDate: a.RefreshDate,
+			LoginDate:   a.LoginDate,
+			ExpiresAt:   a.ExpiresAt,
 		})
 	}
 	return p
 }
 
 func (g *Global) CreateAuthority(a *Authority) error {
+	a.LoadInfo()
 	for _, auth := range g.Authorities {
-		if auth.URI == a.URI {
-			return g.UpdateAuthority(a)
+		if auth.is(a) {
+			return g.UpdateAuthority(a, false)
 		}
 	}
+	a.LoginDate = time.Now()
+	a.LoadInfo()
 	g.Authorities = append(g.Authorities, a)
 	e := Save()
 	if e == nil {
@@ -160,7 +221,7 @@ func (g *Global) CreateAuthority(a *Authority) error {
 func (g *Global) RemoveAuthority(a *Authority) error {
 	var newAuths []*Authority
 	for _, auth := range g.Authorities {
-		if auth.URI != a.URI {
+		if !a.is(auth) {
 			newAuths = append(newAuths, auth)
 		}
 	}
@@ -172,21 +233,28 @@ func (g *Global) RemoveAuthority(a *Authority) error {
 				c <- &AuthChange{Type: "remove", Authority: a}
 			}
 		}()
-		stopMonitoringToken(a.URI)
+		stopMonitoringToken(a.key())
 	}
 	return e
 }
 
-func (g *Global) UpdateAuthority(a *Authority) error {
-	var newAuths []*Authority
+func (g *Global) UpdateAuthority(a *Authority, isRefresh bool) error {
+	if !isRefresh {
+		a.LoginDate = time.Now()
+	} else {
+		a.RefreshDate = time.Now()
+	}
 	for _, auth := range g.Authorities {
-		if auth.URI == a.URI {
-			newAuths = append(newAuths, a)
-		} else {
-			newAuths = append(newAuths, auth)
+		if auth.is(a) {
+			auth.IdToken = a.IdToken
+			auth.RefreshToken = a.RefreshToken
+			if isRefresh {
+				auth.RefreshDate = time.Now()
+			} else {
+				auth.LoginDate = time.Now()
+			}
 		}
 	}
-	g.Authorities = newAuths
 	e := Save()
 	if e == nil {
 		go func() {
