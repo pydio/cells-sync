@@ -1,6 +1,6 @@
 import React from 'react'
 import { Route } from 'react-router-dom'
-import Servers from './Servers'
+import Servers from '../components/Servers'
 import CallbackPage from './Callback'
 
 export default function Routes(props) {

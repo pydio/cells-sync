@@ -27,9 +27,6 @@ import EndpointLabel from './EndpointLabel'
 import ActionBar from './ActionBar'
 import humanize from 'humanize'
 import moment from 'moment'
-import 'moment/locale/fr';
-import 'moment/locale/es';
-import 'moment/locale/it';
 import {withTranslation} from 'react-i18next'
 import PatchDialog from "./PatchDialog";
 import parse from 'url-parse'
@@ -118,9 +115,8 @@ class SyncTask extends React.Component {
     }
 
     computeStatus() {
-        const {state, t, i18n} = this.props;
+        const {state, t} = this.props;
         const {LastProcessStatus, Status, LastSyncTime, LastOpsTime} = state;
-        moment.locale(i18n.language);
 
         switch (Status) {
             case StatusPaused:

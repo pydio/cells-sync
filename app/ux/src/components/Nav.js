@@ -26,6 +26,7 @@ import PageSettings from "./PageSettings";
 import PageServers from "./PageServers";
 import PageLogs from "./PageLogs";
 import PageAbout from "./PageAbout";
+import moment from 'moment';
 
 class NavMenu extends React.Component {
 
@@ -67,6 +68,7 @@ class NavMenu extends React.Component {
         const menuItems = (i18n) => {
             return Object.keys(languages).map(key => {
                 return {key, text:languages[key], iconProps:{iconName:i18n.language === key ?'CheckboxComposite':'Checkbox'}, onClick:()=>{
+                    moment.locale(key);
                     i18n.changeLanguage(key).then(()=>{
                         localStorage.setItem('language', key);
                     })

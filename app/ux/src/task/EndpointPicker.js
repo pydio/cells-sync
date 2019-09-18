@@ -108,11 +108,11 @@ class EndpointPicker extends React.Component {
             />
         );
 
-        const authValues = auths.map(({uri}) => {
-            const parsed = parse(uri, {}, true);
-            return { key: parsed.host, text: uri, data:{uri}}
+        const authValues = auths.map(({id, username}) => {
+            const parsed = parse(id, {}, true);
+            return { key: id, text: `${parsed.host} (${username})`, data:parsed}
         });
-        authValues.push({key:'__CREATE__', text:'Add new server...'});
+        authValues.push({key:'__CREATE__', text:t('server.create.legend')});
 
         return (
             <Stack horizontal tokens={{childrenGap: 8}} >
@@ -140,15 +140,17 @@ class EndpointPicker extends React.Component {
                                 <Stack horizontal tokens={{childrenGap: 8}} >
                                     <Stack.Item>
                                         <Dropdown
-                                            selectedKey={createServer ? '__CREATE__' : url.host}
+                                            styles={{root:{minWidth:250}}}
+                                            selectedKey={createServer ? '__CREATE__' : url.protocol + '//' + url.username + '@' + url.host}
                                             onChange={(ev, item) => {
                                                 if(item.key === '__CREATE__'){
                                                     this.setState({createServer: true});
                                                     return;
                                                 }
-                                                const parsed = parse(item.data.uri, {}, true);
-                                                url.set('host', parsed.host);
-                                                url.set('protocol', parsed.protocol);
+                                                const {protocol, host, username}= item.data;
+                                                url.set('host', host);
+                                                url.set('protocol', protocol);
+                                                url.set('username', username);
                                                 this.updateUrl(url);
                                             }}
                                             placeholder={t('editor.picker.auth')}
@@ -158,10 +160,10 @@ class EndpointPicker extends React.Component {
                                     {createServer &&
                                         <React.Fragment>
                                             <Stack.Item grow>
-                                                <TextField placeholder={"Enter server URL"} value={loginUrl} onChange={(e,v)=>{this.setState({loginUrl: v})}}/>
+                                                <TextField placeholder={t('server.url.placeholder')} value={loginUrl} onChange={(e,v)=>{this.setState({loginUrl: v})}}/>
                                             </Stack.Item>
                                             <Stack.Item>
-                                                <PrimaryButton text={"Login"} onClick={() => {this.createAuthority()}} disabled={!loginUrl}/>
+                                                <PrimaryButton text={t('server.login.button')} onClick={() => {this.createAuthority()}} disabled={!loginUrl}/>
                                             </Stack.Item>
                                         </React.Fragment>
                                     }

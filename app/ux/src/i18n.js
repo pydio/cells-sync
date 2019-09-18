@@ -21,6 +21,10 @@ import en from "./i18n/en"
 import fr from "./i18n/fr"
 import de from "./i18n/de"
 import { initReactI18next } from "react-i18next";
+import moment from 'moment';
+import 'moment/locale/de';
+import 'moment/locale/fr';
+
 
 // the translations
 // (tip move them in a JSON file and import them)
@@ -51,5 +55,7 @@ i18n
             escapeValue: false // react already safes from xss
         }
     });
+
+moment.locale(local);
 
 export default i18n;

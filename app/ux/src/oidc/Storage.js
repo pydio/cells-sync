@@ -71,8 +71,8 @@ class Storage
         this.socket.sendMessage('CONFIG', {Cmd:"create", Authority:{uri: url,id_token, refresh_token, expires_at}})
     }
 
-    deleteServer(url){
-        this.socket.sendMessage('CONFIG', {cmd:"delete", Authority: {uri: url}})
+    deleteServer(id){
+        this.socket.sendMessage('CONFIG', {cmd:"delete", Authority: {id: id}})
     }
 
 }
