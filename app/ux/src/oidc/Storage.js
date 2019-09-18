@@ -23,6 +23,17 @@ class Storage
         return Storage.__INSTANCE;
     }
 
+    static signin(url, currentEditState = undefined){
+        const externalOpen = !!window.linkOpener;
+        const manager = Storage.newManager(url, currentEditState);
+        const href = 'http://localhost:' + window.location.port + '/servers/external?manager=' + encodeURI(url);
+        if (externalOpen){
+            window.linkOpener.open(href)
+        } else {
+            manager.signinRedirect();
+        }
+    }
+
     static newManager(url, currentEditState = undefined){
         const newConfig = {
             ...userManagerConfig,

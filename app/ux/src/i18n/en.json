@@ -155,5 +155,8 @@
   "server.info.description":"User %1 was logged in %2",
   "server.refresh.button": "Refresh Login",
   "server.delete.button": "Remove Account",
-  "server.callback.close": "You can now close this window and use this account to create a synchronization task"
+  "server.callback.close": "You can now close this window and use this account to create a synchronization task",
+  "callback.redirect":"Redirecting to login page...",
+  "callback.error":"An error happened during authentication: ",
+  "callback.closewindow": "Account has been added, you can now close the window!"
 }

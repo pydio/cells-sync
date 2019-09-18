@@ -64,7 +64,7 @@ class Servers extends Component{
     componentDidMount(){
         const {socket} = this.props;
         this._listener = (auths) => {
-            this.setState({servers: auths || []});
+            this.setState({servers: auths || [], addMode: false});
         };
         socket.listenAuthorities(this._listener);
         Storage.getInstance(socket).listServers();
@@ -84,14 +84,12 @@ class Servers extends Component{
     }
 
     refreshLogin(serverUrl){
-        const manager = Storage.newManager(serverUrl);
-        manager.signinRedirect();
+        Storage.signin(serverUrl);
     }
 
     loginToNewServer(){
         const {newUrl} = this.state;
-        const manager = Storage.newManager(newUrl);
-        manager.signinRedirect();
+        Storage.signin(newUrl);
     }
 
     render() {

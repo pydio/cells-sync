@@ -85,7 +85,7 @@ class Editor extends React.Component {
             saveTask.Config.RightURI = loginUrl;
         }
         localStorage.setItem("Editor.SavedState", JSON.stringify({task: saveTask}));
-        Storage.newManager(loginUrl, editState).signinRedirect();
+        Storage.signin(loginUrl, editState);
     }
 
 
