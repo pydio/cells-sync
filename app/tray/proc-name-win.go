@@ -33,5 +33,5 @@ func processName(name string) string {
 	if !strings.HasSuffix(name, ".exe") {
 		name += ".exe"
 	}
-	return filepath.Join(dir, name)
+	return filepath.Join(dir, filepath.Base(name))
 }
