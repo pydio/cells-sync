@@ -23,10 +23,10 @@ package tray
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
-	"time"
+
+	"github.com/pydio/cells-sync/common"
 
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
@@ -61,7 +61,7 @@ func spawnWebView(path ...string) {
 	if len(path) > 0 {
 		url += path[0]
 	}
-	cmd := exec.CommandContext(c, processName(os.Args[0]), "webview", "--url", url)
+	cmd := exec.CommandContext(c, common.ProcessName(os.Args[0]), "webview", "--url", url)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	viewCancel = cancel
@@ -174,16 +174,18 @@ func onReady() {
 		}
 	}()
 
-	pinger := http.DefaultClient
-	if r, e := pinger.Get(uxUrl); e == nil && r.StatusCode == 200 {
-		fmt.Println("Service already running on port 3636 - Skipping start")
-	} else {
-		fmt.Println("Starting cli sync")
-		supervisor = suture.New("cli", suture.Spec{})
-		supervisor.Add(&CliService{})
-		supervisor.ServeBackground()
-		<-time.After(2 * time.Second)
-	}
+	/*
+		pinger := http.DefaultClient
+		if r, e := pinger.Get(uxUrl); e == nil && r.StatusCode == 200 {
+			fmt.Println("Service already running on port 3636 - Skipping start")
+		} else {
+			fmt.Println("Starting cli sync")
+			supervisor = suture.New("cli", suture.Spec{})
+			supervisor.Add(&control.SpawnedService{})
+			supervisor.ServeBackground()
+			<-time.After(2 * time.Second)
+		}
+	*/
 	ws.Connect()
 }
 

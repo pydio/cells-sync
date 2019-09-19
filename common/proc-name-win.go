@@ -20,7 +20,7 @@
  * The latest code can be found at <https://pydio.com>.
  */
 
-package tray
+package common
 
 import (
 	"os"
@@ -28,7 +28,7 @@ import (
 	"strings"
 )
 
-func processName(name string) string {
+func ProcessName(name string) string {
 	dir, _ := os.Getwd()
 	if !strings.HasSuffix(name, ".exe") {
 		name += ".exe"

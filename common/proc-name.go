@@ -1,13 +1,13 @@
 // +build !windows
 
-package tray
+package common
 
 import (
 	"os"
 	"path/filepath"
 )
 
-func processName(name string) string {
+func ProcessName(name string) string {
 	dir, _ := os.Getwd()
 	return filepath.Join(dir, name)
 }

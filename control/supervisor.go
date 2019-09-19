@@ -26,11 +26,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kardianos/service"
+
 	"github.com/thejerf/suture"
 
+	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells/common/log"
 	servicecontext "github.com/pydio/cells/common/service/context"
-	"github.com/pydio/cells-sync/config"
 )
 
 // Supervisor is a service manager for starting syncs and other services and restarting them if necessary
@@ -73,7 +75,12 @@ func (s *Supervisor) Serve() error {
 
 	s.schedulerToken = s.Add(NewScheduler(conf.Tasks))
 	s.Add(&Profiler{})
-	s.Add(&StdInner{})
+	if service.Interactive() {
+		s.Add(&StdInner{})
+	} else {
+		// Start systray
+		s.Add(&SpawnedService{args: []string{"systray"}})
+	}
 	s.Add(httpServer)
 	s.Add(NewUpdater())
 
