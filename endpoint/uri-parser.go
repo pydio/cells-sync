@@ -106,7 +106,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 				for change := range watcher {
 					if aC, ok := change.(*config.AuthChange); ok {
 						acUrl, _ := url.Parse(aC.Authority.URI)
-						if acUrl.Scheme == u.Scheme && acUrl.Host == u.Host {
+						if acUrl.Scheme == u.Scheme && acUrl.Host == u.Host && aC.Authority.Username == u.User.Username() {
 							if aC.Type == "delete" {
 								return
 							} else {

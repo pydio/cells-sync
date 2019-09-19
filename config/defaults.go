@@ -35,6 +35,7 @@ type Global struct {
 	Authorities []*Authority
 	Logs        *Logs
 	Updates     *Updates
+	Debugging   *Debugging
 	changes     []chan interface{}
 }
 
@@ -69,6 +70,10 @@ type Updates struct {
 	UpdateChannel   string
 	UpdateUrl       string
 	UpdatePublicKey string
+}
+
+type Debugging struct {
+	ShowPanels bool
 }
 
 func NewLogs() *Logs {
@@ -143,12 +148,15 @@ func (g *Global) UpdateTask(task *Task) error {
 	return e
 }
 
-func (g *Global) UpdateGlobals(logs *Logs, updates *Updates) error {
+func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debugging) error {
 	if logs != nil {
 		g.Logs = logs
 	}
 	if updates != nil {
 		g.Updates = updates
+	}
+	if debugging != nil {
+		g.Debugging = debugging
 	}
 	return Save()
 }
@@ -180,6 +188,9 @@ func Default() *Global {
 		}
 		if def.Updates == nil {
 			def.Updates = NewUpdates()
+		}
+		if def.Debugging == nil {
+			def.Debugging = &Debugging{}
 		}
 		if len(def.Authorities) > 0 {
 			for _, a := range def.Authorities {

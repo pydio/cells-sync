@@ -32,6 +32,7 @@ type Authority struct {
 	LoginDate   time.Time `json:"loginDate"`
 	RefreshDate time.Time `json:"refreshDate"`
 	TokenStatus string    `json:"tokenStatus"`
+	TasksCount  int       `json:"tasksCount"`
 
 	IdToken      string `json:"id_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -183,7 +184,7 @@ func stopMonitoringToken(key string) {
 func (g *Global) PublicAuthorities() []*Authority {
 	var p []*Authority
 	for _, a := range g.Authorities {
-		p = append(p, &Authority{
+		pA := &Authority{
 			Id:          a.key(),
 			URI:         a.URI,
 			ServerLabel: a.ServerLabel,
@@ -191,7 +192,18 @@ func (g *Global) PublicAuthorities() []*Authority {
 			RefreshDate: a.RefreshDate,
 			LoginDate:   a.LoginDate,
 			ExpiresAt:   a.ExpiresAt,
-		})
+		}
+		// Associate number of sync tasks
+		pU, _ := url.Parse(a.URI)
+		for _, s := range g.Tasks {
+			sUL, _ := url.Parse(s.LeftURI)
+			rUL, _ := url.Parse(s.LeftURI)
+			if (sUL.Scheme == pU.Scheme && sUL.User.Username() == pA.Username && sUL.Host == pU.Host) ||
+				(rUL.Scheme == pU.Scheme && rUL.User.Username() == pA.Username && rUL.Host == pU.Host) {
+				pA.TasksCount++
+			}
+		}
+		p = append(p, pA)
 	}
 	return p
 }
@@ -220,22 +232,28 @@ func (g *Global) CreateAuthority(a *Authority) error {
 
 func (g *Global) RemoveAuthority(a *Authority) error {
 	var newAuths []*Authority
+	var notif *Authority
 	for _, auth := range g.Authorities {
 		if !a.is(auth) {
 			newAuths = append(newAuths, auth)
+		} else {
+			notif = auth
 		}
 	}
-	g.Authorities = newAuths
-	e := Save()
-	if e == nil {
-		go func() {
-			for _, c := range g.changes {
-				c <- &AuthChange{Type: "remove", Authority: a}
-			}
-		}()
-		stopMonitoringToken(a.key())
+	if notif != nil {
+		g.Authorities = newAuths
+		e := Save()
+		if e == nil {
+			go func() {
+				for _, c := range g.changes {
+					c <- &AuthChange{Type: "remove", Authority: notif}
+				}
+			}()
+			stopMonitoringToken(a.key())
+		}
+		return e
 	}
-	return e
+	return nil
 }
 
 func (g *Global) UpdateAuthority(a *Authority, isRefresh bool) error {
