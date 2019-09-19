@@ -64,7 +64,7 @@ class Servers extends Component{
     componentDidMount(){
         const {socket} = this.props;
         this._listener = (auths) => {
-            this.setState({servers: auths || [], addMode: false});
+            this.setState({servers: auths || [], addMode: false, newUrl: ''});
         };
         socket.listenAuthorities(this._listener);
         Storage.getInstance(socket).listServers();
@@ -119,14 +119,17 @@ class Servers extends Component{
                         <h2 style={{color:'#607D8B'}}>{s.serverLabel}</h2>
                         <div style={{flex: 1}}>
                             <h4 style={{margin:'10px 0'}}>{s.uri}</h4>
-                            <div>{t('server.info.description').replace('%1', s.username).replace('%2', moment(new Date(s.loginDate)).fromNow())}</div>
+                            <div style={{lineHeight:'1.5em'}}>
+                                {t('server.info.description').replace('%1', s.username).replace('%2', moment(new Date(s.loginDate)).fromNow())}.<br/>
+                                {s.tasksCount > 0 ? ( s.tasksCount === 1 ? t('server.tasksCount.one') : t('server.tasksCount.plural').replace('%s', s.tasksCount)) : t('server.tasksCount.zero')}
+                            </div>
                         </div>
                         <div style={styles.serverActions}>
                             <TooltipHost id={"button-refresh"} key={"button-refresh"} content={t('server.refresh.button')} delay={TooltipDelay.zero}>
                                 <IconButton iconProps={{iconName:'Refresh'}} onClick={()=>{this.refreshLogin(s.uri)}} styles={styles.buttons}/>
                             </TooltipHost>
                             <TooltipHost id={"button-delete"} key={"button-delete"} content={t('server.delete.button')} delay={TooltipDelay.zero}>
-                                <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s.id)}} styles={styles.buttons}/>
+                                <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s.id)}} styles={styles.buttons} disabled={s.tasksCount > 0}/>
                             </TooltipHost>
                         </div>
                     </div>

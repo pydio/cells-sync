@@ -43,6 +43,14 @@ class EndpointPicker extends React.Component {
         const {socket} = this.props;
         this._listener = (auths) => {
             this.setState({auths: auths || []});
+            const {loginUrl} = this.state;
+            if (loginUrl) {
+                // Detect new server in auths list
+                const aa = auths.filter((a) => a.uri === loginUrl);
+                if(aa.length){
+                    this.updateUrl(aa[0].id);
+                }
+            }
         };
         socket.listenAuthorities(this._listener);
         Storage.getInstance(socket).listServers();
@@ -61,10 +69,11 @@ class EndpointPicker extends React.Component {
         return pathDisabled
     }
 
-    updateUrl(newUrl, startPort = false) {
+    updateUrl(newUrl) {
         const {onChange} = this.props;
         this.setState({
             pathDisabled: this.pathIsDisabled(newUrl),
+            createServer: false
         });
         onChange(null, newUrl.toString());
     }
@@ -87,7 +96,7 @@ class EndpointPicker extends React.Component {
 
     render(){
         const {dialog, pathDisabled, auths, createServer, loginUrl} = this.state;
-        const {value, t} = this.props;
+        const {editType, value, t, invalid} = this.props;
         const url = parse(value, {}, true);
         const rootUrl = parse(value, {}, true);
         const selectedPath = rootUrl.pathname;
@@ -104,6 +113,7 @@ class EndpointPicker extends React.Component {
                 iconProps={{iconName:"FolderList"}}
                 readOnly={true}
                 disabled={pathDisabled}
+                errorMessage={invalid?invalid:undefined}
                 onClick={() => {this.setState({dialog: true})}}
             />
         );
@@ -115,68 +125,78 @@ class EndpointPicker extends React.Component {
         authValues.push({key:'__CREATE__', text:t('server.create.legend')});
 
         return (
-            <Stack horizontal tokens={{childrenGap: 8}} >
-                <Dropdown
-                    selectedKey={url.protocol === 'https:' ? 'http:' : url.protocol}
-                    onChange={(ev, item) => {
-                        url.set('protocol', item.key);
-                        this.updateUrl(url);
-                    }}
-                    placeholder={t('editor.picker.type')}
-                    onRenderOption={renderOptionWithIcon}
-                    onRenderTitle={renderTitleWithIcon}
-                    styles={{root:{width: 200}}}
-                    options={EndpointTypes.map(({key, icon}) => {
-                        return { key: key + ':', text: t('editor.picker.type.' + key), data: {icon} }
-                    })}
-                />
-                {(!url.protocol || url.protocol.indexOf('http') !== 0) &&
-                    <Stack.Item grow>{pathField}</Stack.Item>
-                }
-                {url.protocol && url.protocol.indexOf('http') === 0 &&
-                    <Stack.Item grow>
-                        <Stack vertical tokens={{childrenGap: 8}} >
-                            <Stack.Item>
-                                <Stack horizontal tokens={{childrenGap: 8}} >
-                                    <Stack.Item>
-                                        <Dropdown
-                                            styles={{root:{minWidth:250}}}
-                                            selectedKey={createServer ? '__CREATE__' : url.protocol + '//' + url.username + '@' + url.host}
-                                            onChange={(ev, item) => {
-                                                if(item.key === '__CREATE__'){
-                                                    this.setState({createServer: true});
-                                                    return;
-                                                }
-                                                const {protocol, host, username}= item.data;
-                                                url.set('host', host);
-                                                url.set('protocol', protocol);
-                                                url.set('username', username);
-                                                this.updateUrl(url);
-                                            }}
-                                            placeholder={t('editor.picker.auth')}
-                                            options={authValues}
-                                        />
-                                    </Stack.Item>
-                                    {createServer &&
-                                        <React.Fragment>
-                                            <Stack.Item grow>
-                                                <TextField placeholder={t('server.url.placeholder')} value={loginUrl} onChange={(e,v)=>{this.setState({loginUrl: v})}}/>
-                                            </Stack.Item>
-                                            <Stack.Item>
-                                                <PrimaryButton text={t('server.login.button')} onClick={() => {this.createAuthority()}} disabled={!loginUrl}/>
-                                            </Stack.Item>
-                                        </React.Fragment>
-                                    }
-                                    {url.host && !createServer &&
-                                    <Stack.Item grow>
-                                        {pathField}
-                                    </Stack.Item>
-                                    }
-                                </Stack>
-                            </Stack.Item>
-                        </Stack>
-                    </Stack.Item>
-                }
+            <React.Fragment>
+                <Stack horizontal tokens={{childrenGap: 8}} >
+                    {editType &&
+                        <Dropdown
+                            selectedKey={url.protocol === 'https:' ? 'http:' : url.protocol}
+                            onChange={(ev, item) => {
+                                url.set('protocol', item.key);
+                                url.set('pathname', '');
+                                this.updateUrl(url);
+                            }}
+                            placeholder={t('editor.picker.type')}
+                            onRenderOption={renderOptionWithIcon}
+                            onRenderTitle={renderTitleWithIcon}
+                            styles={{root: {width: 200}}}
+                            options={EndpointTypes.map(({key, icon}) => {
+                                return {key: key + ':', text: t('editor.picker.type.' + key), data: {icon}}
+                            })}
+                        />
+                    }
+                    {(!url.protocol || url.protocol.indexOf('http') !== 0) &&
+                        <Stack.Item grow>{pathField}</Stack.Item>
+                    }
+                    {url.protocol && url.protocol.indexOf('http') === 0 &&
+                        <Stack.Item grow>
+                            <Stack vertical tokens={{childrenGap: 8}} >
+                                <Stack.Item>
+                                    <Stack horizontal tokens={{childrenGap: 8}} >
+                                        <Stack.Item>
+                                            <Dropdown
+                                                styles={{root:{minWidth:250}}}
+                                                selectedKey={createServer ? '__CREATE__' : url.protocol + '//' + url.username + '@' + url.host}
+                                                onChange={(ev, item) => {
+                                                    if(item.key === '__CREATE__'){
+                                                        url.set('host', '');
+                                                        url.set('username', '');
+                                                        url.set('pathname', '');
+                                                        this.updateUrl(url);
+                                                        this.setState({createServer: true});
+                                                        return;
+                                                    }
+                                                    const {protocol, host, username}= item.data;
+                                                    url.set('host', host);
+                                                    url.set('protocol', protocol);
+                                                    url.set('username', username);
+                                                    url.set('pathname', '');
+                                                    this.updateUrl(url);
+                                                }}
+                                                placeholder={t('editor.picker.auth')}
+                                                options={authValues}
+                                            />
+                                        </Stack.Item>
+                                        {createServer &&
+                                            <React.Fragment>
+                                                <Stack.Item grow>
+                                                    <TextField placeholder={t('server.url.placeholder')} value={loginUrl} onChange={(e,v)=>{this.setState({loginUrl: v})}}/>
+                                                </Stack.Item>
+                                                <Stack.Item>
+                                                    <PrimaryButton text={t('server.login.button')} onClick={() => {this.createAuthority()}} disabled={!loginUrl}/>
+                                                </Stack.Item>
+                                            </React.Fragment>
+                                        }
+                                        {!createServer &&
+                                        <Stack.Item grow>
+                                            {pathField}
+                                        </Stack.Item>
+                                        }
+                                    </Stack>
+                                </Stack.Item>
+                            </Stack>
+                        </Stack.Item>
+                    }
+                </Stack>
                 <TreeDialog
                     uri={dialog ? rootUrl.toString(): ''}
                     hidden={!dialog}
@@ -185,7 +205,7 @@ class EndpointPicker extends React.Component {
                     onSelect={this.onSelect.bind(this)}
                     unique={true}
                 />
-            </Stack>
+            </React.Fragment>
         )
     }
 

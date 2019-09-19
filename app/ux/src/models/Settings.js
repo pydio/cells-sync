@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
+let listeners = [];
+
 // Declare keys for the sake of auto-completion
 class Settings {
 
@@ -32,6 +34,9 @@ class Settings {
         UpdateUrl: "",
         UpdatePublicKey: ""
     };
+    Debugging = {
+        ShowPanels: false
+    };
 
     constructor(data) {
         if (data && data.Logs) {
@@ -39,6 +44,9 @@ class Settings {
         }
         if (data && data.Updates) {
             this.Updates = data.Updates;
+        }
+        if (data && data.Debugging){
+            this.Debugging = data.Debugging;
         }
     }
 
@@ -57,6 +65,8 @@ class Settings {
         }).then(data => {
             this.Logs = data.Logs;
             this.Updates = data.Updates;
+            this.Debugging = data.Debugging || {};
+            Settings.notify(this);
             return this;
         });
     }
@@ -80,6 +90,18 @@ class Settings {
             credentials: 'omit',
             body: JSON.stringify(this)
         }));
+    }
+
+    static observe(listener){
+        listeners.push(listener)
+    }
+
+    static stopObserving(listener){
+        listeners = listeners.filter((l) => l !== listener)
+    }
+
+    static notify(data){
+        listeners.forEach(l => l(data));
     }
 
 }

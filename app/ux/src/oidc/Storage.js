@@ -24,6 +24,8 @@ class Storage
     }
 
     static signin(url, currentEditState = undefined){
+        // TMP DEBUG
+        // window.linkOpener = window;
         const externalOpen = !!window.linkOpener;
         const manager = Storage.newManager(url, currentEditState);
         const href = 'http://localhost:' + window.location.port + '/servers/external?manager=' + encodeURI(url);

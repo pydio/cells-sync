@@ -149,6 +149,15 @@ class PageSettings extends React.Component {
                 </PageBlock>
                 <PageBlock style={{paddingBottom: 40}}>
                     <h3>{t('settings.section.logs')}</h3>
+                    <Toggle
+                        label={t('settings.show.debug')}
+                        checked={settings.Debugging.ShowPanels}
+                        onText={t('settings.show.debug.on')}
+                        offText={t('settings.show.debug.off')}
+                        onChange={(e, v) => {
+                            settings.Debugging.ShowPanels= !settings.Debugging.ShowPanels;
+                        }}
+                    />
                     <TextField
                         label={t('settings.logs.folder')}
                         placeholder={t('settings.logs.folder.placeholder')}

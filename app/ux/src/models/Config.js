@@ -20,7 +20,7 @@
 const Config = {
     UUID:"",
     Config:{
-        Label:"New Task",
+        Label:"",
         Uuid:"",
         LeftURI:"http://",
         RightURI:"fs:///",

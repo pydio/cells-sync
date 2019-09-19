@@ -26,6 +26,7 @@ import PageSettings from "./PageSettings";
 import PageServers from "./PageServers";
 import PageLogs from "./PageLogs";
 import PageAbout from "./PageAbout";
+import Settings from '../models/Settings'
 import moment from 'moment';
 
 class NavMenu extends React.Component {
@@ -35,16 +36,42 @@ class NavMenu extends React.Component {
         return <ContextualMenu {...menuProps} />;
     };
 
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
+
+    componentDidMount(){
+        (new Settings()).load().then((s) => {
+            this.setState({showDebug: s.Debugging.ShowPanels})
+            this._listener = (s) => {
+                this.setState({showDebug: s.Debugging.ShowPanels})
+            };
+            this._listener(s);
+            Settings.observe(this._listener)
+        });
+    }
+
+    componentWillUnmount(){
+        if(this._listener){
+            Settings.stopObserving(this._listener);
+        }
+    }
+
     render() {
+        const {showDebug} = this.state;
 
         const links = {
             '/': {label:'tasks', icon:'SyncToPC'},
             '/servers': {label:'servers', icon:'Server'},
             '/settings': {label:'settings', icon:'Settings'},
-            '/logs': {label:'logs', icon:'CustomList'},
-            '/about': {label:'about', icon:'Help'},
-            '/debugger': {label:'debugger', icon:'Code'}
         };
+        if(showDebug){
+            links['/logs'] = {label:'logs', icon:'CustomList'};
+            links['/debugger'] = {label:'debugger', icon:'Code'};
+        }
+        links['/about'] = {label:'about', icon:'Help'};
 
         const tStyles = {
             root: {
@@ -124,8 +151,8 @@ class NavRoutes extends React.Component {
                     <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <PageTasks syncTasks={syncTasks} socket={socket}/>}/>
                     <Route path={"/settings"} component={PageSettings}/>
                     <Route path={"/servers"} render={(p) => <PageServers {...p} socket={socket}/>}/>
-                    <Route path={"/logs"} component={PageLogs}/>
                     <Route path={"/about"} render={() => <PageAbout socket={socket}/>}/>
+                    <Route path={"/logs"} component={PageLogs}/>
                 </Switch>
             }/>
         )
