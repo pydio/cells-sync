@@ -38,6 +38,7 @@ var (
 	BuildStamp    = ""
 	BuildRevision = ""
 	PackageType   = "CellsSync"
+	PackageLabel  = "Cells Sync Client"
 )
 
 type EndpointInfo struct {
@@ -192,7 +193,11 @@ func MessageFromData(d []byte) *Message {
 }
 
 func PrintVersion(appName string) {
-	fmt.Println(appName, Version)
-	fmt.Println(BuildRevision)
-	fmt.Println(BuildStamp)
+
+	fmt.Println("")
+	fmt.Println("    " + fmt.Sprintf("%s (%s)", PackageLabel, Version))
+	fmt.Println("    " + fmt.Sprintf("Published on %s", BuildStamp.Format(time.RFC822Z)))
+	fmt.Println("    " + fmt.Sprintf("Revision number %s", BuildRevision))
+	fmt.Println("")
+
 }
