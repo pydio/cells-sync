@@ -194,9 +194,16 @@ func MessageFromData(d []byte) *Message {
 
 func PrintVersion(appName string) {
 
+	var t time.Time
+	if BuildStamp != "" {
+		t, _ = time.Parse("2006-01-02T15:04:05", BuildStamp)
+	} else {
+		t = time.Now()
+	}
+
 	fmt.Println("")
 	fmt.Println("    " + fmt.Sprintf("%s (%s)", PackageLabel, Version))
-	fmt.Println("    " + fmt.Sprintf("Published on %s", BuildStamp.Format(time.RFC822Z)))
+	fmt.Println("    " + fmt.Sprintf("Published on %s", t.Format(time.RFC822Z)))
 	fmt.Println("    " + fmt.Sprintf("Revision number %s", BuildRevision))
 	fmt.Println("")
 
