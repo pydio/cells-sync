@@ -1,6 +1,6 @@
 ENV=env
-TODAY=`date -u +%Y-%m-%dT%H:%M:%S`
-GITREV=`git rev-parse HEAD`
+TODAY:=$(shell date -u +%Y-%m-%dT%H:%M:%S)
+GITREV:=$(shell git rev-parse HEAD)
 CELLS_VERSION?=0.2.0
 
 all: clean pack ui
