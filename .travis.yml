@@ -9,10 +9,8 @@ go:
   - "1.12"
 
 before_install:
-  - sudo apt-get update
-    if: os = linux
-  - sudo apt-get install -y libqt5webview5-dev libgtk-3-dev libappindicator3-dev
-    if: os = linux
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update ; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y libqt5webview5-dev libgtk-3-dev libappindicator3-dev ; fi
 
 script:
   - go get -u github.com/pydio/cells-sync
