@@ -20,7 +20,7 @@ var ServiceCmd = &cobra.Command{
 		if args[0] == "status" {
 			s, e := config.Status()
 			if e != nil {
-				log.Fatal("Cannot get service status", e)
+				log.Fatal("Cannot get service status: ", e)
 			}
 			fmt.Print("Service status : ")
 			switch s {

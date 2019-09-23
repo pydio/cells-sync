@@ -1,11 +1,6 @@
 package config
 
-import (
-	"os/runtime"
-	"os/user"
-
-	"github.com/kardianos/service"
-)
+import "github.com/kardianos/service"
 
 var ServiceConfig = &service.Config{
 	Name:        "com.pydio.CellsSync",
@@ -15,11 +10,4 @@ var ServiceConfig = &service.Config{
 	Option: map[string]interface{}{
 		"RunAtLoad": true,
 	},
-}
-
-func init() {
-	u, _ := user.Current()
-	if runtime.GOOS == "linux" {
-		ServiceConfig.UserName = u.Username
-	}
 }

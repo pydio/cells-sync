@@ -1,11 +1,7 @@
 package config
 
 import (
-	"io/ioutil"
-	"os"
-	"os/user"
-	"path/filepath"
-	"runtime"
+	"fmt"
 
 	"github.com/kardianos/service"
 )
@@ -36,11 +32,10 @@ func (p *ServiceProgram) Stop(s service.Service) error {
 }
 
 func GetAppService(runner func()) (service.Service, error) {
-	prg := &ServiceProgram{runner: runner}
-	u, _ := user.Current()
-	if runtime.GOOS == "linux" {
-		ServiceConfig.UserName = u.Username
+	if ServiceConfig.Name == "" {
+		return nil, fmt.Errorf("Background service is not supported on this OS")
 	}
+	prg := &ServiceProgram{runner: runner}
 	return service.New(prg, ServiceConfig)
 }
 
@@ -51,11 +46,6 @@ func ControlAppService(cmd ServiceCmd) error {
 		if cmd == ServiceCmdInstall {
 			var er error
 			// Distro-specific tasks
-			if runtime.GOOS == "windows" {
-				// store the CWD for further usage
-				cwd, _ := os.Getwd()
-				er = ioutil.WriteFile(filepath.Join(SyncClientDataDir(), "cwd.txt"), []byte(cwd), 0755)
-			}
 			if sI := GetOSShortcutInstaller(); sI != nil {
 				er = sI.Install(ShortcutOptions{Shortcut: true, AutoStart: true})
 			}
