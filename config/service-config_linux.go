@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os/runtime"
 	"os/user"
 
 	"github.com/kardianos/service"
@@ -19,7 +18,5 @@ var ServiceConfig = &service.Config{
 
 func init() {
 	u, _ := user.Current()
-	if runtime.GOOS == "linux" {
-		ServiceConfig.UserName = u.Username
-	}
+	ServiceConfig.UserName = u.Username
 }
