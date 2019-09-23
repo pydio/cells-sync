@@ -10,17 +10,6 @@ const ServiceCmdRestart ServiceCmd = "restart"
 const ServiceCmdInstall ServiceCmd = "install"
 const ServiceCmdUninstall ServiceCmd = "uninstall"
 
-var ServiceConfig = &service.Config{
-	Name:        "com.pydio.CellsSync",
-	DisplayName: "Cells Sync",
-	Description: "Synchronization tool for Pydio Cells",
-	Arguments:   []string{"start"},
-	Option: map[string]interface{}{
-		"UserService": true,
-		"RunAtLoad":   true,
-	},
-}
-
 type ServiceProgram struct {
 	runner func()
 }

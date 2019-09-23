@@ -81,7 +81,7 @@ func (s *Supervisor) Serve() error {
 		s.Add(&StdInner{})
 	}
 	if !s.noUi {
-		s.Add(&SpawnedService{args: []string{"systray"}})
+		s.Add(NewSpawnedService("systray", []string{"systray"}))
 	}
 	s.Add(httpServer)
 	s.Add(NewUpdater())
