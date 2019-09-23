@@ -182,6 +182,13 @@ func MessageFromData(d []byte) *Message {
 			} else {
 				log.Logger(context.Background()).Debug("Ignoring Update Message (probably a response):" + string(d))
 			}
+		} else if m.Type == "SERVICE" {
+			if sCmd, ok := m.Content.(string); ok && config.AllowedServiceCmd(sCmd) {
+				log.Logger(context.Background()).Debug("Controlling service with command:" + sCmd)
+				config.ControlAppService(config.ServiceCmd(sCmd))
+			} else {
+				log.Logger(context.Background()).Error("Could not recognize service command!")
+			}
 		}
 		return &m
 	} else {

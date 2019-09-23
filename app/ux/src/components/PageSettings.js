@@ -101,6 +101,18 @@ class PageSettings extends React.Component {
         return (
             <Page title={t('settings.title')} legend={t('settings.legend')} barItems={cmdBarItems}>
                 <PageBlock style={{paddingBottom: 40}}>
+                    <h3>{t('settings.section.service')}</h3>
+                    <Toggle
+                        label={"Launch at startup (will install as background service)"}
+                        checked={settings.Service.RunAsService}
+                        onText={t('settings.service.run.on')}
+                        offText={t('settings.service.run.off')}
+                        onChange={(e, v) => {
+                            settings.Service.RunAsService = !settings.Service.RunAsService;
+                        }}
+                    />
+                </PageBlock>
+                <PageBlock style={{paddingBottom: 40}}>
                     <h3>{t('settings.section.update')}</h3>
                     <Dropdown
                         label={t('settings.updates.frequency')}

@@ -40,7 +40,7 @@ func (h *HttpServer) updateConf(i *gin.Context) {
 		return
 	}
 
-	if er := config.Default().UpdateGlobals(glob.Logs, glob.Updates, glob.Debugging); er != nil {
+	if er := config.Default().UpdateGlobals(glob.Logs, glob.Updates, glob.Debugging, glob.Service); er != nil {
 		h.writeError(i, er)
 	} else {
 		i.JSON(http.StatusOK, config.Default())

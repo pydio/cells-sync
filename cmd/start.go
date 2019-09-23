@@ -23,35 +23,57 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells-sync/control"
+	"github.com/pydio/cells/common/log"
 )
+
+var startNoUi bool
+
+func runner() {
+	logs := config.Default().Logs
+	os.MkdirAll(logs.Folder, 0755)
+	log.RegisterWriteSyncer(zapcore.AddSync(&lumberjack.Logger{
+		Filename:   filepath.Join(logs.Folder, "sync.log"),
+		MaxAge:     logs.MaxAgeDays,   // days
+		MaxSize:    logs.MaxFilesSize, // megabytes
+		MaxBackups: logs.MaxFilesNumber,
+	}))
+	s := control.NewSupervisor(startNoUi)
+	s.Serve()
+}
 
 var StartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start sync tasks",
 	Run: func(cmd *cobra.Command, args []string) {
-
-		logs := config.Default().Logs
-		os.MkdirAll(logs.Folder, 0755)
-		log.RegisterWriteSyncer(zapcore.AddSync(&lumberjack.Logger{
-			Filename:   filepath.Join(logs.Folder, "sync.log"),
-			MaxAge:     logs.MaxAgeDays,   // days
-			MaxSize:    logs.MaxFilesSize, // megabytes
-			MaxBackups: logs.MaxFilesNumber,
-		}))
-
-		s := control.NewSupervisor()
-		s.Serve()
-
+		if service.Interactive() {
+			runner()
+		} else {
+			s, err := config.GetAppService(runner)
+			if err != nil {
+				log.Fatal(err.Error())
+				return
+			}
+			l, err := s.Logger(nil)
+			if err != nil {
+				log.Fatal(err.Error())
+				return
+			}
+			err = s.Run()
+			if err != nil {
+				l.Error(err)
+			}
+		}
 	},
 }
 
 func init() {
+	StartCmd.Flags().BoolVar(&startNoUi, "headless", false, "Start sync tasks without UI components")
 	RootCmd.AddCommand(StartCmd)
 }
