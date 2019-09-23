@@ -3,17 +3,14 @@ TODAY=`date -u +%Y-%m-%dT%H:%M:%S`
 GITREV=`git rev-parse HEAD`
 CELLS_VERSION?=0.2.0
 
-all: clean pack ui
+all: clean pack cli
 
-ui:
+cli:
 	go build \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	--tags app -o cells-sync main.go
-
-dev:
-	go run main.go start
+	-o cells-sync main.go
 
 pack:
 	${GOPATH}/bin/packr
@@ -24,7 +21,6 @@ xgo:
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	-tags "app" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
 	${GOPATH}/bin/xgo -go 1.12 -out "cells-sync" \
@@ -33,7 +29,6 @@ xgo:
 	-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	-tags "app" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
 	${GOPATH}/bin/xgo -go 1.12 -out "cells-sync-noui" \
@@ -41,7 +36,6 @@ xgo:
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	-tags "app" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
 

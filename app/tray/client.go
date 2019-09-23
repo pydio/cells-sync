@@ -9,9 +9,9 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service"
-	"github.com/pydio/cells-sync/common"
 )
 
 type StatusMessage int
@@ -141,4 +141,22 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 		}
 	}()
 	conn.WriteJSON(&common.Message{Type: "PING"})
+}
+
+func (c *Client) SendCmd(content *common.CmdContent) {
+	if c.conn != nil {
+		c.conn.WriteJSON(&common.Message{Type: "CMD", Content: content})
+	} else {
+		log.Logger(context.Background()).Error("No active connection for sending message")
+	}
+
+}
+
+func (c *Client) SendHalt() {
+	if c.conn != nil {
+		log.Logger(context.Background()).Info("Sending 'quit' message to websocket")
+		c.conn.WriteJSON(&common.Message{Type: "CMD", Content: &common.CmdContent{Cmd: "quit"}})
+	} else {
+		log.Logger(context.Background()).Error("No active connection for sending message")
+	}
 }

@@ -139,7 +139,11 @@ func (h *HttpServer) InitHandlers() {
 					if cmd.UUID != "" {
 						go GetBus().Pub(intCmd, TopicSync_+cmd.UUID)
 					} else {
-						go GetBus().Pub(intCmd, TopicSyncAll)
+						if intCmd == MessageHalt || intCmd == MessageRestart {
+							GetBus().Pub(intCmd, TopicGlobal)
+						} else {
+							go GetBus().Pub(intCmd, TopicSyncAll)
+						}
 					}
 				}
 			}

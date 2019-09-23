@@ -33,5 +33,8 @@ func ProcessName(name string) string {
 	if !strings.HasSuffix(name, ".exe") {
 		name += ".exe"
 	}
-	return filepath.Join(dir, filepath.Base(name))
+	if dir == filepath.Dir(name) {
+		name = filepath.Base(name)
+	}
+	return filepath.Join(dir, name)
 }

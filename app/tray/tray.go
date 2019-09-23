@@ -29,13 +29,10 @@ import (
 	"github.com/pydio/cells-sync/common"
 
 	"github.com/getlantern/systray"
-	"github.com/skratchdot/open-golang/open"
-	"github.com/thejerf/suture"
-
 	"github.com/pydio/cells/common/sync/model"
+	"github.com/skratchdot/open-golang/open"
 
 	"github.com/pydio/cells-sync/app/tray/icon"
-	"github.com/pydio/cells-sync/control"
 )
 
 var (
@@ -44,7 +41,6 @@ var (
 	closing    bool
 	ws         *Client
 	stateSlots []*systray.MenuItem
-	supervisor *suture.Supervisor
 )
 
 func Run() {
@@ -90,6 +86,7 @@ func onReady() {
 	}
 	mNewTasks := systray.AddMenuItem("Create new task...", "")
 	systray.AddSeparator()
+	mResync := systray.AddMenuItem("Resync all", "Resync all tasks")
 	mAbout := systray.AddMenuItem("About", "About Cells Sync")
 	mQuit := systray.AddMenuItem("Quit", "Exit Sync")
 	ws = NewClient()
@@ -154,47 +151,27 @@ func onReady() {
 				go spawnWebView("/create")
 			case <-mAbout.ClickedCh:
 				go spawnWebView("/about")
+			case <-mResync.ClickedCh:
+				ws.SendCmd(&common.CmdContent{Cmd: "loop"})
 			case <-mQuit.ClickedCh:
 				fmt.Println("Quitting now...")
-				beforeExit()
-				systray.Quit()
+				if viewCancel != nil {
+					viewCancel()
+					viewCancel = nil
+				}
+				//beforeExit()
+				//systray.Quit()
+				ws.SendHalt()
 				return
 			}
 		}
 	}()
 
-	ctrlChan := control.GetBus().SubOnce(control.TopicGlobal)
-	go func() {
-		for msg := range ctrlChan {
-			if msg == control.MessageHalt {
-				beforeExit()
-				systray.Quit()
-				return
-			}
-		}
-	}()
-
-	/*
-		pinger := http.DefaultClient
-		if r, e := pinger.Get(uxUrl); e == nil && r.StatusCode == 200 {
-			fmt.Println("Service already running on port 3636 - Skipping start")
-		} else {
-			fmt.Println("Starting cli sync")
-			supervisor = suture.New("cli", suture.Spec{})
-			supervisor.Add(&control.SpawnedService{})
-			supervisor.ServeBackground()
-			<-time.After(2 * time.Second)
-		}
-	*/
 	ws.Connect()
 }
 
 func beforeExit() {
 	closing = true
-	if supervisor != nil {
-		fmt.Println("Closing Supervisor")
-		supervisor.Stop()
-	}
 	if ws != nil {
 		ws.Close()
 	}

@@ -43,14 +43,16 @@ type Supervisor struct {
 	ctx            context.Context
 	tasksTokens    map[string]suture.ServiceToken
 	schedulerToken suture.ServiceToken
+	noUi           bool
 }
 
 // NewSupervisor creates a new Supervisor
-func NewSupervisor() *Supervisor {
+func NewSupervisor(noUi bool) *Supervisor {
 	ctx := servicecontext.WithServiceName(context.Background(), "supervisor")
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
 	s := &Supervisor{
 		ctx:         ctx,
+		noUi:        noUi,
 		tasksTokens: make(map[string]suture.ServiceToken),
 		Supervisor: suture.New("cells-sync", suture.Spec{
 			Log: func(s string) {
@@ -77,8 +79,8 @@ func (s *Supervisor) Serve() error {
 	s.Add(&Profiler{})
 	if service.Interactive() {
 		s.Add(&StdInner{})
-	} else {
-		// Start systray
+	}
+	if !s.noUi {
 		s.Add(&SpawnedService{args: []string{"systray"}})
 	}
 	s.Add(httpServer)
@@ -145,7 +147,11 @@ func (s *Supervisor) listenBus() {
 	c := GetBus().Sub(TopicGlobal)
 	for m := range c {
 		if m == MessageHalt {
-			s.Stop()
+			if service.Interactive() {
+				s.Stop()
+			} else {
+				config.ControlAppService(config.ServiceCmdStop)
+			}
 		}
 	}
 }

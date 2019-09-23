@@ -22,6 +22,9 @@ package config
 
 import (
 	"path/filepath"
+
+	"github.com/pydio/cells/common/log"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -36,6 +39,7 @@ type Global struct {
 	Logs        *Logs
 	Updates     *Updates
 	Debugging   *Debugging
+	Service     *Service
 	changes     []chan interface{}
 }
 
@@ -74,6 +78,10 @@ type Updates struct {
 
 type Debugging struct {
 	ShowPanels bool
+}
+
+type Service struct {
+	RunAsService bool
 }
 
 func NewLogs() *Logs {
@@ -148,7 +156,7 @@ func (g *Global) UpdateTask(task *Task) error {
 	return e
 }
 
-func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debugging) error {
+func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debugging, service *Service) error {
 	if logs != nil {
 		g.Logs = logs
 	}
@@ -157,6 +165,20 @@ func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debuggin
 	}
 	if debugging != nil {
 		g.Debugging = debugging
+	}
+	if service != nil {
+		if g.Service != nil {
+			if service.RunAsService != g.Service.RunAsService {
+				if service.RunAsService {
+					log.Logger(context.Background()).Info("Installing Cells-Sync as service")
+					ControlAppService(ServiceCmdInstall)
+				} else {
+					log.Logger(context.Background()).Info("Uninstalling Cells-Sync as service")
+					ControlAppService(ServiceCmdUninstall)
+				}
+			}
+		}
+		g.Service = service
 	}
 	return Save()
 }

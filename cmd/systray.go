@@ -1,5 +1,3 @@
-// +build app
-
 /*
  * Copyright 2019 Abstrium SAS
  *

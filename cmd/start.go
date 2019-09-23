@@ -33,6 +33,8 @@ import (
 	"github.com/pydio/cells/common/log"
 )
 
+var startNoUi bool
+
 func runner() {
 	logs := config.Default().Logs
 	os.MkdirAll(logs.Folder, 0755)
@@ -42,32 +44,8 @@ func runner() {
 		MaxSize:    logs.MaxFilesSize, // megabytes
 		MaxBackups: logs.MaxFilesNumber,
 	}))
-	s := control.NewSupervisor()
+	s := control.NewSupervisor(startNoUi)
 	s.Serve()
-}
-
-var svcConfig = &service.Config{
-	Name:        "com.pydio.CellsSync",
-	DisplayName: "Cells Sync",
-	Description: "Synchronization tool for Pydio Cells",
-	Arguments:   []string{"start"},
-	Option: map[string]interface{}{
-		"UserService": true,
-		"RunAtLoad":   true,
-	},
-}
-
-type program struct{}
-
-// Start should not block. Do the actual work async.
-func (p *program) Start(s service.Service) error {
-	go runner()
-	return nil
-}
-
-// Stop should not block. Return with a few seconds.
-func (p *program) Stop(s service.Service) error {
-	return nil
 }
 
 var StartCmd = &cobra.Command{
@@ -77,8 +55,7 @@ var StartCmd = &cobra.Command{
 		if service.Interactive() {
 			runner()
 		} else {
-			prg := &program{}
-			s, err := service.New(prg, svcConfig)
+			s, err := config.GetAppService(runner)
 			if err != nil {
 				log.Fatal(err.Error())
 				return
@@ -97,5 +74,6 @@ var StartCmd = &cobra.Command{
 }
 
 func init() {
+	StartCmd.Flags().BoolVar(&startNoUi, "headless", false, "Start sync tasks without UI components")
 	RootCmd.AddCommand(StartCmd)
 }

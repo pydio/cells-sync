@@ -37,6 +37,9 @@ class Settings {
     Debugging = {
         ShowPanels: false
     };
+    Service =  {
+        RunAsService: false,
+    };
 
     constructor(data) {
         if (data && data.Logs) {
@@ -47,6 +50,9 @@ class Settings {
         }
         if (data && data.Debugging){
             this.Debugging = data.Debugging;
+        }
+        if (data && data.Service){
+            this.Service = data.Service;
         }
     }
 
@@ -66,6 +72,7 @@ class Settings {
             this.Logs = data.Logs;
             this.Updates = data.Updates;
             this.Debugging = data.Debugging || {};
+            this.Service = data.Service || {};
             Settings.notify(this);
             return this;
         });
