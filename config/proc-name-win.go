@@ -23,13 +23,12 @@
 package config
 
 import (
+	"context"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/pydio/cells/common/log"
-	"golang.org/x/net/context"
 )
 
 func ProcessName(name string) string {
@@ -41,10 +40,10 @@ func ProcessName(name string) string {
 		name = filepath.Base(name)
 	}
 	cwdFile := filepath.Join(SyncClientDataDir(), "cwd.txt")
+	log.Logger(context.Background()).Info("Loading CWD from file : " + cwdFile)
 	if data, e := ioutil.ReadFile(cwdFile); e == nil {
 		dir = string(data)
 		name = filepath.Base(name)
-		log.Logger(context.Background()).Info("Loading CWD from file : " + dir)
 	}
 	return filepath.Join(dir, name)
 }

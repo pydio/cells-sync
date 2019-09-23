@@ -38,7 +38,9 @@ func (p *ServiceProgram) Stop(s service.Service) error {
 func GetAppService(runner func()) (service.Service, error) {
 	prg := &ServiceProgram{runner: runner}
 	u, _ := user.Current()
-	ServiceConfig.UserName = u.Username
+	if runtime.GOOS == "linux" {
+		ServiceConfig.UserName = u.Username
+	}
 	return service.New(prg, ServiceConfig)
 }
 
@@ -46,10 +48,20 @@ func ControlAppService(cmd ServiceCmd) error {
 	if s, e := GetAppService(nil); e != nil {
 		return e
 	} else {
-		if cmd == ServiceCmdInstall && runtime.GOOS == "windows" {
-			// store the CWD for further usage
-			cwd, _ := os.Getwd()
-			ioutil.WriteFile(filepath.Join(SyncClientDataDir(), "cwd.txt"), []byte(cwd), 0755)
+		if cmd == ServiceCmdInstall {
+			var er error
+			// Distro-specific tasks
+			if runtime.GOOS == "windows" {
+				// store the CWD for further usage
+				cwd, _ := os.Getwd()
+				er = ioutil.WriteFile(filepath.Join(SyncClientDataDir(), "cwd.txt"), []byte(cwd), 0755)
+			}
+			if sI := GetOSShortcutInstaller(); sI != nil {
+				er = sI.Install(ShortcutOptions{Shortcut: true, AutoStart: true})
+			}
+			if er != nil {
+				return er
+			}
 		}
 		return service.Control(s, string(cmd))
 	}
