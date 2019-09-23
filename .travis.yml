@@ -8,6 +8,12 @@ os:
 go:
   - "1.12"
 
+before_install:
+  - sudo apt-get update
+    if: os = linux
+  - sudo apt-get install -y libqt5webview5-dev libgtk-3-dev libappindicator3-dev
+    if: os = linux
+
 script:
   - go get -u github.com/pydio/cells-sync
   - go build main.go
