@@ -39,14 +39,16 @@ func (s *StdInner) Serve() {
 
 	log.Logger(s.ctx).Info("Use 'quit' or Ctrl+C to exit, type 'resync', 'dry', 'loop' to control syncs, 'pause' or 'resume'")
 	bus := GetBus()
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		text := scanner.Text()
-		if cmd, e := MessageFromString(text); e == nil {
-			if cmd == MessageHalt {
-				bus.Pub(cmd, TopicGlobal)
-			} else {
-				bus.Pub(cmd, TopicSyncAll)
+	if os.Stdin != nil {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			text := scanner.Text()
+			if cmd, e := MessageFromString(text); e == nil {
+				if cmd == MessageHalt {
+					bus.Pub(cmd, TopicGlobal)
+				} else {
+					bus.Pub(cmd, TopicSyncAll)
+				}
 			}
 		}
 	}
