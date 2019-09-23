@@ -26,6 +26,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/pydio/cells-sync/config"
+
 	"github.com/pydio/cells-sync/common"
 
 	"github.com/getlantern/systray"
@@ -57,7 +59,7 @@ func spawnWebView(path ...string) {
 	if len(path) > 0 {
 		url += path[0]
 	}
-	cmd := exec.CommandContext(c, common.ProcessName(os.Args[0]), "webview", "--url", url)
+	cmd := exec.CommandContext(c, config.ProcessName(os.Args[0]), "webview", "--url", url)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	viewCancel = cancel

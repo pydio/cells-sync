@@ -20,12 +20,16 @@
  * The latest code can be found at <https://pydio.com>.
  */
 
-package common
+package config
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pydio/cells/common/log"
+	"golang.org/x/net/context"
 )
 
 func ProcessName(name string) string {
@@ -35,6 +39,12 @@ func ProcessName(name string) string {
 	}
 	if dir == filepath.Dir(name) {
 		name = filepath.Base(name)
+	}
+	cwdFile := filepath.Join(SyncClientDataDir(), "cwd.txt")
+	if data, e := ioutil.ReadFile(cwdFile); e == nil {
+		dir = string(data)
+		name = filepath.Base(name)
+		log.Logger(context.Background()).Info("Loading CWD from file : " + dir)
 	}
 	return filepath.Join(dir, name)
 }

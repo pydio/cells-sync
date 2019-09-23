@@ -7,11 +7,11 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/pydio/cells-sync/config"
+
 	servicecontext "github.com/pydio/cells/common/service/context"
 
 	"github.com/pydio/cells/common/log"
-
-	"github.com/pydio/cells-sync/common"
 )
 
 type SpawnedService struct {
@@ -36,7 +36,7 @@ func (c *SpawnedService) Serve() {
 	var ctx context.Context
 	log.Logger(c.logCtx).Info("Starting sub-process")
 	ctx, c.cancel = context.WithCancel(c.logCtx)
-	cmd := exec.CommandContext(ctx, common.ProcessName(os.Args[0]), c.args...)
+	cmd := exec.CommandContext(ctx, config.ProcessName(os.Args[0]), c.args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return // PRINT SOMETHING

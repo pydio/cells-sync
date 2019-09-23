@@ -1,6 +1,14 @@
 package config
 
-import "github.com/kardianos/service"
+import (
+	"io/ioutil"
+	"os"
+	"os/user"
+	"path/filepath"
+	"runtime"
+
+	"github.com/kardianos/service"
+)
 
 type ServiceCmd string
 
@@ -29,6 +37,8 @@ func (p *ServiceProgram) Stop(s service.Service) error {
 
 func GetAppService(runner func()) (service.Service, error) {
 	prg := &ServiceProgram{runner: runner}
+	u, _ := user.Current()
+	ServiceConfig.UserName = u.Username
 	return service.New(prg, ServiceConfig)
 }
 
@@ -36,6 +46,11 @@ func ControlAppService(cmd ServiceCmd) error {
 	if s, e := GetAppService(nil); e != nil {
 		return e
 	} else {
+		if cmd == ServiceCmdInstall && runtime.GOOS == "windows" {
+			// store the CWD for further usage
+			cwd, _ := os.Getwd()
+			ioutil.WriteFile(filepath.Join(SyncClientDataDir(), "cwd.txt"), []byte(cwd), 0755)
+		}
 		return service.Control(s, string(cmd))
 	}
 }
