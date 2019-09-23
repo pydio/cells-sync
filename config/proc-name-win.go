@@ -25,10 +25,11 @@ package config
 import (
 	"context"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pydio/cells/common/log"
 )
 
 func ProcessName(name string) string {
