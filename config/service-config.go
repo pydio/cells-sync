@@ -1,3 +1,5 @@
+// +build !linux
+
 package config
 
 import "github.com/kardianos/service"
