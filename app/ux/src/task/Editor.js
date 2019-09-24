@@ -22,7 +22,7 @@ import ObservableSlim from 'observable-slim'
 import parse from 'url-parse'
 import basename from 'basename'
 import { Label, TextField, Dropdown, Separator, Stack, DefaultButton, PrimaryButton, Toggle, Icon, TooltipHost, TooltipDelay } from 'office-ui-fabric-react';
-import {Config} from '../models/Config'
+import {Config, DefaultDirLoader} from '../models/Config'
 import EndpointPicker from './EndpointPicker'
 import SelectiveFolders from "./SelectiveFolders";
 import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownRender";
@@ -58,6 +58,9 @@ class Editor extends React.Component {
         if(isNew){
             this.state.LeftURIInvalid = true;
             this.state.RightURIInvalid = true;
+            DefaultDirLoader.getInstance().onDefaultDir().then(defaultPath => {
+                proxy.Config.RightURI += defaultPath;
+            })
         }
     }
 

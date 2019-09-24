@@ -199,6 +199,7 @@ class EndpointPicker extends React.Component {
                 </Stack>
                 <TreeDialog
                     uri={dialog ? rootUrl.toString(): ''}
+                    allowCreate={true}
                     hidden={!dialog}
                     onDismiss={()=>{this.setState({dialog: false})}}
                     initialSelection={selectedPath}

@@ -30,9 +30,9 @@ class TreeDialog extends React.Component {
 
     submit(){
         const {selection} = this.state;
-        const {initialSelection} = this.props;
+        const {initialSelection, t} = this.props;
         if((!selection || !selection.length) && !initialSelection) {
-            window.alert('Please pick a folder')
+            window.alert(t('tree.alert.selection.empty'))
         } else if(selection) {
             this.props.onSelect(selection);
             this.props.onDismiss();
@@ -43,7 +43,7 @@ class TreeDialog extends React.Component {
     }
 
     render() {
-        const {uri, t, initialSelection, unique, ...dialogProps} = this.props;
+        const {uri, t, initialSelection, unique, allowCreate, ...dialogProps} = this.props;
         const {error} = this.state;
         return (
             <Dialog {...dialogProps} minWidth={700} title={t('tree.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
@@ -58,6 +58,7 @@ class TreeDialog extends React.Component {
                             <TreeView
                                 unique={unique}
                                 uri={uri}
+                                allowCreate={allowCreate}
                                 initialSelection={initialSelection}
                                 onError={(err) => {this.setState({error: err})}}
                                 onSelectionChanged={(sel) => {this.setState({selection: sel})}}

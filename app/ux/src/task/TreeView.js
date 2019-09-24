@@ -17,16 +17,20 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
-import { GroupedList, GroupHeader } from 'office-ui-fabric-react/lib/components/GroupedList/index';
-import { FocusZone } from 'office-ui-fabric-react/lib/FocusZone';
-import { Selection, SelectionMode, SelectionZone } from 'office-ui-fabric-react/lib/utilities/selection/index';
+import { GroupedList, GroupHeader, FocusZone, Selection, SelectionMode, SelectionZone, Icon, IconButton, TextField } from 'office-ui-fabric-react';
 import {TreeNode, Loader} from "../models/TreeNode";
+import {withTranslation} from 'react-i18next'
 
-export default class TreeView extends React.Component {
+class TreeView extends React.Component {
 
     constructor(props) {
         super(props);
-        const loader = new Loader(props.uri);
+        const {unique, t} = props;
+        let label = t('tree.root.select.multiple');
+        if(unique){
+            label = t('tree.root.select.unique');
+        }
+        const loader = new Loader(label, props.uri, props.allowCreate);
         const {initialSelection} = this.props;
         const selection = new Selection({onSelectionChanged:()=>{
             this.setState({selection: selection}, () => {
@@ -111,11 +115,24 @@ export default class TreeView extends React.Component {
     }
 
     onRenderGroup(data){
-        const {onToggleCollapse, styles, ...all} = data;
-        const {unique} = this.props;
+        const {onToggleCollapse, onToggleSelectGroup, styles, ...all} = data;
+        const {unique, onError, t} = this.props;
         const {selection} = this.state;
 
+        const toggleSelectGroup = (group) => {
+            if(group.node.name === TreeNode.CREATE_FOLDER){
+                return;
+            }
+            if(unique){
+                selection.setAllSelected(false);
+            }
+            onToggleSelectGroup(group);
+        };
+
         const toggleCollapse = (group) => {
+            if(group.node.name === TreeNode.CREATE_FOLDER){
+                return;
+            }
             onToggleCollapse(group);
             if (!group.isCollapsed && !group.node.isLoaded()) {
                 group.node.load();
@@ -132,19 +149,33 @@ export default class TreeView extends React.Component {
         if(data.group.startIndex === 0){
             //hStyles.check = {visibility:'hidden'};
         }
-        const other = {};
-        if(unique){
-            other.onToggleSelectGroup = (group) => {
-                selection.setAllSelected(false);
-                all.onToggleSelectGroup(group);
-            }
+        let expandProps = {};
+        if(data.group.name === TreeNode.CREATE_FOLDER){
+            expandProps.style = {display:'none'};
         }
+
+        const onNewFolder = (group, newName) => {
+            if(newName){
+                group.node.parent.createChildFolder(newName).catch((e) => {
+                    onError(e);
+                });
+            }
+        };
+
         return <GroupHeader
             {...all}
             styles={hStyles}
             isGroupLoading={isGroupLoading}
             onToggleCollapse={toggleCollapse}
-            {...other}
+            onToggleSelectGroup={toggleSelectGroup}
+            expandButtonProps={expandProps}
+            onRenderTitle={({group})=> {
+                if(group.name === TreeNode.CREATE_FOLDER) {
+                    return <FolderPrompt onFinish={(newName) => onNewFolder(group, newName)}/>
+                }else{
+                    return <div>{group.name}</div>
+                }
+            }}
         />
     }
 
@@ -174,3 +205,35 @@ export default class TreeView extends React.Component {
     }
 
 }
+
+class FolderPrompt extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {open: false, value: ""};
+    }
+    render(){
+        const {t, onFinish} = this.props;
+        const {open, value} = this.state;
+        let content;
+        if(open){
+            content = (
+                <React.Fragment>
+                    <TextField autoFocus={true} placeholder={t('tree.create.folder.placeholder')} value={value} onChange={(e,v)=>{this.setState({value: v})}}/>
+                    <IconButton iconProps={{iconName:'CheckMark'}} onClick={() => {onFinish(value); this.setState({open: false, value: ""})}}/>
+                    <IconButton iconProps={{iconName:'Cancel'}} onClick={() => {this.setState({open: false})}}/>
+                </React.Fragment>
+            );
+        } else {
+            content = t('tree.create.folder');
+        }
+        return (
+            <div style={{color: '#0078d4',cursor: 'pointer', display:'flex', alignItems:'center'}} onClick={()=>{if(!open) this.setState({open: true})}}>
+                <Icon iconName={"NewFolder"} styles={{root:{margin:'0 8px'}}}/>{content}
+            </div>
+        )
+    }
+}
+
+FolderPrompt = withTranslation()(FolderPrompt);
+TreeView = withTranslation()(TreeView);
+export {TreeView as default}

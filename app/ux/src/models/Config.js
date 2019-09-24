@@ -23,7 +23,7 @@ const Config = {
         Label:"",
         Uuid:"",
         LeftURI:"http://",
-        RightURI:"fs:///",
+        RightURI:"fs://",
         Direction:"Bi",
         Realtime: true,
         LoopInterval:"",
@@ -51,4 +51,58 @@ const Config = {
     }
 };
 
-export {Config}
+class DefaultDirLoader {
+    loaded = false;
+    defaultDir = "";
+
+    static getInstance(){
+        if (!DefaultDirLoader.instance){
+            DefaultDirLoader.instance = new DefaultDirLoader();
+        }
+        return DefaultDirLoader.instance
+    }
+
+    onDefaultDir(){
+        if (this.loaded){
+            return Promise.resolve(this.defaultDir)
+        } else {
+            return this.load().then(node => {
+                this.defaultDir = node.Path;
+                return node.Path;
+            })
+        }
+    }
+
+    load(){
+        return window.fetch('http://localhost:3636/default', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'omit',
+            body: JSON.stringify({
+                EndpointURI: "fs://",
+            })
+        }).then(response => {
+            this.loaded = true;
+            if (response.status === 500) {
+                console.log(response);
+                return response.json().then(data => {
+                    console.log(data);
+                    if(data && data.error) {
+                        throw new Error(data.error);
+                    }
+                });
+            }
+            return response.json();
+        }).then(data => {
+            return data.Node || {Path:''};
+        }).catch(reason => {
+            this.loaded = true;
+            console.log(reason);
+            throw reason;
+        });
+    }
+}
+
+export {Config, DefaultDirLoader}

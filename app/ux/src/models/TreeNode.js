@@ -31,10 +31,14 @@ class TreeNode {
         this.collapsed = true;
     }
     load(initialPath = undefined){
+        if(this.name === TreeNode.CREATE_FOLDER){
+            return Promise.resolve([]);
+        }
         this.loading = true;
         this.loaded = false;
         this.notify();
         return this.loader.ls(this.name).then(children => {
+            this.children = [];
             let nextChild;
             children.forEach(child => {
                 if (child.Type === 'COLLECTION'){
@@ -44,6 +48,10 @@ class TreeNode {
                     }
                 }
             });
+            if(this.getDepth() >= 1 && this.loader.allowCreate){
+                // Append Create Child
+                this.appendChild(TreeNode.CREATE_FOLDER);
+            }
             this.loading = false;
             this.loaded = true;
             if(!this.parent || initialPath){
@@ -53,7 +61,18 @@ class TreeNode {
                 nextChild.load(initialPath);
             }
             this.notify();
+        }).catch(e => {
+            console.error(e);
+            this.loading = false;
+            this.loaded = true;
+            this.collapsed = true;
+            this.notify();
         });
+    }
+    createChildFolder(newName){
+        return this.loader.mkdir(this.name + '/' + newName).then(() => {
+            return this.load();
+        })
     }
     notify(){
         if(this.parent){
@@ -72,7 +91,7 @@ class TreeNode {
         return this.name;
     }
     getName() {
-        return basename(this.name) || 'Select Folders';
+        return basename(this.name) || this.loader.rootLabel;
     }
     isLoaded(){
         return this.loaded;
@@ -89,6 +108,16 @@ class TreeNode {
     getChildren(){
         return this.children;
     }
+    getDepth(){
+        let d = 0;
+        let crt = this;
+        while (crt.parent){
+            d++;
+            crt = crt.parent;
+        }
+        console.log(d);
+        return d;
+    }
     walk(cb){
         cb(this);
         this.children.forEach(c => {
@@ -97,10 +126,15 @@ class TreeNode {
     }
 }
 
+TreeNode.CREATE_FOLDER = "__CREATE_FOLDER__";
+
 class Loader {
-    constructor(uri) {
+    constructor(rootLabel, uri, allowCreate) {
+        this.rootLabel = rootLabel;
         this.uri = uri;
+        this.allowCreate = allowCreate;
     }
+
     ls(path) {
         return window.fetch('http://localhost:3636/tree', {
             method: 'POST',
@@ -129,6 +163,35 @@ class Loader {
             console.log(reason);
             throw reason;
         });
+    }
+
+    mkdir(path){
+        return window.fetch('http://localhost:3636/tree', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'omit',
+            body: JSON.stringify({
+                EndpointURI: this.uri,
+                Path: path,
+            })
+        }).then(response => {
+            if (response.status === 500) {
+                console.log(response);
+                return response.json().then(data => {
+                    console.log(data);
+                    if(data && data.error) {
+                        throw new Error(data.error);
+                    }
+                });
+            }
+            return response.json();
+        }).catch(reason => {
+            console.log(reason);
+            throw reason;
+        });
+
     }
 }
 
