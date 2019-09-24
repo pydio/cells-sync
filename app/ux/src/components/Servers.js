@@ -117,7 +117,7 @@ class Servers extends Component{
                 {servers.map(s =>
                     <div key={s.id} style={styles.server}>
                         <h2 style={{color:'#607D8B'}}>{s.serverLabel}</h2>
-                        <div style={{flex: 1}}>
+                        <div style={{flex: '1 1 auto'}}>
                             <h4 style={{margin:'10px 0'}}>{s.uri}</h4>
                             <div style={{lineHeight:'1.5em'}}>
                                 {t('server.info.description').replace('%1', s.username).replace('%2', moment(new Date(s.loginDate)).fromNow())}.<br/>
