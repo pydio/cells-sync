@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -148,4 +149,20 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		return nil, fmt.Errorf("unsupported scheme " + u.Scheme)
 	}
 
+}
+
+func DefaultDirForURI(uri string) string {
+	p, e := url.Parse(uri)
+	if e != nil {
+		return ""
+	}
+	if p.Scheme != "fs" {
+		return ""
+	}
+	if u, e := user.Current(); e == nil {
+		parts := strings.Split(u.HomeDir, fmt.Sprintf("%v", filepath.Separator))
+		parts = append(parts, "Cells")
+		return strings.Join(parts, "/")
+	}
+	return ""
 }

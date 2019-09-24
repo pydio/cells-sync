@@ -295,6 +295,7 @@ func (h *HttpServer) Serve() {
 		MaxAge:           12 * time.Hour,
 	}))
 	// Manage Tree
+	Server.POST("/default", h.defaultDir)
 	Server.POST("/tree", h.ls)
 	Server.PUT("/tree", h.mkdir)
 

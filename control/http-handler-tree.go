@@ -33,11 +33,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/jsonpb"
 
+	"github.com/pydio/cells-sync/endpoint"
 	"github.com/pydio/cells/common"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/proto/tree"
 	"github.com/pydio/cells/common/sync/model"
-	"github.com/pydio/cells-sync/endpoint"
 )
 
 type TreeRequest struct {
@@ -192,5 +192,37 @@ func (h *HttpServer) mkdir(c *gin.Context) {
 	}
 
 	log.Logger(context.Background()).Info("Created folder on " + request.endpoint.GetEndpointInfo().URI + " at path " + request.Path)
+	c.JSON(http.StatusOK, &TreeResponse{Node: newNode})
+}
+
+func (h *HttpServer) defaultDir(c *gin.Context) {
+	request, e := h.parseTreeRequest(c)
+	if e != nil {
+		h.writeError(c, e)
+		return
+	}
+	dir := endpoint.DefaultDirForURI(request.EndpointURI)
+	if dir == "" {
+		c.JSON(http.StatusOK, &TreeResponse{Node: &tree.Node{Path: ""}})
+		return
+	}
+	if node, err := request.endpoint.LoadNode(context.Background(), dir); err == nil {
+		c.JSON(http.StatusOK, &TreeResponse{Node: node})
+		return
+	}
+
+	target, ok := model.AsPathSyncTarget(request.endpoint)
+	if !ok {
+		h.writeError(c, fmt.Errorf("cannot.write"))
+		return
+	}
+	newNode := &tree.Node{
+		Path: dir,
+		Type: tree.NodeType_COLLECTION,
+	}
+	if e := target.CreateNode(context.Background(), newNode, false); e != nil {
+		h.writeError(c, e)
+		return
+	}
 	c.JSON(http.StatusOK, &TreeResponse{Node: newNode})
 }
