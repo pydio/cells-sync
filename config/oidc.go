@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +12,9 @@ import (
 	"time"
 
 	"gopkg.in/square/go-jose.v2/jwt"
+
+	"github.com/pydio/cells/common/log"
+	servicecontext "github.com/pydio/cells/common/service/context"
 )
 
 func init() {
@@ -21,6 +25,7 @@ func init() {
 var (
 	monitors     map[string]chan bool
 	monitorsLock *sync.Mutex
+	oidcContext  = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "oidc"), servicecontext.ServiceColorRest)
 )
 
 type Authority struct {
@@ -50,16 +55,13 @@ func (a *Authority) RefreshRequired() (in time.Duration, now bool) {
 	if in <= 0 {
 		in = 0
 		now = true
-		fmt.Println("Token expired, should refresh now")
-	} else {
-		fmt.Println("Will refresh in", in)
 	}
 	return
 }
 
 func (a *Authority) Refresh() error {
 
-	fmt.Println("Refreshing token for ", a.URI)
+	log.Logger(oidcContext).Info("Refreshing token for " + a.URI)
 	data := url.Values{}
 	data.Add("grant_type", "refresh_token")
 	data.Add("client_id", "cells-sync")
@@ -93,7 +95,7 @@ func (a *Authority) Refresh() error {
 	a.IdToken = respMap.Id
 	a.RefreshToken = respMap.Refresh
 	a.ExpiresAt = int(time.Now().Unix()) + respMap.Exp
-	fmt.Println("Got new token, will expire in ", respMap.Exp, " thus expiresAt ", a.ExpiresAt)
+	log.Logger(oidcContext).Info(fmt.Sprintf("Got new token, will expire in %v", respMap.Exp))
 
 	Default().UpdateAuthority(a, true)
 
@@ -143,7 +145,7 @@ func (a *Authority) is(a2 *Authority) bool {
 	return a.key() == a2.key()
 }
 
-func monitorToken(a *Authority) {
+func monitorToken(a *Authority, wait ...time.Duration) {
 
 	var done chan bool
 	monitorsLock.Lock()
@@ -154,13 +156,17 @@ func monitorToken(a *Authority) {
 		monitors[a.key()] = done
 	}
 	monitorsLock.Unlock()
-	d, _ := a.RefreshRequired()
+	d, now := a.RefreshRequired()
+	if now && len(wait) > 0 {
+		d = wait[0]
+	}
 	for {
 		select {
 		case <-time.After(d):
 			if e := a.Refresh(); e != nil {
-				fmt.Println(e)
-				stopMonitoringToken(a.key())
+				log.Logger(oidcContext).Error("Error while refreshing token, will retry in 10s (" + e.Error() + ")")
+				//stopMonitoringToken(a.key())
+				monitorToken(a, 10*time.Second)
 			} else {
 				monitorToken(a)
 			}

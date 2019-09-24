@@ -36,14 +36,6 @@ import (
 var startNoUi bool
 
 func runner() {
-	logs := config.Default().Logs
-	os.MkdirAll(logs.Folder, 0755)
-	log.RegisterWriteSyncer(zapcore.AddSync(&lumberjack.Logger{
-		Filename:   filepath.Join(logs.Folder, "sync.log"),
-		MaxAge:     logs.MaxAgeDays,   // days
-		MaxSize:    logs.MaxFilesSize, // megabytes
-		MaxBackups: logs.MaxFilesNumber,
-	}))
 	s := control.NewSupervisor(startNoUi)
 	s.Serve()
 }
@@ -51,6 +43,31 @@ func runner() {
 var StartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start sync tasks",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		logs := config.Default().Logs
+		os.MkdirAll(logs.Folder, 0755)
+		log.RegisterWriteSyncer(zapcore.AddSync(&lumberjack.Logger{
+			Filename:   filepath.Join(logs.Folder, "sync.log"),
+			MaxAge:     logs.MaxAgeDays,   // days
+			MaxSize:    logs.MaxFilesSize, // megabytes
+			MaxBackups: logs.MaxFilesNumber,
+		}))
+		/*
+			logger := log.Logger(context.Background())
+			r, w, err := os.Pipe()
+			if err == nil {
+				os.Stdout = w
+				go func() {
+					scanner := bufio.NewScanner(r)
+					for scanner.Scan() {
+						line := scanner.Text()
+						// Log the stdout line to my event logger
+						logger.Named("StdOut").Info(line)
+					}
+				}()
+			}
+		*/
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if service.Interactive() {
 			runner()
