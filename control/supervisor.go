@@ -23,11 +23,11 @@ package control
 
 import (
 	"context"
+	"runtime"
 	"sync"
 	"time"
 
 	"github.com/kardianos/service"
-
 	"github.com/thejerf/suture"
 
 	"github.com/pydio/cells-sync/config"
@@ -77,7 +77,7 @@ func (s *Supervisor) Serve() error {
 
 	s.schedulerToken = s.Add(NewScheduler(conf.Tasks))
 	s.Add(&Profiler{})
-	if service.Interactive() {
+	if service.Interactive() && runtime.GOOS != "windows" {
 		s.Add(&StdInner{})
 	}
 	if !s.noUi {
