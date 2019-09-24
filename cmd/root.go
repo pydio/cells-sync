@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"os"
+	"runtime"
 
 	"github.com/spf13/cobra"
 )
@@ -35,6 +36,10 @@ var RootCmd = &cobra.Command{
 		handleSignals()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
+		if runtime.GOOS == "windows" {
+			StartCmd.Run(cmd, args)
+		} else {
+			cmd.Usage()
+		}
 	},
 }
