@@ -4,3 +4,4 @@ cells-sync*
 sync.exe*
 .vscode
 debug
+package-lock.json

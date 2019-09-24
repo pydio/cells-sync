@@ -40,6 +40,7 @@ type Authority struct {
 	TasksCount  int       `json:"tasksCount"`
 
 	IdToken      string `json:"id_token"`
+	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 	ExpiresAt    int    `json:"expires_at"`
 }
@@ -85,6 +86,7 @@ func (a *Authority) Refresh() error {
 	defer res.Body.Close()
 	var respMap struct {
 		Id      string `json:"id_token"`
+		Access  string `json:"access_token"`
 		Refresh string `json:"refresh_token"`
 		Exp     int    `json:"expires_in"`
 	}
@@ -93,6 +95,7 @@ func (a *Authority) Refresh() error {
 		return fmt.Errorf("could not unmarshall response with status %d: %s\nerror cause: %s", res.StatusCode, res.Status, err.Error())
 	}
 	a.IdToken = respMap.Id
+	a.AccessToken = respMap.Access
 	a.RefreshToken = respMap.Refresh
 	a.ExpiresAt = int(time.Now().Unix()) + respMap.Exp
 	log.Logger(oidcContext).Info(fmt.Sprintf("Got new token, will expire in %v", respMap.Exp))
@@ -271,6 +274,7 @@ func (g *Global) UpdateAuthority(a *Authority, isRefresh bool) error {
 	for _, auth := range g.Authorities {
 		if auth.is(a) {
 			auth.IdToken = a.IdToken
+			auth.AccessToken = a.AccessToken
 			auth.RefreshToken = a.RefreshToken
 			if isRefresh {
 				auth.RefreshDate = time.Now()

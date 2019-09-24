@@ -92,7 +92,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		}
 		conf := cells.RemoteConfig{
 			Url:          fmt.Sprintf("%s://%s", u.Scheme, u.Host),
-			IdToken:      auth.IdToken,
+			IdToken:      auth.AccessToken,
 			RefreshToken: auth.RefreshToken,
 			ExpiresAt:    auth.ExpiresAt,
 		}
