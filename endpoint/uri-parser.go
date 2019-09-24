@@ -110,7 +110,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 							if aC.Type == "delete" {
 								return
 							} else {
-								conf.IdToken = aC.Authority.IdToken
+								conf.IdToken = aC.Authority.AccessToken
 								conf.RefreshToken = aC.Authority.RefreshToken
 								conf.ExpiresAt = aC.Authority.ExpiresAt
 								ep.RefreshRemoteConfig(conf)
