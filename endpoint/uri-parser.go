@@ -90,6 +90,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		if auth == nil {
 			return nil, fmt.Errorf("cannot find authority")
 		}
+		// Warning, we use the ACCESSS TOKEN as IdToken
 		conf := cells.RemoteConfig{
 			Url:          fmt.Sprintf("%s://%s", u.Scheme, u.Host),
 			IdToken:      auth.AccessToken,
@@ -110,7 +111,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 							if aC.Type == "delete" {
 								return
 							} else {
-								conf.IdToken = aC.Authority.IdToken
+								conf.IdToken = aC.Authority.AccessToken
 								conf.RefreshToken = aC.Authority.RefreshToken
 								conf.ExpiresAt = aC.Authority.ExpiresAt
 								ep.RefreshRemoteConfig(conf)
