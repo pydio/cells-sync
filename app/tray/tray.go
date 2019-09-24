@@ -26,15 +26,14 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/pydio/cells-sync/config"
-
-	"github.com/pydio/cells-sync/common"
-
 	"github.com/getlantern/systray"
-	"github.com/pydio/cells/common/sync/model"
 	"github.com/skratchdot/open-golang/open"
 
 	"github.com/pydio/cells-sync/app/tray/icon"
+	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells/common/log"
+	"github.com/pydio/cells/common/sync/model"
 )
 
 var (
@@ -82,7 +81,7 @@ func onReady() {
 	systray.AddSeparator()
 	// Prepare slots for tasks
 	for i := 0; i < 10; i++ {
-		slot := systray.AddMenuItem("", "")
+		slot := systray.AddMenuItem("---", "")
 		slot.Hide()
 		stateSlots = append(stateSlots, slot)
 	}
@@ -115,6 +114,7 @@ func onReady() {
 				}
 			case tasks := <-ws.Tasks:
 				i := 0
+				log.Logger(context.Background()).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
 				for _, t := range tasks {
 					label := t.Config.Label
 					switch t.Status {
@@ -141,7 +141,7 @@ func onReady() {
 					}
 				}
 				for k, slot := range stateSlots {
-					if k > len(tasks) {
+					if k >= len(tasks) {
 						slot.Hide()
 					}
 				}
@@ -157,12 +157,6 @@ func onReady() {
 				ws.SendCmd(&common.CmdContent{Cmd: "loop"})
 			case <-mQuit.ClickedCh:
 				fmt.Println("Quitting now...")
-				if viewCancel != nil {
-					viewCancel()
-					viewCancel = nil
-				}
-				//beforeExit()
-				//systray.Quit()
 				ws.SendHalt()
 				return
 			}
