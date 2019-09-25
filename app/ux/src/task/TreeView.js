@@ -120,7 +120,7 @@ class TreeView extends React.Component {
 
     onRenderGroup(data){
         const {onToggleCollapse, onToggleSelectGroup, styles, ...all} = data;
-        const {unique, onError, t} = this.props;
+        const {unique, onError} = this.props;
         const {selection} = this.state;
 
         const toggleSelectGroup = (group) => {
