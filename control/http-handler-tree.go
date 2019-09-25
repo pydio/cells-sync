@@ -201,12 +201,23 @@ func (h *HttpServer) defaultDir(c *gin.Context) {
 		h.writeError(c, e)
 		return
 	}
-	dir := endpoint.DefaultDirForURI(request.EndpointURI)
-	if dir == "" {
+	outputDir := endpoint.DefaultDirForURI(request.EndpointURI)
+	epDir := outputDir
+	if outputDir == "" {
 		c.JSON(http.StatusOK, &TreeResponse{Node: &tree.Node{Path: ""}})
 		return
 	}
-	if node, err := request.endpoint.LoadNode(context.Background(), dir); err == nil {
+	if runtime.GOOS == "windows" {
+		outputDir = "/" + outputDir
+		request.Path = outputDir
+		if er := h.applyWindowsTransformation(request); er != nil {
+			c.JSON(http.StatusOK, &TreeResponse{Node: &tree.Node{Path: ""}})
+			return
+		}
+		epDir = request.Path
+	}
+	if node, err := request.endpoint.LoadNode(context.Background(), epDir); err == nil {
+		node.Path = outputDir
 		c.JSON(http.StatusOK, &TreeResponse{Node: node})
 		return
 	}
@@ -216,13 +227,9 @@ func (h *HttpServer) defaultDir(c *gin.Context) {
 		h.writeError(c, fmt.Errorf("cannot.write"))
 		return
 	}
-	newNode := &tree.Node{
-		Path: dir,
-		Type: tree.NodeType_COLLECTION,
-	}
-	if e := target.CreateNode(context.Background(), newNode, false); e != nil {
+	if e := target.CreateNode(context.Background(), &tree.Node{Path: epDir, Type: tree.NodeType_COLLECTION}, false); e != nil {
 		h.writeError(c, e)
 		return
 	}
-	c.JSON(http.StatusOK, &TreeResponse{Node: newNode})
+	c.JSON(http.StatusOK, &TreeResponse{Node: &tree.Node{Path: outputDir, Type: tree.NodeType_COLLECTION}})
 }

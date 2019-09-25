@@ -49,7 +49,12 @@ class TreeView extends React.Component {
             selection.setItems(items);
             if(initialSelectionPath !== '' && crtSel.length === 0) {
                 for (let i = 0; i < items.length; i++) {
-                    if (initialSelectionPath === '/' + items[i].key) {
+                    let compKey = items[i].key;
+                    if(compKey.length > 0 && compKey[0] !== "/"){
+                        compKey = "/" + compKey
+                    }
+                    console.log('comparing', initialSelectionPath, compKey)
+                    if (initialSelectionPath === compKey) {
                         selection.setIndexSelected(i, true, true);
                     }
                 }

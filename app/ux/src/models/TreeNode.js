@@ -43,7 +43,11 @@ class TreeNode {
             children.forEach(child => {
                 if (child.Type === 'COLLECTION'){
                     const treeChild = this.appendChild(child.Path);
-                    if(initialPath !== undefined && initialPath.indexOf('/' + child.Path) === 0 && initialPath !== '/' + child.Path) {
+                    let compKey = child.Path;
+                    if(compKey.length > 0 && compKey[0] !== "/"){
+                        compKey = "/" + compKey
+                    }
+                    if(initialPath !== undefined && initialPath.indexOf(compKey) === 0 && initialPath !== compKey) {
                         nextChild = treeChild;
                     }
                 }

@@ -160,7 +160,7 @@ func DefaultDirForURI(uri string) string {
 		return ""
 	}
 	if u, e := user.Current(); e == nil {
-		parts := strings.Split(u.HomeDir, fmt.Sprintf("%v", filepath.Separator))
+		parts := strings.Split(u.HomeDir, string(filepath.Separator))
 		parts = append(parts, "Cells")
 		return strings.Join(parts, "/")
 	}

@@ -59,7 +59,10 @@ class Editor extends React.Component {
             this.state.LeftURIInvalid = true;
             this.state.RightURIInvalid = true;
             DefaultDirLoader.getInstance().onDefaultDir().then(defaultPath => {
-                proxy.Config.RightURI += defaultPath;
+                if(defaultPath){
+                    proxy.Config.RightURI += defaultPath;
+                    this.setState({RightURIInvalid: false});
+                }
             })
         }
     }
