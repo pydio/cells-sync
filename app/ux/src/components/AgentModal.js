@@ -23,6 +23,13 @@ import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 
 class AgentModal extends React.Component {
 
+    componentDidMount(){
+        const {history, socket} = this.props;
+        socket.listenExternalRoute((string) => {
+            history.push(string);
+        });
+    }
+
     render() {
 
         const {hidden, connecting, maxAttemptsReached, reconnect, t} = this.props;

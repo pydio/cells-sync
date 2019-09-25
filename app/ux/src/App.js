@@ -55,6 +55,8 @@ class App extends React.Component{
                             reconnect={socket.forceReconnect.bind(socket)}
                             connecting={connecting}
                             maxAttemptsReached={maxAttemptsReached}
+                            history={history}
+                            socket={socket}
                         />
                     }/>
                     <EditorPanel

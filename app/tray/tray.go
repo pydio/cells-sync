@@ -51,6 +51,9 @@ func Run() {
 func spawnWebView(path ...string) {
 	if viewCancel != nil {
 		// It is already opened - do nothing
+		if len(path) > 0 {
+			ws.SendRoute(path[0])
+		}
 		return
 	}
 	c, cancel := context.WithCancel(context.Background())
@@ -153,6 +156,26 @@ func onReady() {
 				go spawnWebView("/create")
 			case <-mAbout.ClickedCh:
 				go spawnWebView("/about")
+			case <-stateSlots[0].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[1].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[2].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[3].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[4].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[5].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[6].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[7].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[8].ClickedCh:
+				go spawnWebView("/")
+			case <-stateSlots[9].ClickedCh:
+				go spawnWebView("/")
 			case <-mResync.ClickedCh:
 				ws.SendCmd(&common.CmdContent{Cmd: "loop"})
 			case <-mQuit.ClickedCh:

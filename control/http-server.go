@@ -132,6 +132,11 @@ func (h *HttpServer) InitHandlers() {
 			session.Write(m.Bytes())
 			GetBus().Pub(MessagePublishState, TopicSyncAll)
 
+		case "WEBVIEW_ROUTE":
+
+			// Just forward to webview
+			h.WebSocket.Broadcast(bytes)
+
 		case "CMD":
 
 			if cmd, ok := data.Content.(*common.CmdContent); ok {

@@ -44,6 +44,10 @@ export default class Socket {
         }
     }
 
+    listenExternalRoute(callback){
+        this.onExternalRoute = callback;
+    }
+
     listenUpdates(callback){
         this.onUpdate.push(callback);
     }
@@ -137,6 +141,10 @@ export default class Socket {
             this.onAuthorities.forEach(cb => {
                 cb(data.Content);
             })
+        } else if(data.Type === 'WEBVIEW_ROUTE') {
+            if(this.onExternalRoute) {
+                this.onExternalRoute(data.Content);
+            }
         } else {
             console.log(data)
         }

@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pydio/cells/common/sync/model"
+
 	"github.com/getlantern/systray"
 	"github.com/gorilla/websocket"
 
@@ -124,10 +126,13 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 						log.Logger(context.Background()).Debug(fmt.Sprintf("Got state for sync %s - Status %d", content.Config.Label, content.Status))
 						c.Lock()
 						prev, hasPrev := c.tasks[content.Config.Uuid]
-						c.tasks[content.Config.Uuid] = content
+						if content.Status == model.TaskStatusRemoved && hasPrev {
+							delete(c.tasks, content.Config.Uuid)
+						} else {
+							c.tasks[content.Config.Uuid] = content
+						}
 						c.Unlock()
 						if !hasPrev || prev.Status != content.Status {
-							//c.Tasks <- c.tasks
 							c.SendOrderedTasks()
 						}
 					}
@@ -147,6 +152,15 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 func (c *Client) SendCmd(content *common.CmdContent) {
 	if c.conn != nil {
 		if e := c.conn.WriteJSON(&common.Message{Type: "CMD", Content: content}); e == nil {
+			return
+		}
+	}
+	log.Logger(context.Background()).Error("No active connection for sending message")
+}
+
+func (c *Client) SendRoute(route string) {
+	if c.conn != nil {
+		if e := c.conn.WriteJSON(&common.Message{Type: "WEBVIEW_ROUTE", Content: route}); e == nil {
 			return
 		}
 	}
