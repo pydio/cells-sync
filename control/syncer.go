@@ -28,13 +28,13 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells-sync/endpoint"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/sync/merger"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/cells/common/sync/task"
-	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells-sync/endpoint"
 )
 
 type Syncer struct {
@@ -252,9 +252,14 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 				log.Logger(ctx).Info("-- Stopping PatchStore")
 				s.patchStore.Stop()
 			}
-			if s.cleanSnapsAfterStop && s.snapFactory != nil {
-				log.Logger(ctx).Info("-- Cleaning Snapsots")
-				s.snapFactory.Reset(ctx)
+			if s.snapFactory != nil {
+				if s.cleanAllAfterStop {
+					log.Logger(ctx).Info("-- Cleaning Snapshots")
+					s.snapFactory.Reset(ctx)
+				} else {
+					log.Logger(ctx).Info("-- Closing Snapshots")
+					s.snapFactory.Close(ctx)
+				}
 			}
 			if s.cleanAllAfterStop {
 				log.Logger(ctx).Info("-- Cleaning all data for service")

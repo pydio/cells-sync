@@ -28,7 +28,6 @@ class PageAbout extends React.Component {
         super(props);
         this.state = {currentVersion:{}};
         this.updateListener = (data) => {
-            console.log('UPDATE DATA RECEIVED', data);
             if (data.CheckStatus){
                 this.setState({checkStatus: data})
             } else if (data.ApplyStatus){

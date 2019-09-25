@@ -67,6 +67,16 @@ func (f *SnapshotFactory) Load(source model.PathSyncSource) (model.Snapshoter, e
 	return s, nil
 }
 
+func (f *SnapshotFactory) Close(ctx context.Context) error {
+	for _, name := range []string{"left", "right"} {
+		if s, ok := f.snaps[name]; ok {
+			log.Logger(ctx).Info("Closing snapshot " + name)
+			s.(*snapshot.BoltSnapshot).Close()
+		}
+	}
+	return nil
+}
+
 // Reset clears all snapshots (left and right)
 func (f *SnapshotFactory) Reset(ctx context.Context) error {
 

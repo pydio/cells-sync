@@ -119,7 +119,6 @@ class TreeNode {
             d++;
             crt = crt.parent;
         }
-        console.log(d);
         return d;
     }
     walk(cb){
