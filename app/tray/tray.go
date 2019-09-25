@@ -25,6 +25,13 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
+
+	"github.com/pydio/cells-sync/app/tray/iconactive2"
+
+	"github.com/pydio/cells-sync/app/tray/iconerror"
+
+	"github.com/pydio/cells-sync/app/tray/iconactive"
 
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
@@ -37,11 +44,13 @@ import (
 )
 
 var (
-	viewCancel context.CancelFunc
-	uxUrl      = "http://localhost:3636"
-	closing    bool
-	ws         *Client
-	stateSlots []*systray.MenuItem
+	viewCancel    context.CancelFunc
+	uxUrl         = "http://localhost:3636"
+	closing       bool
+	ws            *Client
+	stateSlots    []*systray.MenuItem
+	activeToggler bool
+	activeDone    chan bool
 )
 
 func Run() {
@@ -75,8 +84,45 @@ func spawnWebView(path ...string) {
 	viewCancel = nil
 }
 
+func setIconActive() {
+	activeDone = make(chan bool, 1)
+	go func() {
+		defer func() {
+			activeDone = nil
+		}()
+		for {
+			select {
+			case <-time.After(750 * time.Millisecond):
+				if !activeToggler {
+					systray.SetIcon(iconactive.Data)
+				} else {
+					systray.SetIcon(iconactive2.Data)
+				}
+				activeToggler = !activeToggler
+			case <-activeDone:
+				return
+			}
+		}
+	}()
+}
+
+func setIconIdle() {
+	if activeDone != nil {
+		close(activeDone)
+	}
+	systray.SetIcon(icon.Data)
+}
+
+func setIconError() {
+	if activeDone != nil {
+		close(activeDone)
+	}
+	systray.SetIcon(iconerror.Data)
+}
+
 func onReady() {
 	systray.SetIcon(icon.Data)
+	setIconActive()
 	systray.SetTitle("Starting")
 	systray.SetTooltip("Cells Sync Client")
 	mOpen := systray.AddMenuItem("Open Interface", "Open Sync UX")
@@ -100,15 +146,15 @@ func onReady() {
 		for {
 			select {
 			case s := <-ws.Status:
+				systray.SetTitle("")
 				if s == StatusConnected {
-					systray.SetTitle("Cells")
 					mOpen.Enable()
 					mNewTasks.Enable()
 					for _, slot := range stateSlots {
 						slot.Disable()
 					}
 				} else {
-					systray.SetTitle("Cells (!)")
+					setIconError()
 					mOpen.Disable()
 					mNewTasks.Disable()
 					for _, slot := range stateSlots {
@@ -118,6 +164,8 @@ func onReady() {
 			case tasks := <-ws.Tasks:
 				i := 0
 				log.Logger(context.Background()).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
+				var hasError bool
+				var hasProcessing bool
 				for _, t := range tasks {
 					label := t.Config.Label
 					switch t.Status {
@@ -125,10 +173,16 @@ func onReady() {
 						label += " (disabled)"
 					case model.TaskStatusProcessing:
 						label += " (syncing)"
+						hasProcessing = true
 					case model.TaskStatusPaused:
 						label += " (paused)"
 					case model.TaskStatusError:
 						label += " (error!)"
+						hasError = true
+					}
+					if !hasError && (!t.LeftInfo.Connected || !t.RightInfo.Connected) {
+						label += " (cannot connect!)"
+						hasError = true
 					}
 					stateSlots[i].SetTitle(label)
 					stateSlots[i].SetTooltip(t.Config.Uuid)
@@ -138,9 +192,16 @@ func onReady() {
 					} else {
 						stateSlots[i].Enable()
 					}
+					if hasError {
+						setIconError()
+					} else if hasProcessing {
+						setIconActive()
+					} else {
+						setIconIdle()
+					}
 					i++
 					if i >= len(stateSlots) {
-						return
+						break
 					}
 				}
 				for k, slot := range stateSlots {
