@@ -17,7 +17,7 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import 'whatwg-fetch'
-import basename from "basename";
+import path from 'path'
 
 class TreeNode {
     constructor(name, loader, parent = null, onChange = null){
@@ -95,7 +95,7 @@ class TreeNode {
         return this.name;
     }
     getName() {
-        return basename(this.name) || this.loader.rootLabel;
+        return path.basename(this.name) || this.loader.rootLabel;
     }
     isLoaded(){
         return this.loaded;
