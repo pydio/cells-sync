@@ -90,7 +90,10 @@ class EndpointPicker extends React.Component {
     createAuthority(){
         const {onCreateServer} = this.props;
         const {loginUrl} = this.state;
-        onCreateServer(loginUrl);
+        // Remove pathname
+        const parsed = parse(loginUrl, {}, true);
+        parsed.pathname = "";
+        onCreateServer(parsed.toString());
     }
 
 
@@ -101,6 +104,13 @@ class EndpointPicker extends React.Component {
         const rootUrl = parse(value, {}, true);
         const selectedPath = rootUrl.pathname;
         rootUrl.set('pathname', '');
+        let loginButtonDisabled = true;
+        if(loginUrl) {
+            const ll = parse(loginUrl, {}, true);
+            if(ll.protocol.indexOf("http") === 0 && ll.host) {
+                loginButtonDisabled = false;
+            }
+        }
 
         const pathField = (
             <TextField
@@ -182,7 +192,7 @@ class EndpointPicker extends React.Component {
                                                     <TextField placeholder={t('server.url.placeholder')} value={loginUrl} onChange={(e,v)=>{this.setState({loginUrl: v})}}/>
                                                 </Stack.Item>
                                                 <Stack.Item>
-                                                    <PrimaryButton text={t('server.login.button')} onClick={() => {this.createAuthority()}} disabled={!loginUrl}/>
+                                                    <PrimaryButton text={t('server.login.button')} onClick={() => {this.createAuthority()}} disabled={loginButtonDisabled}/>
                                                 </Stack.Item>
                                             </React.Fragment>
                                         }

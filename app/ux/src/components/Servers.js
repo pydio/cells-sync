@@ -13,6 +13,7 @@ import {
     TooltipHost
 } from 'office-ui-fabric-react';
 import moment from 'moment'
+import parse from "url-parse";
 /*
 const sampleServer = {
     uri:"http://local.pydio:8080",
@@ -89,12 +90,21 @@ class Servers extends Component{
 
     loginToNewServer(){
         const {newUrl} = this.state;
-        Storage.signin(newUrl);
+        // Remove path part
+        const ll = parse(newUrl, {}, true);
+        ll.pathname = "";
+        Storage.signin(ll.toString());
     }
 
     render() {
         const {servers, newUrl, addMode} = this.state;
         const {t} = this.props;
+        let loginButtonDisabled = true;
+        const ll = parse(newUrl, {}, true);
+        if(ll.protocol.indexOf("http") === 0 && ll.host) {
+            loginButtonDisabled = false;
+        }
+
         const action = {
             key:'create',
             text:t('server.create'),
@@ -109,7 +119,7 @@ class Servers extends Component{
                     <Stack horizontal tokens={{childrenGap: 8}} style={{margin:10, padding: '0 10px', boxShadow: Depths.depth4, backgroundColor:'white', display:'flex', alignItems: 'center'}}>
                         <Stack.Item><h3>{t('server.create')}</h3></Stack.Item>
                         <Stack.Item grow><TextField styles={{root:{flex: 1}}} placeholder={t('server.url.placeholder')} type={"text"} value={newUrl} onChange={(e, v) => {this.setState({newUrl: v})}}/></Stack.Item>
-                        <Stack.Item><PrimaryButton onClick={this.loginToNewServer.bind(this)} text={t('server.login.button')}/></Stack.Item>
+                        <Stack.Item><PrimaryButton onClick={this.loginToNewServer.bind(this)} text={t('server.login.button')} disabled={loginButtonDisabled}/></Stack.Item>
                         <Stack.Item><DefaultButton onClick={()=>{this.setState({addMode: false})}} text={t('button.cancel')}/></Stack.Item>
                     </Stack>
                 }
