@@ -21,14 +21,18 @@ package control
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/url"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/pydio/cells/common/sync/model"
-
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells/common/sync/model"
 )
 
 func compareURI(status, config string) bool {
@@ -41,6 +45,7 @@ type StateStore interface {
 	LastState() common.SyncState
 	BothConnected() bool
 	TouchLastOpsTime(t ...time.Time)
+	Close()
 
 	UpdateConnection(c bool, i model.EndpointInfo) common.SyncState
 	UpdateWatcherActivity(a bool, i model.EndpointInfo) common.SyncState
@@ -69,6 +74,8 @@ func NewMemoryStateStore(config *config.Task) *MemoryStateStore {
 	}
 	return s
 }
+
+func (b *MemoryStateStore) Close() {}
 
 func (b *MemoryStateStore) LastState() common.SyncState {
 	b.Lock()
@@ -162,4 +169,81 @@ func (b *MemoryStateStore) BothConnected() bool {
 	b.Lock()
 	defer b.Unlock()
 	return b.state.LeftInfo.Connected && b.state.RightInfo.Connected
+}
+
+type FileStateStore struct {
+	MemoryStateStore
+	PreviousState model.TaskStatus
+	FileError     error
+
+	filePath  string
+	fileState chan model.TaskStatus
+	done      chan bool
+}
+
+func NewFileStateStore(config *config.Task, folderPath string) *FileStateStore {
+	m := NewMemoryStateStore(config)
+	f := &FileStateStore{
+		MemoryStateStore: *m,
+		filePath:         filepath.Join(folderPath, "state"),
+		fileState:        make(chan model.TaskStatus, 1),
+		done:             make(chan bool, 1),
+	}
+	f.PreviousState = f.readLastState()
+	if file, e := os.OpenFile(f.filePath, os.O_CREATE|os.O_WRONLY, 0755); e == nil {
+		go f.listenToState(file)
+	} else {
+		f.FileError = e
+	}
+	return f
+}
+
+func (f *FileStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
+	if f.FileError == nil {
+		go func() {
+			f.fileState <- s
+		}()
+	}
+	return f.MemoryStateStore.UpdateSyncStatus(s)
+}
+
+func (f *FileStateStore) UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState {
+	if f.FileError == nil {
+		go func() {
+			if len(status) > 0 {
+				f.fileState <- status[0]
+			}
+		}()
+	}
+	return f.MemoryStateStore.UpdateProcessStatus(processStatus, status...)
+}
+
+func (f *FileStateStore) Close() {
+	f.MemoryStateStore.Close()
+	close(f.done)
+}
+
+func (f *FileStateStore) readLastState() model.TaskStatus {
+	if bb, e := ioutil.ReadFile(f.filePath); e == nil {
+		s := strings.Trim(string(bb), "\n")
+		if i, er := strconv.Atoi(s); er == nil {
+			return model.TaskStatus(i)
+		}
+	}
+	return model.TaskStatusIdle
+}
+
+func (f *FileStateStore) listenToState(file *os.File) {
+	for {
+		select {
+		case s := <-f.fileState:
+			st := strconv.Itoa(int(s))
+			file.WriteAt([]byte(st), 0)
+			file.Sync()
+		case <-f.done:
+			file.Close()
+			close(f.fileState)
+			return
+		}
+	}
 }

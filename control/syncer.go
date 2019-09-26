@@ -48,13 +48,14 @@ type Syncer struct {
 	patchDone   chan interface{}
 	cmd         *model.Command
 
-	serviceCtx  context.Context
-	configPath  string
-	stateStore  StateStore
-	patchStore  *endpoint.PatchStore
-	snapFactory model.SnapshotFactory
-	taskPaused  bool
-	lastPatch   merger.Patch
+	serviceCtx   context.Context
+	configPath   string
+	stateStore   StateStore
+	patchStore   *endpoint.PatchStore
+	snapFactory  model.SnapshotFactory
+	taskPaused   bool
+	lastPatch    merger.Patch
+	dirtyStopped bool
 
 	cleanSnapsAfterStop bool
 	cleanAllAfterStop   bool
@@ -64,10 +65,13 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 
 	var startError error
 
-	stateStore := NewMemoryStateStore(conf)
 	ctx := servicecontext.WithServiceName(context.Background(), "sync-task")
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
 	configPath := filepath.Join(config.SyncClientDataDir(), conf.Uuid)
+	stateStore := NewFileStateStore(conf, configPath)
+	if stateStore.FileError != nil {
+		log.Logger(ctx).Warn("Cannot open file for monitoring state : " + stateStore.FileError.Error())
+	}
 
 	syncer = &Syncer{
 		uuid:       conf.Uuid,
@@ -75,6 +79,10 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 		stop:       make(chan bool, 1),
 		stateStore: stateStore,
 		configPath: configPath,
+	}
+	if stateStore.PreviousState == model.TaskStatusProcessing {
+		log.Logger(ctx).Warn("Last Status on this task was 'processing', this is not normal, will relaunch a full resync")
+		syncer.dirtyStopped = true
 	}
 
 	defer func() {
@@ -272,6 +280,9 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 				// Publish that this task has been removed
 				bus.Pub(s.stateStore.UpdateSyncStatus(model.TaskStatusRemoved), TopicState)
 			}
+			if s.stateStore != nil {
+				s.stateStore.Close()
+			}
 			return
 
 		case message := <-topic:
@@ -370,8 +381,14 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 						state := s.stateStore.UpdateConnection(connected, status.EndpointInfo)
 						newConnState := s.stateStore.BothConnected()
 						if state.Status == model.TaskStatusIdle && newConnState && newConnState != initialConnState {
-							log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
-							s.task.Run(ctx, false, false)
+							if s.dirtyStopped {
+								s.dirtyStopped = false
+								log.Logger(ctx).Info("Both sides are connected, now launching a full resync")
+								s.task.Run(ctx, false, true)
+							} else {
+								log.Logger(ctx).Info("Both sides are connected, now launching a sync loop")
+								s.task.Run(ctx, false, false)
+							}
 						}
 						bus.Pub(state, TopicState)
 					} else if updateActive {
