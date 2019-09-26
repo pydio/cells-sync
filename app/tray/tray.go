@@ -85,6 +85,10 @@ func spawnWebView(path ...string) {
 }
 
 func setIconActive() {
+	if activeDone != nil {
+		// already active
+		return
+	}
 	activeDone = make(chan bool, 1)
 	go func() {
 		defer func() {
