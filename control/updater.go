@@ -36,16 +36,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
 	"github.com/hashicorp/go-version"
 	update2 "github.com/inconshreveable/go-update"
 
+	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/proto/update"
 	servicecontext "github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/utils/net"
-	"github.com/pydio/cells-sync/common"
-	"github.com/pydio/cells-sync/config"
 )
 
 type Updater struct {
@@ -58,10 +59,15 @@ func NewUpdater() *Updater {
 	ctx := servicecontext.WithServiceName(context.Background(), "update.service")
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
 	return &Updater{
-		debug: true,
+		debug: false,
 		ctx:   ctx,
 		done:  make(chan bool, 1),
 	}
+}
+
+func init() {
+	// Strange thing here, this proto ENUM is not properly registered.
+	proto.RegisterEnum("update.Package_PackageStatus", update.Package_PackageStatus_name, update.Package_PackageStatus_value)
 }
 
 // LoadUpdates will post a Json query to the update server to detect if there are any
@@ -143,7 +149,7 @@ func (u *Updater) LoadUpdates(ctx context.Context, busTopic string) (packages []
 	var updateResponse update.UpdateResponse
 	marshaller := jsonpb.Marshaler{}
 	jsonReq, _ := marshaller.MarshalToString(request)
-	reader := strings.NewReader(string(jsonReq))
+	reader := strings.NewReader(jsonReq)
 	response, outErr := http.Post(strings.TrimRight(parsed.String(), "/")+"/", "application/json", reader)
 	if outErr != nil {
 		return
