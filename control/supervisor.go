@@ -22,6 +22,7 @@
 package control
 
 import (
+	"os"
 	"context"
 	"runtime"
 	"sync"
@@ -77,7 +78,7 @@ func (s *Supervisor) Serve() error {
 
 	s.schedulerToken = s.Add(NewScheduler(conf.Tasks))
 	s.Add(&Profiler{})
-	if service.Interactive() && runtime.GOOS != "windows" {
+	if service.Interactive() && runtime.GOOS != "windows" && os.Getenv("CELLS_SYNC_IN_PATH") == "" {
 		s.Add(&StdInner{})
 	}
 	if !s.noUi {
