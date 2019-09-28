@@ -140,7 +140,7 @@ class AccountsList extends Component{
             onClick:()=>{this.setState({addMode: true})},
         };
         let content;
-        if(!addMode && !servers && servers.length === 0) {
+        if(!addMode && servers && servers.length === 0) {
             content = (
                 <div style={styles.bigButtonContainer}>
                     <CompoundButton
