@@ -169,13 +169,13 @@ func monitorToken(a *Authority, wait ...time.Duration) {
 			if e := a.Refresh(); e != nil {
 				log.Logger(oidcContext).Error("Error while refreshing token, will retry in 10s (" + e.Error() + ")")
 				//stopMonitoringToken(a.key())
-				monitorToken(a, 10*time.Second)
+				go monitorToken(a, 10*time.Second)
 			} else {
-				monitorToken(a)
+				go monitorToken(a)
 			}
 			return
 		case <-done:
-			fmt.Println("Stopping monitor on " + a.key())
+			log.Logger(oidcContext).Info("Stopping monitor on " + a.key())
 			return
 		}
 	}
@@ -276,6 +276,7 @@ func (g *Global) UpdateAuthority(a *Authority, isRefresh bool) error {
 			auth.IdToken = a.IdToken
 			auth.AccessToken = a.AccessToken
 			auth.RefreshToken = a.RefreshToken
+			auth.ExpiresAt = a.ExpiresAt
 			if isRefresh {
 				auth.RefreshDate = time.Now()
 			} else {

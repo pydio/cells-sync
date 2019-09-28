@@ -366,6 +366,7 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 						updateConnection = true
 					case model.WatchDisconnected:
 						log.Logger(ctx).Info(status.EndpointInfo.URI + " is currently disconnected")
+						//if s.task.
 						connected = false
 						updateConnection = true
 					case model.WatchActive:

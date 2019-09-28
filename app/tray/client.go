@@ -1,7 +1,6 @@
 package tray
 
 import (
-	"context"
 	"fmt"
 	"sort"
 	"sync"
@@ -55,7 +54,7 @@ func (c *Client) Reconnect() {
 		for {
 			select {
 			case <-ticker.C:
-				log.Logger(context.Background()).Info("Trying to reconnect...")
+				log.Logger(trayCtx).Info("Trying to reconnect...")
 				c.Connect()
 			case s := <-c.Status:
 				if s == StatusConnected {
@@ -72,9 +71,9 @@ func (c *Client) Connect() error {
 		if err == nil {
 			go c.bindConn(conn)
 			c.Status <- StatusConnected
-			log.Logger(context.Background()).Info("Opened WS Connection")
+			log.Logger(trayCtx).Info("Opened WS Connection")
 		} else {
-			log.Logger(context.Background()).Info("Error while opening WS Connection " + err.Error())
+			log.Logger(trayCtx).Info("Error while opening WS Connection " + err.Error())
 		}
 		return err
 	}, 6*time.Second, 30*time.Second)
@@ -83,7 +82,7 @@ func (c *Client) Connect() error {
 func (c *Client) Close() {
 	c.closing = true
 	if c.conn != nil {
-		log.Logger(context.Background()).Info("Closing WS Connection...")
+		log.Logger(trayCtx).Info("Closing WS Connection...")
 		c.conn.Close()
 	}
 }
@@ -106,15 +105,18 @@ func (c *Client) SendOrderedTasks() {
 func (c *Client) bindConn(conn *websocket.Conn) {
 	c.conn = conn
 	go func() {
+		defer func() {
+			log.Logger(trayCtx).Info("Closing bindConn listener")
+		}()
 		for {
 			messageType, message, err := conn.ReadMessage()
 			if c.closing {
 				return
 			}
 			if err != nil {
-				log.Logger(context.Background()).Info("Got Error: " + err.Error())
+				log.Logger(trayCtx).Info("Got Error: " + err.Error())
 				c.Status <- StatusDisconnected
-				c.Reconnect()
+				go c.Reconnect()
 				return
 			}
 			if messageType == websocket.TextMessage {
@@ -123,7 +125,7 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 				case "STATE":
 					content, ok := m.Content.(*common.ConcreteSyncState)
 					if ok {
-						log.Logger(context.Background()).Debug(fmt.Sprintf("Got state for sync %s - Status %d", content.Config.Label, content.Status))
+						log.Logger(trayCtx).Debug(fmt.Sprintf("Got state for sync %s - Status %d", content.Config.Label, content.Status))
 						c.Lock()
 						prev, hasPrev := c.tasks[content.Config.Uuid]
 						if content.Status == model.TaskStatusRemoved && hasPrev {
@@ -141,7 +143,7 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 					c.tasks = make(map[string]*common.ConcreteSyncState)
 					c.Unlock()
 				case "ERROR":
-					log.Logger(context.Background()).Error("Could not parse message")
+					log.Logger(trayCtx).Error("Could not parse message")
 				}
 			}
 		}
@@ -155,7 +157,7 @@ func (c *Client) SendCmd(content *common.CmdContent) {
 			return
 		}
 	}
-	log.Logger(context.Background()).Error("No active connection for sending message")
+	log.Logger(trayCtx).Error("No active connection for sending message")
 }
 
 func (c *Client) SendRoute(route string) {
@@ -164,7 +166,7 @@ func (c *Client) SendRoute(route string) {
 			return
 		}
 	}
-	log.Logger(context.Background()).Error("No active connection for sending message")
+	log.Logger(trayCtx).Error("No active connection for sending message")
 }
 
 func (c *Client) SendHalt() {
@@ -173,18 +175,18 @@ func (c *Client) SendHalt() {
 		viewCancel = nil
 	}
 	if c.conn != nil {
-		log.Logger(context.Background()).Info("Sending 'quit' message to websocket")
+		log.Logger(trayCtx).Info("Sending 'quit' message to websocket")
 		if e := c.conn.WriteJSON(&common.Message{Type: "CMD", Content: &common.CmdContent{Cmd: "quit"}}); e == nil {
 			go func() {
 				<-time.After(3 * time.Second)
-				log.Logger(context.Background()).Error("Process should have been closed by parent, quitting now")
+				log.Logger(trayCtx).Error("Process should have been closed by parent, quitting now")
 				beforeExit()
 				systray.Quit()
 			}()
 			return
 		}
 	}
-	log.Logger(context.Background()).Error("Could not send 'quit' message, quitting now")
+	log.Logger(trayCtx).Error("Could not send 'quit' message, quitting now")
 	beforeExit()
 	systray.Quit()
 }

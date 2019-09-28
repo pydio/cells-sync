@@ -27,19 +27,17 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/pydio/cells-sync/app/tray/iconactive2"
-
-	"github.com/pydio/cells-sync/app/tray/iconerror"
-
-	"github.com/pydio/cells-sync/app/tray/iconactive"
-
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
 
 	"github.com/pydio/cells-sync/app/tray/icon"
+	"github.com/pydio/cells-sync/app/tray/iconactive"
+	"github.com/pydio/cells-sync/app/tray/iconactive2"
+	"github.com/pydio/cells-sync/app/tray/iconerror"
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells/common/log"
+	servicecontext "github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/sync/model"
 )
 
@@ -51,6 +49,7 @@ var (
 	stateSlots    []*systray.MenuItem
 	activeToggler bool
 	activeDone    chan bool
+	trayCtx       = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
 )
 
 func Run() {
@@ -76,7 +75,7 @@ func spawnWebView(path ...string) {
 	viewCancel = cancel
 	if e := cmd.Run(); e != nil {
 		if !closing {
-			fmt.Println("Error while starting WebView - Opening in browser instead", e)
+			log.Logger(trayCtx).Error("Error while starting WebView - Opening in browser instead: " + e.Error())
 			open.Run(uxUrl)
 		}
 	}
@@ -167,7 +166,7 @@ func onReady() {
 				}
 			case tasks := <-ws.Tasks:
 				i := 0
-				log.Logger(context.Background()).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
+				log.Logger(trayCtx).Debug(fmt.Sprintf("Systray received %d tasks", len(tasks)))
 				var hasError bool
 				var hasProcessing bool
 				for _, t := range tasks {
@@ -214,7 +213,7 @@ func onReady() {
 					}
 				}
 			case e := <-ws.Errors:
-				fmt.Println("Errors from client", e)
+				log.Logger(trayCtx).Error("Received error from client " + e.Error())
 			case <-mOpen.ClickedCh:
 				go spawnWebView()
 			case <-mNewTasks.ClickedCh:
@@ -244,7 +243,7 @@ func onReady() {
 			case <-mResync.ClickedCh:
 				ws.SendCmd(&common.CmdContent{Cmd: "loop"})
 			case <-mQuit.ClickedCh:
-				fmt.Println("Quitting now...")
+				log.Logger(trayCtx).Info("Closing systray now...")
 				ws.SendHalt()
 				return
 			}
@@ -266,5 +265,5 @@ func beforeExit() {
 }
 
 func onExit() {
-	fmt.Println("OnExit")
+	//fmt.Println("OnExit")
 }
