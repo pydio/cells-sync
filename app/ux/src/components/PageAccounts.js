@@ -19,7 +19,7 @@
 import React, {Component} from 'react'
 import Routes from '../oidc/Routes.js'
 
-class PageServers extends Component {
+class PageAccounts extends Component {
     render() {
         return (
             <Routes {...this.props} />
@@ -27,4 +27,4 @@ class PageServers extends Component {
     }
 }
 
-export default PageServers
+export default PageAccounts

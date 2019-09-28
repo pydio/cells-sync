@@ -23,7 +23,7 @@ import {Nav as OfficeNav, IconButton, TooltipHost, TooltipDelay, ContextualMenu,
 import {Translation} from "react-i18next";
 import PageTasks from "./PageTasks";
 import PageSettings from "./PageSettings";
-import PageServers from "./PageServers";
+import PageAccounts from "./PageAccounts";
 import PageLogs from "./PageLogs";
 import PageAbout from "./PageAbout";
 import Settings from '../models/Settings'
@@ -150,7 +150,7 @@ class NavRoutes extends React.Component {
                 <Switch>
                     <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <PageTasks syncTasks={syncTasks} socket={socket}/>}/>
                     <Route path={"/settings"} component={PageSettings}/>
-                    <Route path={"/servers"} render={(p) => <PageServers {...p} socket={socket}/>}/>
+                    <Route path={"/servers"} render={(p) => <PageAccounts {...p} socket={socket}/>}/>
                     <Route path={"/about"} render={() => <PageAbout socket={socket}/>}/>
                     <Route path={"/logs"} component={PageLogs}/>
                 </Switch>

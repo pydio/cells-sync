@@ -1,3 +1,21 @@
+/**
+ * Copyright 2019 Abstrium SAS
+ *
+ *  This file is part of Cells Sync.
+ *
+ *  Cells Sync is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Cells Sync is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
+ */
 import React, {Component} from 'react'
 import Storage from '../oidc/Storage'
 import {Page} from "./Page";
@@ -10,7 +28,7 @@ import {
     Stack,
     IconButton,
     TooltipDelay,
-    TooltipHost
+    TooltipHost, CompoundButton
 } from 'office-ui-fabric-react';
 import moment from 'moment'
 import parse from "url-parse";
@@ -48,11 +66,19 @@ const styles = {
         root:{borderRadius: '50%', width: 48, height: 48, backgroundColor: '#F5F5F5', padding: '0 8px;', margin: '0 5px'},
         icon:{fontSize: 24},
         menuIcon:{display:'none'}
+    },
+    bigButtonContainer: {
+        position: 'absolute',
+        display: 'flex',
+        height: '90%',
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 };
 
 
-class Servers extends Component{
+class AccountsList extends Component{
 
     constructor(props) {
         super(props);
@@ -113,38 +139,56 @@ class Servers extends Component{
             iconProps:{iconName:'Add'},
             onClick:()=>{this.setState({addMode: true})},
         };
+        let content;
+        if(!addMode && !servers && servers.length === 0) {
+            content = (
+                <div style={styles.bigButtonContainer}>
+                    <CompoundButton
+                        primary={true}
+                        iconProps={{iconName: 'AddFriend'}}
+                        secondaryText={t('server.create.legend')}
+                        onClick={() => {this.setState({addMode: true})}}
+                    >{t('server.create')}</CompoundButton>
+                </div>
+            );
+        } else {
+            content = (
+                <div style={styles.serverCont}>
+                    {servers.map(s =>
+                        <div key={s.id} style={styles.server}>
+                            <h2 style={{color:'#607D8B'}}>{s.serverLabel}</h2>
+                            <div style={{flex: '1 1 auto'}}>
+                                <h4 style={{margin:'10px 0'}}>{s.uri}</h4>
+                                <div style={{lineHeight:'1.5em'}}>
+                                    {t('server.info.description').replace('%1', s.username).replace('%2', moment(new Date(s.loginDate)).fromNow())}.<br/>
+                                    {s.tasksCount > 0 ? ( s.tasksCount === 1 ? t('server.tasksCount.one') : t('server.tasksCount.plural').replace('%s', s.tasksCount)) : t('server.tasksCount.zero')}
+                                </div>
+                            </div>
+                            <div style={styles.serverActions}>
+                                <TooltipHost id={"button-refresh"} key={"button-refresh"} content={t('server.refresh.button')} delay={TooltipDelay.zero}>
+                                    <IconButton iconProps={{iconName:'Refresh'}} onClick={()=>{this.refreshLogin(s.uri)}} styles={styles.buttons}/>
+                                </TooltipHost>
+                                <TooltipHost id={"button-delete"} key={"button-delete"} content={t('server.delete.button')} delay={TooltipDelay.zero}>
+                                    <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s.id)}} styles={styles.buttons} disabled={s.tasksCount > 0}/>
+                                </TooltipHost>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )
+        }
+
         return (
             <Page title={t("nav.servers")} barItems={[action]}>
                 {addMode &&
                     <Stack horizontal tokens={{childrenGap: 8}} style={{margin:10, padding: '0 10px', boxShadow: Depths.depth4, backgroundColor:'white', display:'flex', alignItems: 'center'}}>
                         <Stack.Item><h3>{t('server.create')}</h3></Stack.Item>
-                        <Stack.Item grow><TextField styles={{root:{flex: 1}}} placeholder={t('server.url.placeholder')} type={"text"} value={newUrl} onChange={(e, v) => {this.setState({newUrl: v})}}/></Stack.Item>
+                        <Stack.Item grow><TextField autoFocus={true} styles={{root:{flex: 1}}} placeholder={t('server.url.placeholder')} type={"text"} value={newUrl} onChange={(e, v) => {this.setState({newUrl: v})}}/></Stack.Item>
                         <Stack.Item><PrimaryButton onClick={this.loginToNewServer.bind(this)} text={t('server.login.button')} disabled={loginButtonDisabled}/></Stack.Item>
                         <Stack.Item><DefaultButton onClick={()=>{this.setState({addMode: false})}} text={t('button.cancel')}/></Stack.Item>
                     </Stack>
                 }
-                <div style={styles.serverCont}>
-                {servers.map(s =>
-                    <div key={s.id} style={styles.server}>
-                        <h2 style={{color:'#607D8B'}}>{s.serverLabel}</h2>
-                        <div style={{flex: '1 1 auto'}}>
-                            <h4 style={{margin:'10px 0'}}>{s.uri}</h4>
-                            <div style={{lineHeight:'1.5em'}}>
-                                {t('server.info.description').replace('%1', s.username).replace('%2', moment(new Date(s.loginDate)).fromNow())}.<br/>
-                                {s.tasksCount > 0 ? ( s.tasksCount === 1 ? t('server.tasksCount.one') : t('server.tasksCount.plural').replace('%s', s.tasksCount)) : t('server.tasksCount.zero')}
-                            </div>
-                        </div>
-                        <div style={styles.serverActions}>
-                            <TooltipHost id={"button-refresh"} key={"button-refresh"} content={t('server.refresh.button')} delay={TooltipDelay.zero}>
-                                <IconButton iconProps={{iconName:'Refresh'}} onClick={()=>{this.refreshLogin(s.uri)}} styles={styles.buttons}/>
-                            </TooltipHost>
-                            <TooltipHost id={"button-delete"} key={"button-delete"} content={t('server.delete.button')} delay={TooltipDelay.zero}>
-                                <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s.id)}} styles={styles.buttons} disabled={s.tasksCount > 0}/>
-                            </TooltipHost>
-                        </div>
-                    </div>
-                )}
-                </div>
+                {content}
             </Page>
 
         );
@@ -152,6 +196,6 @@ class Servers extends Component{
 
 }
 
-Servers = withTranslation()(Servers);
+AccountsList = withTranslation()(AccountsList);
 
-export default Servers;
+export default AccountsList;

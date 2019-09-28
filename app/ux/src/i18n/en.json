@@ -173,5 +173,15 @@
   "server.tasksCount.plural":"There are % sync with this account",
   "callback.redirect":"Redirecting to login page...",
   "callback.error":"An error happened during authentication: ",
-  "callback.closewindow": "Account has been added, you can now close the window!"
+  "callback.closewindow": "Account has been added, you can now close the window!",
+  "tray.title.starting": "starting...",
+  "tray.menu.open": "Open",
+  "tray.menu.open.legend": "Open Interface",
+  "tray.menu.exit": "Quit",
+  "tray.menu.exit.legend": "Exit Cells Sync",
+  "tray.task.status.disabled": "disabled",
+  "tray.task.status.processing": "syncing",
+  "tray.task.status.paused": "paused",
+  "tray.task.status.error": "error!",
+  "tray.task.status.disconnected": "cannot connect!"
 }
