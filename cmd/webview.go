@@ -20,6 +20,7 @@
 package cmd
 
 import (
+	"github.com/pydio/cells-sync/i18n"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
 	"github.com/zserge/webview"
@@ -37,11 +38,15 @@ var WebviewCmd = &cobra.Command{
 	Use:   "webview",
 	Short: "Launch WebView",
 	Run: func(cmd *cobra.Command, args []string) {
+		lang := i18n.JsonLang()
+		if lang != "" {
+			url += "?lang=" + lang
+		}
 		w := webview.New(webview.Settings{
 			Width:     900,
 			Height:    600,
 			Resizable: true,
-			Title:     "Cells Sync",
+			Title:     i18n.T("application.title"),
 			URL:       url,
 			Debug:     true, // Enable JS Debugger
 		})

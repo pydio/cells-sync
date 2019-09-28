@@ -150,6 +150,7 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 					c.Lock()
 					c.tasks = make(map[string]*common.ConcreteSyncState)
 					c.Unlock()
+					c.SendOrderedTasks()
 				case "ERROR":
 					log.Logger(trayCtx).Error("Could not parse message")
 				}

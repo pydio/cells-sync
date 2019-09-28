@@ -5,3 +5,4 @@ sync.exe*
 .vscode
 debug
 package-lock.json
+*-packr.go

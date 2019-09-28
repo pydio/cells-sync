@@ -27,6 +27,8 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/pydio/cells-sync/i18n"
+
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
 
@@ -129,9 +131,9 @@ func setIconError() {
 func onReady() {
 	systray.SetIcon(icon.Data)
 	setIconActive()
-	systray.SetTitle("Starting")
-	systray.SetTooltip("Cells Sync Client")
-	mOpen := systray.AddMenuItem("Open Interface", "Open Sync UX")
+	systray.SetTitle(i18n.T("tray.title.starting"))
+	systray.SetTooltip(i18n.T("application.title"))
+	mOpen := systray.AddMenuItem(i18n.T("tray.menu.open"), i18n.T("tray.menu.open.legend"))
 	mOpen.Disable()
 	systray.AddSeparator()
 	// Prepare slots for tasks
@@ -140,11 +142,11 @@ func onReady() {
 		slot.Hide()
 		stateSlots = append(stateSlots, slot)
 	}
-	mNewTasks := systray.AddMenuItem("Create new task...", "")
+	mNewTasks := systray.AddMenuItem(i18n.T("main.create"), i18n.T("main.create.legend"))
 	systray.AddSeparator()
-	mResync := systray.AddMenuItem("Resync all", "Resync all tasks")
-	mAbout := systray.AddMenuItem("About", "About Cells Sync")
-	mQuit := systray.AddMenuItem("Quit", "Exit Sync")
+	mResync := systray.AddMenuItem(i18n.T("main.all.resync"), i18n.T("main.all.resync.legend"))
+	mAbout := systray.AddMenuItem(i18n.T("nav.about"), "")
+	mQuit := systray.AddMenuItem(i18n.T("tray.menu.exit"), i18n.T("tray.menu.exit.legend"))
 	ws = NewClient()
 
 	// We can manipulate the systray in other goroutines
@@ -169,25 +171,28 @@ func onReady() {
 				}
 			case tasks := <-ws.Tasks:
 				i := 0
-				log.Logger(trayCtx).Debug(fmt.Sprintf("Systray received %d tasks", len(tasks)))
+				if len(tasks) == 0 {
+					setIconIdle()
+				}
+				log.Logger(trayCtx).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
 				var hasError bool
 				var hasProcessing bool
 				for _, t := range tasks {
 					label := t.Config.Label
 					switch t.Status {
 					case model.TaskStatusDisabled:
-						label += " (disabled)"
+						label += " (" + i18n.T("tray.task.status.disabled") + ")"
 					case model.TaskStatusProcessing:
-						label += " (syncing)"
+						label += " (" + i18n.T("tray.task.status.processing") + ")"
 						hasProcessing = true
 					case model.TaskStatusPaused:
-						label += " (paused)"
+						label += " (" + i18n.T("tray.task.status.paused") + ")"
 					case model.TaskStatusError:
-						label += " (error!)"
+						label += " (" + i18n.T("tray.task.status.error") + ")"
 						hasError = true
 					}
 					if !hasError && (!t.LeftInfo.Connected || !t.RightInfo.Connected) {
-						label += " (cannot connect!)"
+						label += " (" + i18n.T("tray.task.status.disconnected") + ")"
 						hasError = true
 					}
 					stateSlots[i].SetTitle(label)
