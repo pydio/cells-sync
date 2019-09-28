@@ -34,7 +34,7 @@ func NewSpawnedService(name string, args []string) *SpawnedService {
 
 func (c *SpawnedService) Serve() {
 	var ctx context.Context
-	log.Logger(c.logCtx).Info("Starting sub-process")
+	log.Logger(c.logCtx).Info("Starting sub-process with args " + strings.Join(c.args, " "))
 	ctx, c.cancel = context.WithCancel(c.logCtx)
 	cmd := exec.CommandContext(ctx, config.ProcessName(os.Args[0]), c.args...)
 	stdout, err := cmd.StdoutPipe()

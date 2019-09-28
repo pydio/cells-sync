@@ -2,6 +2,7 @@ package tray
 
 import (
 	"fmt"
+	"net/url"
 	"sort"
 	"sync"
 	"time"
@@ -66,8 +67,15 @@ func (c *Client) Reconnect() {
 }
 
 func (c *Client) Connect() error {
+	parsed, _ := url.Parse(uxUrl)
+	if parsed.Scheme == "https" {
+		parsed.Scheme = "wss"
+	} else {
+		parsed.Scheme = "ws"
+	}
+	parsed.Path = "/status"
 	return service.Retry(func() error {
-		conn, _, err := websocket.DefaultDialer.Dial("ws://localhost:3636/status", nil)
+		conn, _, err := websocket.DefaultDialer.Dial(parsed.String(), nil)
 		if err == nil {
 			go c.bindConn(conn)
 			c.Status <- StatusConnected

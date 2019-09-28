@@ -52,7 +52,10 @@ var (
 	trayCtx       = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
 )
 
-func Run() {
+func Run(url string) {
+	if url != "" {
+		uxUrl = url
+	}
 	systray.Run(onReady, onExit)
 }
 

@@ -22,8 +22,9 @@
 package control
 
 import (
-	"os"
 	"context"
+	"fmt"
+	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -82,7 +83,8 @@ func (s *Supervisor) Serve() error {
 		s.Add(&StdInner{})
 	}
 	if !s.noUi {
-		s.Add(NewSpawnedService("systray", []string{"systray"}))
+		addr, _ := config.GetHttpAddress()
+		s.Add(NewSpawnedService("systray", []string{"systray", "--url", fmt.Sprintf("%s://%s", config.GetHttpProtocol(), addr)}))
 	}
 	s.Add(httpServer)
 	s.Add(NewUpdater())

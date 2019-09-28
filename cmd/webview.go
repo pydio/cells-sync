@@ -53,7 +53,7 @@ var WebviewCmd = &cobra.Command{
 }
 
 func init() {
-	WebviewCmd.PersistentFlags().StringVar(&url, "url", "http://localhost:3636", "Open webview")
+	WebviewCmd.PersistentFlags().StringVar(&url, "url", "http://localhost:3636", "Web server URL")
 
 	RootCmd.AddCommand(WebviewCmd)
 }

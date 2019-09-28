@@ -28,10 +28,11 @@ var SystrayCmd = &cobra.Command{
 	Use:   "systray",
 	Short: "Launch Systray",
 	Run: func(cmd *cobra.Command, args []string) {
-		tray.Run()
+		tray.Run(url)
 	},
 }
 
 func init() {
+	SystrayCmd.PersistentFlags().StringVar(&url, "url", "http://localhost:3636", "WebServer URL")
 	RootCmd.AddCommand(SystrayCmd)
 }

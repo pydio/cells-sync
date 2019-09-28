@@ -311,8 +311,13 @@ func (h *HttpServer) Serve() {
 	Server.GET("/config", h.loadConf)
 	Server.PUT("/config", h.updateConf)
 
-	log.Logger(h.ctx).Info("Starting HttpServer on port 3636")
-	if e := http.ListenAndServe(":3636", Server); e != nil {
+	addr, err := config.GetHttpAddress()
+	if err != nil {
+		log.Logger(h.ctx).Error("Cannot start server: " + err.Error())
+		return
+	}
+	log.Logger(h.ctx).Info("Starting HttpServer on " + addr)
+	if e := http.ListenAndServe(addr, Server); e != nil {
 		log.Logger(h.ctx).Error("Cannot start server: " + e.Error())
 	}
 }
