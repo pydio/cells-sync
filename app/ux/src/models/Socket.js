@@ -17,6 +17,7 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import Sockette from "sockette";
+import buildUrl from './Url'
 
 export default class Socket {
 
@@ -74,7 +75,7 @@ export default class Socket {
     }
 
     start() {
-        this.ws = new Sockette('ws://localhost:3636/status', {
+        this.ws = new Sockette( buildUrl('/status', true) , {
             timeout: 3e3,
             maxAttempts: 60,
             onopen: (e) => this.onOpen(e),

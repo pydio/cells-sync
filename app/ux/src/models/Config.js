@@ -17,6 +17,8 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import buildUrl from './Url'
+
 const Config = {
     UUID:"",
     Config:{
@@ -74,7 +76,7 @@ class DefaultDirLoader {
     }
 
     load(){
-        return window.fetch('http://localhost:3636/default', {
+        return window.fetch(buildUrl('/default'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

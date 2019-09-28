@@ -18,6 +18,7 @@
  */
 import 'whatwg-fetch'
 import path from 'path'
+import buildUrl from './Url'
 
 class TreeNode {
     constructor(name, loader, parent = null, onChange = null){
@@ -139,7 +140,7 @@ class Loader {
     }
 
     ls(path) {
-        return window.fetch('http://localhost:3636/tree', {
+        return window.fetch(buildUrl('/tree'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -169,7 +170,7 @@ class Loader {
     }
 
     mkdir(path){
-        return window.fetch('http://localhost:3636/tree', {
+        return window.fetch(buildUrl('/tree'), {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

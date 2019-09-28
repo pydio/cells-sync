@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
+import buildUrl from './Url'
+
 let listeners = [];
 
 // Declare keys for the sake of auto-completion
@@ -79,7 +81,7 @@ class Settings {
     }
 
     load(){
-        return this.parseResponse(window.fetch('http://localhost:3636/config', {
+        return this.parseResponse(window.fetch(buildUrl('/config'), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -89,7 +91,7 @@ class Settings {
     }
 
     save(){
-        return this.parseResponse(window.fetch('http://localhost:3636/config', {
+        return this.parseResponse(window.fetch(buildUrl('/config'), {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
+import buildUrl from './Url'
+
 class Operation {
     constructor(data){
         this.OpType = data.OpType;
@@ -106,12 +108,14 @@ class Patch {
 
 /**
  *
+ * @param syncUuid
  * @param offset
  * @param limit
  * @return Promise
  */
 function load(syncUuid, offset = 0, limit = 10) {
-    return window.fetch('http://localhost:3636/patches/' + syncUuid + '/' + offset + '/' + limit, {
+    const url = buildUrl('/patches/' + syncUuid + '/' + offset + '/' + limit);
+    return window.fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'

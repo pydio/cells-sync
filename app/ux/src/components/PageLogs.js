@@ -22,6 +22,7 @@ import Sockette from "sockette";
 import AnsiUp from 'ansi_up'
 import {List} from 'office-ui-fabric-react'
 import {withTranslation} from "react-i18next";
+import buildUrl from '../models/Url'
 
 class PageLogs extends React.Component {
 
@@ -48,7 +49,7 @@ class PageLogs extends React.Component {
     }
 
     start() {
-        this.ws = new Sockette('ws://localhost:3636/logs', {
+        this.ws = new Sockette(buildUrl('/logs', true), {
             timeout: 3e3,
             maxAttempts: 60,
             onopen: (e) => this.onOpen(e),
