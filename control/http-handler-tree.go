@@ -67,6 +67,7 @@ func (l *TreeResponse) MarshalJSON() ([]byte, error) {
 }
 
 func (h *HttpServer) writeError(i *gin.Context, e error) {
+	log.Logger(h.ctx).Error("Request error :" + e.Error())
 	i.JSON(http.StatusInternalServerError, map[string]string{"error": e.Error()})
 }
 
@@ -125,24 +126,22 @@ func (h *HttpServer) parseTreeRequest(c *gin.Context) (*TreeRequest, error) {
 }
 
 func (h *HttpServer) ls(c *gin.Context) {
-	ctx := context.Background()
 	request, e := h.parseTreeRequest(c)
 	if e != nil {
-		log.Logger(ctx).Error("Failed to parse request: " + e.Error())
 		h.writeError(c, e)
 		return
 	}
 
-	log.Logger(context.Background()).Info("Browsing " + request.endpoint.GetEndpointInfo().URI + " on path " + request.Path)
+	log.Logger(h.ctx).Info("Browsing " + request.endpoint.GetEndpointInfo().URI + " on path " + request.Path)
 
 	response := &TreeResponse{}
 
 	if request.browseWinVolumes {
 		response.Node = &tree.Node{}
-		for _, v := range browseWinVolumes(ctx) {
+		for _, v := range browseWinVolumes(h.ctx) {
 			response.Children = append(response.Children, v)
 		}
-	} else if node, err := request.endpoint.LoadNode(ctx, request.Path); err == nil {
+	} else if node, err := request.endpoint.LoadNode(h.ctx, request.Path); err == nil {
 		response.Node = node.WithoutReservedMetas()
 		if !node.IsLeaf() {
 			if source, ok := model.AsPathSyncSource(request.endpoint); ok {
