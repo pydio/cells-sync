@@ -32,10 +32,6 @@ import (
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
 
-	"github.com/pydio/cells-sync/app/tray/icon"
-	"github.com/pydio/cells-sync/app/tray/iconactive"
-	"github.com/pydio/cells-sync/app/tray/iconactive2"
-	"github.com/pydio/cells-sync/app/tray/iconerror"
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells/common/log"
@@ -102,9 +98,9 @@ func setIconActive() {
 			select {
 			case <-time.After(750 * time.Millisecond):
 				if !activeToggler {
-					systray.SetIcon(iconactive.Data)
+					systray.SetIcon(iconActiveData)
 				} else {
-					systray.SetIcon(iconactive2.Data)
+					systray.SetIcon(iconActive2Data)
 				}
 				activeToggler = !activeToggler
 			case <-activeDone:
@@ -118,18 +114,18 @@ func setIconIdle() {
 	if activeDone != nil {
 		close(activeDone)
 	}
-	systray.SetIcon(icon.Data)
+	systray.SetIcon(iconData)
 }
 
 func setIconError() {
 	if activeDone != nil {
 		close(activeDone)
 	}
-	systray.SetIcon(iconerror.Data)
+	systray.SetIcon(iconErrorData)
 }
 
 func onReady() {
-	systray.SetIcon(icon.Data)
+	systray.SetIcon(iconData)
 	setIconActive()
 	systray.SetTitle(i18n.T("tray.title.starting"))
 	systray.SetTooltip(i18n.T("application.title"))
