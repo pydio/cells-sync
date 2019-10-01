@@ -66,7 +66,7 @@ func AllowedServiceCmd(s string) bool {
 	return false
 }
 
-func IsInstalled() bool {
+func ServiceInstalled() bool {
 	s, e := GetAppService(nil)
 	if e != nil {
 		return false

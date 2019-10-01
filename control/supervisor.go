@@ -150,7 +150,7 @@ func (s *Supervisor) listenBus() {
 	c := GetBus().Sub(TopicGlobal)
 	for m := range c {
 		if m == MessageHalt {
-			if service.Interactive() {
+			if service.Interactive() || (runtime.GOOS == "darwin" && !config.ServiceInstalled()) {
 				s.Stop()
 			} else {
 				config.ControlAppService(config.ServiceCmdStop)

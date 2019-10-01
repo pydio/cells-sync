@@ -36,7 +36,8 @@ var RootCmd = &cobra.Command{
 		handleSignals()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if runtime.GOOS == "windows" {
+		if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+			StartCmd.PreRun(cmd, args)
 			StartCmd.Run(cmd, args)
 		} else {
 			cmd.Usage()

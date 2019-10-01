@@ -1,7 +1,6 @@
 package tray
 
 import (
-	"fmt"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -34,7 +33,6 @@ func init() {
 		useLightIcons := false
 		cmd := exec.Command("defaults", "read", "-g", "AppleInterfaceStyle")
 		if output, err := cmd.Output(); err == nil {
-			fmt.Println(string(output))
 			if strings.Contains(string(output), "Dark") {
 				useLightIcons = true
 			}
