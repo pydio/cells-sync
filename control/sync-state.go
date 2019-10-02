@@ -199,7 +199,7 @@ func NewFileStateStore(config *config.Task, folderPath string) *FileStateStore {
 }
 
 func (f *FileStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
-	if f.FileError == nil {
+	if f.FileError == nil && f.state.Status != s {
 		go func() {
 			f.fileState <- s
 		}()
@@ -208,11 +208,9 @@ func (f *FileStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
 }
 
 func (f *FileStateStore) UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState {
-	if f.FileError == nil {
+	if f.FileError == nil && len(status) > 0 && f.state.Status != status[0] {
 		go func() {
-			if len(status) > 0 {
-				f.fileState <- status[0]
-			}
+			f.fileState <- status[0]
 		}()
 	}
 	return f.MemoryStateStore.UpdateProcessStatus(processStatus, status...)
