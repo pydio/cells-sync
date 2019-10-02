@@ -37,7 +37,7 @@ export default class EndpointLabel extends React.Component {
         const data = parse(uri);
         let eType;
         EndpointTypes.forEach(val => {
-            if (val.key + ':' === data.protocol) {
+            if (val.key + ':' === data.protocol || (val.key === 'http' && data.protocol === 'https:')) {
                 eType = val;
             }
         });
