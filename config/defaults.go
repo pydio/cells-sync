@@ -84,6 +84,16 @@ type Service struct {
 	RunAsService bool
 }
 
+type ShortcutOptions struct {
+	Shortcut  bool
+	AutoStart bool
+}
+
+type ShortcutInstaller interface {
+	Install(options ShortcutOptions) error
+	Uninstall() error
+}
+
 func NewLogs() *Logs {
 	return &Logs{
 		Folder:         filepath.Join(SyncClientDataDir(), "logs"),
