@@ -19,6 +19,9 @@
 package config
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/go-ole/go-ole"
@@ -26,22 +29,27 @@ import (
 )
 
 func GetOSShortcutInstaller() ShortcutInstaller {
-	return nil
+	return &winShortcuts{}
 }
+
+var startupLink = filepath.Join(os.Getenv("APPDATA"), "Microsoft", "Windows", "Start Menu", "Programs", "StartUp", "CellsSync.lnk")
 
 type winShortcuts struct{}
 
 func (w winShortcuts) Install(options ShortcutOptions) error {
 
-	return
-
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 
-	dst := ""
-	src := ""
+	dst := startupLink
+	src := ProcessName(os.Args[0])
+	fmt.Printf("Creating shortcut to %s inside %s\n", src, dst)
 
-	ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED|ole.COINIT_SPEED_OVER_MEMORY)
+	err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED|ole.COINIT_SPEED_OVER_MEMORY)
+	if err != nil {
+		return err
+	}
+
 	oleShellObject, err := oleutil.CreateObject("WScript.Shell")
 	if err != nil {
 		return err
@@ -57,10 +65,14 @@ func (w winShortcuts) Install(options ShortcutOptions) error {
 		return err
 	}
 	idispatch := cs.ToIDispatch()
-	oleutil.PutProperty(idispatch, "TargetPath", src)
-	oleutil.CallMethod(idispatch, "Save")
+	_, err = oleutil.PutProperty(idispatch, "TargetPath", src)
+	if err != nil {
+		return err
+	}
+	_, err = oleutil.CallMethod(idispatch, "Save")
+	return err
 }
 
 func (w winShortcuts) Uninstall() error {
-	panic("implement me")
+	return os.Remove(startupLink)
 }

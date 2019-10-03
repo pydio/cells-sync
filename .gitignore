@@ -6,3 +6,4 @@ sync.exe*
 debug
 package-lock.json
 *-packr.go
+/.idea/

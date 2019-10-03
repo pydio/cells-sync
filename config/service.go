@@ -44,13 +44,14 @@ func ControlAppService(cmd ServiceCmd) error {
 		return e
 	} else {
 		if cmd == ServiceCmdInstall {
-			var er error
-			// Distro-specific tasks
+			// Do not install service but create Startup shortcut(s) instead
 			if sI := GetOSShortcutInstaller(); sI != nil {
-				er = sI.Install(ShortcutOptions{Shortcut: true, AutoStart: true})
+				return sI.Install(ShortcutOptions{Shortcut: true, AutoStart: true})
 			}
-			if er != nil {
-				return er
+		} else if cmd == ServiceCmdUninstall {
+			// Do not install service but create Startup shortcut(s) instead
+			if sI := GetOSShortcutInstaller(); sI != nil {
+				return sI.Uninstall()
 			}
 		}
 		return service.Control(s, string(cmd))

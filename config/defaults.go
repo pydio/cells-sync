@@ -224,6 +224,9 @@ func Default() *Global {
 		if def.Debugging == nil {
 			def.Debugging = &Debugging{}
 		}
+		if def.Service == nil {
+			def.Service = &Service{}
+		}
 		if len(def.Authorities) > 0 {
 			for _, a := range def.Authorities {
 				go monitorToken(a)
