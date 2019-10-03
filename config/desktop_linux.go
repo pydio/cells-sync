@@ -7,6 +7,10 @@ import (
 	"text/template"
 )
 
+func GetOSShortcutInstaller() ShortcutInstaller {
+	return &ubuntuInstaller{}
+}
+
 type ubuntuInstaller struct{}
 
 const ubuntuAppTpl = `[Desktop Entry]
