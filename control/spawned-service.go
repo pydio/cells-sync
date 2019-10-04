@@ -4,9 +4,6 @@ import (
 	"bufio"
 	"context"
 	"os"
-	"os/exec"
-	"runtime"
-	"strconv"
 	"strings"
 
 	"github.com/pydio/cells-sync/config"
@@ -34,23 +31,10 @@ func NewSpawnedService(name string, args []string) *SpawnedService {
 }
 
 func (c *SpawnedService) Serve() {
-	var ctx context.Context
 	log.Logger(c.logCtx).Info("Starting sub-process with args " + strings.Join(c.args, " "))
-	ctx, c.cancel = context.WithCancel(c.logCtx)
 	pName := config.ProcessName(os.Args[0])
-	//pName = "C:\\Users\\pydio\\go\\src\\github.com\\pydio\\cells-sync\\cells-sync.exe"
-	cmd := exec.CommandContext(ctx, pName, c.args...)
-	if runtime.GOOS == "windows" {
-		// Replace cancel function with a hard kill
-		c.cancel = func() {
-			kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
-			kill.Stderr = os.Stderr
-			kill.Stdout = os.Stdout
-			//TODO in a win only file
-			//kill.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-			_ = kill.Run()
-		}
-	}
+	cmd, cancel := killableSpawn(pName, c.args)
+	c.cancel = cancel
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return // PRINT SOMETHING
