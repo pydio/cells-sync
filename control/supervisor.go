@@ -29,7 +29,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kardianos/service"
 	"github.com/thejerf/suture"
 
 	"github.com/pydio/cells-sync/config"
@@ -79,7 +78,7 @@ func (s *Supervisor) Serve() error {
 
 	s.schedulerToken = s.Add(NewScheduler(conf.Tasks))
 	s.Add(&Profiler{})
-	if service.Interactive() && runtime.GOOS != "windows" && os.Getenv("CELLS_SYNC_IN_PATH") == "" {
+	if config.NotRunningAsService() && runtime.GOOS != "windows" && os.Getenv("CELLS_SYNC_IN_PATH") == "" {
 		s.Add(&StdInner{})
 	}
 	if !s.noUi {
@@ -150,7 +149,7 @@ func (s *Supervisor) listenBus() {
 	c := GetBus().Sub(TopicGlobal)
 	for m := range c {
 		if m == MessageHalt {
-			if service.Interactive() || (runtime.GOOS == "darwin" && !config.ServiceInstalled()) {
+			if config.NotRunningAsService() {
 				s.Stop()
 			} else {
 				config.ControlAppService(config.ServiceCmdStop)

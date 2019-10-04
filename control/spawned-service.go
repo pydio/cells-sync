@@ -57,7 +57,7 @@ func (c *SpawnedService) Serve() {
 			log.Logger(c.logCtx).Error(text)
 		}
 	}()
-	if e := cmd.Run(); e != nil {
+	if e := cmd.Run(); e != nil && !strings.Contains(e.Error(), "killed") {
 		log.Logger(c.logCtx).Error("Error on sub process : " + e.Error())
 		c.cancel = nil
 		panic(e)

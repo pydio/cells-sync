@@ -23,7 +23,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -52,24 +51,9 @@ var StartCmd = &cobra.Command{
 			MaxSize:    logs.MaxFilesSize, // megabytes
 			MaxBackups: logs.MaxFilesNumber,
 		}))
-		/*
-			logger := log.Logger(context.Background())
-			r, w, err := os.Pipe()
-			if err == nil {
-				os.Stdout = w
-				go func() {
-					scanner := bufio.NewScanner(r)
-					for scanner.Scan() {
-						line := scanner.Text()
-						// Log the stdout line to my event logger
-						logger.Named("StdOut").Info(line)
-					}
-				}()
-			}
-		*/
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if service.Interactive() {
+		if config.NotRunningAsService() {
 			runner()
 		} else {
 			s, err := config.GetAppService(runner)
