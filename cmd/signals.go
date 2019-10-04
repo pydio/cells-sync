@@ -38,8 +38,6 @@ func handleSignals() {
 			case syscall.SIGINT:
 
 				control.GetBus().Pub(control.MessageHalt, control.TopicGlobal)
-				//<-time.After(2 * time.Second)
-				//os.Exit(0)
 
 			case syscall.SIGHUP:
 				// Restart all sync

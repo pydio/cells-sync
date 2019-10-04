@@ -27,13 +27,13 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/pydio/cells-sync/i18n"
-
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
 
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells-sync/control"
+	"github.com/pydio/cells-sync/i18n"
 	"github.com/pydio/cells/common/log"
 	servicecontext "github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/sync/model"
@@ -145,10 +145,18 @@ func onReady() {
 	mQuit := systray.AddMenuItem(i18n.T("tray.menu.exit"), i18n.T("tray.menu.exit.legend"))
 	ws = NewClient()
 
+	haltBus := control.GetBus().Sub(control.TopicGlobal)
+
 	// We can manipulate the systray in other goroutines
 	go func() {
 		for {
 			select {
+			case msg := <-haltBus:
+				if m, ok := msg.(control.CommandMessage); ok && m == control.MessageHalt {
+					beforeExit()
+					systray.Quit()
+					return
+				}
 			case s := <-ws.Status:
 				systray.SetTitle("")
 				if s == StatusConnected {

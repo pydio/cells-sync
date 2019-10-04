@@ -24,17 +24,20 @@ package config
 
 import (
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 func ProcessName(name string) string {
-	dir, _ := os.Getwd()
-	if !strings.HasSuffix(name, ".exe") {
-		name += ".exe"
-	}
-	if dir == filepath.Dir(name) {
-		name = filepath.Base(name)
-	}
-	return filepath.Join(dir, name)
+	exe, _ := os.Executable()
+	//	fmt.Println("Process Name", exe)
+	return exe
+	/*
+		dir, _ := os.Getwd()
+		if !strings.HasSuffix(name, ".exe") {
+			name += ".exe"
+		}
+		if dir == filepath.Dir(name) {
+			name = filepath.Base(name)
+		}
+		return filepath.Join(dir, name)
+	*/
 }

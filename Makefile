@@ -5,6 +5,10 @@ CELLS_VERSION?=0.2.0
 
 all: clean pack cli
 
+dep:
+	go get github.com/akavel/rsrc
+	go get github.com/gobuffalo/packr/packr
+
 cli:
 	go build \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
@@ -17,10 +21,13 @@ win:
 	-ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	-o cells-sync.exe main.go
+	-o cells-sync.exe
 
 pack:
 	${GOPATH}/bin/packr
+
+rsrc:
+	${GOPATH}/bin/rsrc -arch amd64 -ico app/resources/icon.ico
 
 xgo:
 	${GOPATH}/bin/xgo -go 1.12 -out "cells-sync" \
@@ -48,4 +55,5 @@ xgo:
 
 clean:
 	rm -f cells-sync*
+	rm -f rsrc.syso
 	${GOPATH}/bin/packr clean
