@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/kardianos/service"
 )
@@ -65,6 +66,10 @@ func AllowedServiceCmd(s string) bool {
 		}
 	}
 	return false
+}
+
+func NotRunningAsService() bool {
+	return service.Interactive() || (runtime.GOOS == "darwin" && !ServiceInstalled())
 }
 
 func ServiceInstalled() bool {
