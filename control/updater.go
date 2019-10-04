@@ -276,7 +276,10 @@ func (u *Updater) ApplyUpdate(ctx context.Context, p *update.Package, dryRun boo
 
 		dataDir := config.SyncClientDataDir()
 		oldPath := filepath.Join(dataDir, "backups", "revision-"+common.BuildStamp)
-
+		err := os.MkdirAll(filepath.Join(dataDir, "backups"), 0755)
+		if err != nil {
+			oldPath = filepath.Join(dataDir, "revision-"+common.BuildStamp)
+		}
 		reader := net.BodyWithProgressMonitor(resp, pgChan, nil)
 
 		er := update2.Apply(reader, update2.Options{
