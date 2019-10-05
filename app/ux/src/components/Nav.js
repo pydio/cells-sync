@@ -73,6 +73,11 @@ class NavMenu extends React.Component {
         }
         links['/about'] = {label:'about', icon:'Help'};
 
+        const colors = {
+            title: '#61869e',
+            icon: 'rgb(238, 121, 110)'
+        };
+
         const tStyles = {
             root: {
                 width: 200,
@@ -83,11 +88,15 @@ class NavMenu extends React.Component {
             compositeLink:{
                 backgroundColor:'transparent',
                 selectors:{
+                    "& .ms-Button":{height: 40},
                     "&.is-selected .ms-Button":{backgroundColor:'white'},
+                    "& .ms-Button-icon":{color: colors.icon},
                 }
             },
             link:{
                 backgroundColor:'transparent',
+                color: colors.title,
+                fontWeight: 600
             }
         };
 
@@ -108,11 +117,18 @@ class NavMenu extends React.Component {
                 <Route render={({history, location}) =>
                     <React.Fragment>
                         <div style={{display:'flex', alignItems:'center'}}>
-                            <span style={{flex: 1, fontSize: FontSizes.size24, fontWeight: 300, padding: 8}}>{t('application.title')}</span>
+                            <span className={"cells-logo"} style={{width: 24, height: 24, marginLeft: 6, display:'block'}}/>
+                            <span style={{flex: 1, fontSize: FontSizes.size20, fontWeight: 600, padding: 8, paddingLeft: 4, color:colors.title}}>{t('application.title')}</span>
                             <TooltipHost content={t("language.switch")} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
                                 <IconButton
                                     iconProps={{iconName:'Flag'}}
-                                    styles={{root:{marginRight: 4},menuIcon:{display:'none'}}}
+                                    styles={{
+                                        root:{marginRight: 4},
+                                        menuIcon:{display:'none'},
+                                        icon:{opacity:0.4, transition:'opacity 200ms'},
+                                        iconHovered:{opacity:1},
+                                        iconExpanded:{opacity: 1}
+                                    }}
                                     menuAs={NavMenu.menuAs}
                                     menuProps={{items:menuItems(i18n)}}
                                 />
