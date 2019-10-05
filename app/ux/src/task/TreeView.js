@@ -25,12 +25,12 @@ class TreeView extends React.Component {
 
     constructor(props) {
         super(props);
-        const {unique, t} = props;
+        const {unique, t, onError, allowCreate, uri} = props;
         let label = t('tree.root.select.multiple');
         if(unique){
             label = t('tree.root.select.unique');
         }
-        const loader = new Loader(label, props.uri, props.allowCreate);
+        this.loader = new Loader(label, uri, allowCreate, onError);
         const {initialSelection} = this.props;
         const selection = new Selection({onSelectionChanged:()=>{
             this.setState({selection: selection}, () => {
@@ -41,7 +41,7 @@ class TreeView extends React.Component {
                 this.props.onSelectionChanged(selectedPaths);
             });
         }});
-        const tree = new TreeNode("/", loader, null, ()=>{
+        const tree = new TreeNode("/", this.loader, null, ()=>{
             let items = [], groups = [];
             this.nodesToGroups(items, groups, tree);
             const {selection, initialSelectionPath} = this.state;
@@ -68,6 +68,10 @@ class TreeView extends React.Component {
             items:[],
             groups:[], selection, initialSelectionPath: initialSelection};
         selection.setItems([]);
+    }
+
+    componentWillUnmount(){
+        this.loader.close();
     }
 
     nodesToGroups(items, groups, node, level = 0, startIndex = 0) {
@@ -113,9 +117,7 @@ class TreeView extends React.Component {
         const {tree} = this.state;
         const {initialSelection, onError} = this.props;
         onError(null);
-        tree.load(initialSelection).catch(e => {
-            onError(e);
-        });
+        tree.load(initialSelection);
     }
 
     onRenderGroup(data){

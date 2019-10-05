@@ -133,10 +133,25 @@ class TreeNode {
 TreeNode.CREATE_FOLDER = "__CREATE_FOLDER__";
 
 class Loader {
-    constructor(rootLabel, uri, allowCreate) {
+    constructor(rootLabel, uri, allowCreate, errorHandler) {
         this.rootLabel = rootLabel;
         this.uri = uri;
         this.allowCreate = allowCreate;
+        if (!errorHandler) {
+            this.errorHandler = (e) => {console.log(e, 'no error handler set')}
+        } else {
+            this.errorHandler = (e) => {
+                if(!this.closed){
+                    errorHandler(e);
+                } else{
+                    console.log(e, 'loader closed')
+                }
+            }
+        }
+    }
+
+    close(){
+        this.closed = true;
     }
 
     ls(path) {
@@ -165,6 +180,7 @@ class Loader {
             return data.Children || [];
         }).catch(reason => {
             console.log(reason);
+            this.errorHandler(reason);
             throw reason;
         });
     }
@@ -193,6 +209,7 @@ class Loader {
             return response.json();
         }).catch(reason => {
             console.log(reason);
+            this.errorHandler(reason);
             throw reason;
         });
 
