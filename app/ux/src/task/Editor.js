@@ -21,7 +21,7 @@ import 'observable-slim/proxy'
 import ObservableSlim from 'observable-slim'
 import parse from 'url-parse'
 import basename from 'basename'
-import { Label, TextField, Dropdown, Separator, Stack, DefaultButton, PrimaryButton, Toggle, Icon, TooltipHost, TooltipDelay } from 'office-ui-fabric-react';
+import { Label, TextField, Dropdown, Separator, Stack, DefaultButton, PrimaryButton, Toggle, Icon, TooltipHost, TooltipDelay, DirectionalHint } from 'office-ui-fabric-react';
 import {Config, DefaultDirLoader} from '../models/Config'
 import EndpointPicker from './EndpointPicker'
 import SelectiveFolders from "./SelectiveFolders";
@@ -54,7 +54,7 @@ class Editor extends React.Component {
         const proxy = ObservableSlim.create(t, true, () => {
             this.setState({task: proxy});
         });
-        this.state = {task: proxy, isNew};
+        this.state = {task: proxy, isNew, showAdvanced: !isNew};
         if(isNew){
             this.state.LeftURIInvalid = true;
             this.state.RightURIInvalid = true;
@@ -92,24 +92,26 @@ class Editor extends React.Component {
             saveTask.Config.RightURI = loginUrl;
         }
         localStorage.setItem("Editor.SavedState", JSON.stringify({task: saveTask}));
-        Storage.signin(loginUrl, editState);
+        Storage.signin(loginUrl, editState).catch((e) => {
+            const s = {};
+            s[position + 'ServerError'] = e.message;
+            this.setState(s)
+        });
     }
 
     labelForPicker(id, type, edit, editProp){
         const {t} = this.props;
         return (
             <Label styles={{root:{display:'flex', alignItems:'center'}}} htmlFor={id}>{t('editor.picker.type.' + type)}
-                <TooltipHost id={"button-" + id} content={t("editor.picker.type.edit")} delay={TooltipDelay.zero}>
-                    <Icon
-                        iconName={"ChevronDown"}
-                        styles={{root:{fontSize:12, cursor:'pointer', marginLeft: 5, display:edit?'none':'inline'}}}
-                        onClick={()=>{
+                {!edit &&
+                    <TooltipHost id={"button-" + id} content={t("editor.picker.type.edit")} delay={TooltipDelay.zero}>
+                        <span style={{opacity:0.4, fontWeight: 'normal', marginLeft: 5, cursor: 'pointer'}} onClick={()=>{
                             const s = {};
                             s[editProp] = true;
                             this.setState(s)}
-                        }
-                    />
-                </TooltipHost>
+                        }>({t("editor.picker.type.link")})</span>
+                    </TooltipHost>
+                }
             </Label>
         );
     }
@@ -144,20 +146,16 @@ class Editor extends React.Component {
     }
 
     render() {
-        const {task, isNew, editRightType, editLeftType, LeftURIInvalid, RightURIInvalid, LeftURIInvalidMsg, RightURIInvalidMsg} = this.state;
+        const {task, isNew, editRightType, editLeftType, editDir, showAdvanced, LeftURIInvalid, RightURIInvalid,
+            LeftURIInvalidMsg, RightURIInvalidMsg, leftServerError, rightServerError} = this.state;
         const {onDismiss, t, socket} = this.props;
         const leftType = parse(task.Config.LeftURI, {}, true)['protocol'].replace(":", "");
         const rightType = parse(task.Config.RightURI, {}, true)['protocol'].replace(":", "");
+        const sectionStyles = {root:{backgroundColor:'rgb(243, 245, 246)', borderRadius: 8, padding: 16, paddingTop: 8}};
         return (
             <div>
                 <Stack vertical tokens={{childrenGap: 8}}>
-                    {!isNew &&
-                        <Stack.Item>
-                            <Label htmlFor={"uuid"}>{t('editor.uuid')}</Label>
-                            <TextField id={"uuid"} readOnly={true} disabled={true} placeholder={t('editor.uuid.placeholder')} value={task.Config.Uuid}/>
-                        </Stack.Item>
-                    }
-                    <Stack.Item>
+                    <Stack.Item styles={sectionStyles}>
                         {this.labelForPicker("left", leftType, editLeftType, "editLeftType")}
                         <EndpointPicker
                             value={task.Config.LeftURI}
@@ -166,9 +164,44 @@ class Editor extends React.Component {
                             socket={socket}
                             onCreateServer={(url) => this.onCreateServer(url, "left")}
                             invalid={LeftURIInvalidMsg}
+                            serverError={leftServerError}
                         />
                     </Stack.Item>
-                    <Stack.Item>
+                    <Stack.Item styles={{root:{display:'flex', alignItems:'center', justifyContent:'center', padding: 5}}}>
+                        {!editDir &&
+                            <TooltipHost
+                                id={"dir-edit"}
+                                content={t("editor.direction." + task.Config.Direction.toLowerCase())}
+                                delay={TooltipDelay.zero}
+                                directionalHint={DirectionalHint.rightCenter}
+                            >
+                                <div
+                                    onClick={()=>{this.setState({editDir: true})}}
+                                    style={{textAlign:'center', cursor:'pointer', fontSize: 20, backgroundColor:'#607D8B', width:40, height: 40, borderRadius: '50%', padding: 8, boxSizing: 'border-box', color:'white'}}>
+                                    <Icon iconName={"Sort" + (task.Config.Direction === 'Bi' ? '' : (task.Config.Direction === 'Right' ? 'Down' : 'Up'))}/>
+                                </div>
+                            </TooltipHost>
+                        }
+                        {editDir &&
+                            <Dropdown
+                                styles={{root:{minWidth:250, padding:4, backgroundColor:'#607D8B', borderRadius: 4}}}
+                                selectedKey={task.Config.Direction}
+                                onChange={(e, item)=>{
+                                    task.Config.Direction = item.key;
+                                    this.setState({editDir: false})
+                                }}
+                                placeholder={t('editor.direction.placeholder')}
+                                onRenderOption={renderOptionWithIcon}
+                                onRenderTitle={renderTitleWithIcon}
+                                options={[
+                                    { key: 'Bi', text: t('editor.direction.bi'), data: { icon: 'Sort' } },
+                                    { key: 'Right', text: t('editor.direction.right'), data: { icon: 'SortDown' } },
+                                    { key: 'Left', text: t('editor.direction.left'), data: { icon: 'SortUp' } },
+                                ]}
+                            />
+                        }
+                    </Stack.Item>
+                    <Stack.Item styles={sectionStyles}>
                         {this.labelForPicker("right", rightType, editRightType, "editRightType")}
                         <EndpointPicker
                             value={task.Config.RightURI}
@@ -177,74 +210,70 @@ class Editor extends React.Component {
                             socket={socket}
                             onCreateServer={(url) => this.onCreateServer(url, "right")}
                             invalid={RightURIInvalidMsg}
+                            serverError={rightServerError}
                         />
                     </Stack.Item>
                 </Stack>
-                <Separator styles={{root:{marginTop: 20}}}>{t('editor.section.advanced')}</Separator>
-                <Stack vertical tokens={{childrenGap: 8}}>
-                    <Stack.Item>
-                        <Dropdown
-                            label={t('editor.direction')}
-                            selectedKey={task.Config.Direction}
-                            onChange={(e, item)=>{task.Config.Direction = item.key}}
-                            placeholder={t('editor.direction.placeholder')}
-                            onRenderOption={renderOptionWithIcon}
-                            onRenderTitle={renderTitleWithIcon}
-                            options={[
-                                { key: 'Bi', text: t('editor.direction.bi'), data: { icon: 'Sort' } },
-                                { key: 'Right', text: t('editor.direction.right'), data: { icon: 'SortDown' } },
-                                { key: 'Left', text: t('editor.direction.left'), data: { icon: 'SortUp' } },
-                            ]}
-                        />
-                    </Stack.Item>
-                    <Stack.Item>
-                        {task.Config.LeftURI &&
-                        <SelectiveFolders leftURI={task.Config.LeftURI} value={task.Config.SelectiveRoots} onChange={(e,v) => {task.Config.SelectiveRoots = v}}/>
-                        }
-                    </Stack.Item>
-                    <Stack.Item>
-                        <Toggle
-                            label={t('editor.triggers.hard')}
-                            defaultChecked={task.Config.HardInterval !== ""}
-                            onText={<span>{t('editor.triggers.hard.enabled').replace('%s', Schedule.makeReadableString(t, Schedule.parseIso8601(task.Config.HardInterval), false))} <Schedule
-                                displayType={"icon"}
-                                hideManual={true}
+                <Separator alignContent={"center"} styles={{root:{marginTop: 20, marginBottom: 20}}}>
+                    <div style={{fontSize: 16, cursor:'pointer'}} onClick={() => {this.setState({showAdvanced:!showAdvanced})}}>{t('editor.section.advanced')} <Icon styles={{root:{fontSize: 11}}} iconName={showAdvanced?"ChevronDown":"ChevronRight"}/></div>
+                </Separator>
+                {showAdvanced &&
+                    <Stack vertical tokens={{childrenGap: 8}} styles={sectionStyles}>
+                        <Stack.Item>
+                            {task.Config.LeftURI &&
+                            <SelectiveFolders leftURI={task.Config.LeftURI} value={task.Config.SelectiveRoots} onChange={(e,v) => {task.Config.SelectiveRoots = v}}/>
+                            }
+                        </Stack.Item>
+                        <Stack.Item>
+                            <Toggle
+                                label={t('editor.triggers.realtime')}
+                                defaultChecked={task.Config.Realtime}
+                                onText={t('editor.triggers.realtime.enabled')}
+                                offText={t('editor.triggers.realtime.disabled')}
+                                onChange={(e, v) => {task.Config.Realtime = v}}
+                            />
+                        </Stack.Item>
+                        <Stack.Item>
+                            {!task.Config.Realtime &&
+                            <Schedule
+                                label={t('editor.triggers.syncloop')}
+                                schedule={task.Config.LoopInterval}
+                                onChange={(v) => {task.Config.LoopInterval = v}}
+                            />
+                            }
+                        </Stack.Item>
+                        <Stack.Item>
+                            <Toggle
                                 label={t('editor.triggers.hard')}
-                                schedule={task.Config.HardInterval}
-                                onChange={(v) => {task.Config.HardInterval = v}}
-                            /></span>}
-                            offText={t('editor.triggers.hard.disabled')}
-                            onChange={(e, v) => {
-                                if (v) {
-                                    const daytime = new Date();
-                                    daytime.setHours(9);
-                                    daytime.setMinutes(0);
-                                    task.Config.HardInterval = Schedule.makeIso8601FromState({frequency:'daily', daytime:daytime});
-                                } else {
-                                    task.Config.HardInterval = "";
-                                }
-                            }}
-                        />
-                    </Stack.Item>
-                    <Stack.Item>
-                        <Toggle
-                            label={t('editor.triggers.realtime')}
-                            defaultChecked={task.Config.Realtime}
-                            onText={t('editor.triggers.realtime.enabled')}
-                            offText={t('editor.triggers.realtime.disabled')}
-                            onChange={(e, v) => {task.Config.Realtime = v}}
-                        />
-                    </Stack.Item>
-                    <Stack.Item>
-                        {!task.Config.Realtime &&
-                        <Schedule
-                            label={t('editor.triggers.syncloop')}
-                            schedule={task.Config.LoopInterval}
-                            onChange={(v) => {task.Config.LoopInterval = v}}
-                        />
+                                defaultChecked={task.Config.HardInterval !== ""}
+                                onText={<span>{t('editor.triggers.hard.enabled').replace('%s', Schedule.makeReadableString(t, Schedule.parseIso8601(task.Config.HardInterval), false))} <Schedule
+                                    displayType={"icon"}
+                                    hideManual={true}
+                                    label={t('editor.triggers.hard')}
+                                    schedule={task.Config.HardInterval}
+                                    onChange={(v) => {task.Config.HardInterval = v}}
+                                /></span>}
+                                offText={t('editor.triggers.hard.disabled')}
+                                onChange={(e, v) => {
+                                    if (v) {
+                                        const daytime = new Date();
+                                        daytime.setHours(9);
+                                        daytime.setMinutes(0);
+                                        task.Config.HardInterval = Schedule.makeIso8601FromState({frequency:'daily', daytime:daytime});
+                                    } else {
+                                        task.Config.HardInterval = "";
+                                    }
+                                }}
+                            />
+                        </Stack.Item>
+                        {!isNew &&
+                        <Stack.Item>
+                            <Label htmlFor={"uuid"}>{t('editor.uuid')}</Label>
+                            <TextField id={"uuid"} readOnly={true} disabled={true} placeholder={t('editor.uuid.placeholder')} value={task.Config.Uuid}/>
+                        </Stack.Item>
                         }
-                    </Stack.Item>
-                </Stack>
+                    </Stack>
+                }
                 <Stack horizontal tokens={{childrenGap: 8}} horizontalAlign="center" styles={{root:{marginTop: 30}}}>
                     <DefaultButton text={t('button.cancel')} onClick={onDismiss}/>
                     <PrimaryButton text={t('button.save')} onClick={() => this.save()} disabled={LeftURIInvalid || RightURIInvalid}/>

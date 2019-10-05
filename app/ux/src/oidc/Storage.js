@@ -48,9 +48,10 @@ class Storage
         const manager = Storage.newManager(url, currentEditState);
         const href = 'http://localhost:' + window.location.port + '/servers/external?manager=' + encodeURI(url);
         if (externalOpen){
-            window.linkOpener.open(href)
+            window.linkOpener.open(href);
+            return Promise.resolve(true);
         } else {
-            manager.signinRedirect();
+            return manager.signinRedirect();
         }
     }
 
