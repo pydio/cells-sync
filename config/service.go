@@ -44,17 +44,6 @@ func ControlAppService(cmd ServiceCmd) error {
 	if s, e := GetAppService(nil); e != nil {
 		return e
 	} else {
-		if cmd == ServiceCmdInstall {
-			// Do not install service but create Startup shortcut(s) instead
-			if sI := GetOSShortcutInstaller(); sI != nil {
-				return sI.Install(ShortcutOptions{Shortcut: true, AutoStart: true})
-			}
-		} else if cmd == ServiceCmdUninstall {
-			// Do not install service but create Startup shortcut(s) instead
-			if sI := GetOSShortcutInstaller(); sI != nil {
-				return sI.Uninstall()
-			}
-		}
 		return service.Control(s, string(cmd))
 	}
 }

@@ -81,7 +81,7 @@ type Debugging struct {
 }
 
 type Service struct {
-	RunAsService bool
+	AutoStart bool
 }
 
 type ShortcutOptions struct {
@@ -92,6 +92,7 @@ type ShortcutOptions struct {
 type ShortcutInstaller interface {
 	Install(options ShortcutOptions) error
 	Uninstall() error
+	IsInstalled() bool
 }
 
 func NewLogs() *Logs {
@@ -106,7 +107,7 @@ func NewLogs() *Logs {
 func NewUpdates() *Updates {
 	return &Updates{
 		Frequency:       "restart",
-		DownloadAuto:    true,
+		DownloadAuto:    false, // Not supported yet
 		UpdateChannel:   UpdateDefaultChannel,
 		UpdateUrl:       UpdateDefaultServerUrl,
 		UpdatePublicKey: UpdateDefaultPublicKey,
@@ -178,19 +179,43 @@ func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debuggin
 	}
 	if service != nil {
 		if g.Service != nil {
-			if service.RunAsService != g.Service.RunAsService {
-				if service.RunAsService {
-					log.Logger(context.Background()).Info("Installing Cells-Sync as service")
-					ControlAppService(ServiceCmdInstall)
-				} else {
-					log.Logger(context.Background()).Info("Uninstalling Cells-Sync as service")
-					ControlAppService(ServiceCmdUninstall)
-				}
+			if service.AutoStart != g.Service.AutoStart {
+				g.setAutoStartValue(service.AutoStart)
 			}
 		}
 		g.Service = service
 	}
 	return Save()
+}
+
+// readAutoStartValue either detects if the app is installed as service or if shortcuts links are created,
+// depending on the platform
+func (g *Global) readAutoStartValue() bool {
+	if sI := GetOSShortcutInstaller(); sI != nil {
+		return sI.IsInstalled()
+	} else {
+		return ServiceInstalled()
+	}
+}
+
+func (g *Global) setAutoStartValue(autoStart bool) error {
+	var e error
+	if sI := GetOSShortcutInstaller(); sI != nil {
+		if autoStart {
+			e = sI.Install(ShortcutOptions{AutoStart: true, Shortcut: true})
+		} else {
+			e = sI.Uninstall()
+		}
+	} else {
+		if autoStart {
+			log.Logger(context.Background()).Info("Installing Cells-Sync as service")
+			e = ControlAppService(ServiceCmdInstall)
+		} else {
+			log.Logger(context.Background()).Info("Uninstalling Cells-Sync as service")
+			e = ControlAppService(ServiceCmdUninstall)
+		}
+	}
+	return e
 }
 
 func (g *Global) Items() (items []string) {
@@ -227,6 +252,8 @@ func Default() *Global {
 		if def.Service == nil {
 			def.Service = &Service{}
 		}
+		// Dynamically read autoStart value
+		def.Service.AutoStart = def.readAutoStartValue()
 		if len(def.Authorities) > 0 {
 			for _, a := range def.Authorities {
 				go monitorToken(a)

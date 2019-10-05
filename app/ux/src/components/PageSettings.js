@@ -101,18 +101,6 @@ class PageSettings extends React.Component {
         return (
             <Page title={t('settings.title')} legend={t('settings.legend')} barItems={cmdBarItems}>
                 <PageBlock style={{paddingBottom: 40}}>
-                    <h3>{t('settings.section.autostart')}</h3>
-                    <Toggle
-                        label={t('settings.autostart.toggle')}
-                        checked={settings.Service.RunAsService}
-                        onText={t('settings.autostart.on')}
-                        offText={t('settings.autostart.off')}
-                        onChange={(e, v) => {
-                            settings.Service.RunAsService = !settings.Service.RunAsService;
-                        }}
-                    />
-                </PageBlock>
-                <PageBlock style={{paddingBottom: 40}}>
                     <h3>{t('settings.section.update')}</h3>
                     <Dropdown
                         label={t('settings.updates.frequency')}
@@ -125,6 +113,7 @@ class PageSettings extends React.Component {
                             { key: 'monthly', text: t('settings.updates.frequency.monthly') },
                         ]}
                     />
+                    {false &&
                     <Toggle
                         label={t('settings.updates.download')}
                         checked={settings.Updates.DownloadAuto}
@@ -134,6 +123,7 @@ class PageSettings extends React.Component {
                             settings.Updates.DownloadAuto = !settings.Updates.DownloadAuto;
                         }}
                     />
+                    }
                     <TextField
                         label={t('settings.updates.server')}
                         placeholder={t('settings.updates.server.placeholder')}
@@ -160,16 +150,19 @@ class PageSettings extends React.Component {
                     />
                 </PageBlock>
                 <PageBlock style={{paddingBottom: 40}}>
-                    <h3>{t('settings.section.logs')}</h3>
+                    <h3>{t('settings.section.autostart')}</h3>
                     <Toggle
-                        label={t('settings.show.debug')}
-                        checked={settings.Debugging.ShowPanels}
-                        onText={t('settings.show.debug.on')}
-                        offText={t('settings.show.debug.off')}
+                        label={t('settings.autostart.toggle')}
+                        checked={settings.Service.AutoStart}
+                        onText={t('settings.autostart.on')}
+                        offText={t('settings.autostart.off')}
                         onChange={(e, v) => {
-                            settings.Debugging.ShowPanels= !settings.Debugging.ShowPanels;
+                            settings.Service.AutoStart = !settings.Service.AutoStart;
                         }}
                     />
+                </PageBlock>
+                <PageBlock style={{paddingBottom: 40}}>
+                    <h3>{t('settings.section.logs')}</h3>
                     <TextField
                         label={t('settings.logs.folder')}
                         placeholder={t('settings.logs.folder.placeholder')}
@@ -195,6 +188,15 @@ class PageSettings extends React.Component {
                         placeholder={t('settings.logs.maxage.placeholder')}
                         value={settings.Logs.MaxAgeDays}
                         onChange={(e, v) => {settings.Logs.MaxAgeDays = parseInt(v)}}
+                    />
+                    <Toggle
+                        label={t('settings.show.debug')}
+                        checked={settings.Debugging.ShowPanels}
+                        onText={t('settings.show.debug.on')}
+                        offText={t('settings.show.debug.off')}
+                        onChange={(e, v) => {
+                            settings.Debugging.ShowPanels= !settings.Debugging.ShowPanels;
+                        }}
                     />
                 </PageBlock>
             </Page>

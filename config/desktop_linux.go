@@ -83,3 +83,12 @@ func (u ubuntuInstaller) Uninstall() error {
 	os.Remove("/usr/share/applications/cells-sync.desktop")
 	return nil
 }
+
+func (u ubuntuInstaller) IsInstalled() bool {
+	us, e := user.Current()
+	if e != nil {
+		return false
+	}
+	_, e = os.Stat(filepath.Join(us.HomeDir, ".config", "autostart", "cells-sync.desktop"))
+	return e == nil
+}

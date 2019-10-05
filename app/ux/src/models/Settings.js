@@ -40,7 +40,7 @@ class Settings {
         ShowPanels: false
     };
     Service =  {
-        RunAsService: false,
+        AutoStart: false,
     };
 
     constructor(data) {

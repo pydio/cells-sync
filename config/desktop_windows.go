@@ -76,3 +76,8 @@ func (w winShortcuts) Install(options ShortcutOptions) error {
 func (w winShortcuts) Uninstall() error {
 	return os.Remove(startupLink)
 }
+
+func (w winShortcuts) IsInstalled() bool {
+	_, e := os.Stat(startupLink)
+	return e == nil
+}
