@@ -34,18 +34,25 @@ class App extends React.Component{
     constructor(props){
         super(props);
         this.state = {
+            firstAttempt: true,
             connected: false,
             maxAttemptsReached: false,
             syncTasks: {},
         };
-        const onStatus = (status) => this.setState({...status});
+        const onStatus = (status) => {
+            const other = {}
+            if(status && status.connected){
+                other.firstAttempt = false;
+            }
+            this.setState({...status, ...other});
+        };
         const onTasks = (tasks) => this.setState({syncTasks: tasks});
         this.state.socket = new Socket(onStatus, onTasks);
         this.state.socket.start();
     }
 
     render(){
-        const {socket, connected, connecting, maxAttemptsReached, syncTasks} = this.state;
+        const {socket, connected, connecting, maxAttemptsReached, firstAttempt, syncTasks} = this.state;
         return (
             <Customizer {...FluentCustomizations}>
                 <Router>
@@ -54,6 +61,7 @@ class App extends React.Component{
                             hidden={connected || location.pathname === "/about"}
                             reconnect={socket.forceReconnect.bind(socket)}
                             connecting={connecting}
+                            firstAttempt={firstAttempt}
                             maxAttemptsReached={maxAttemptsReached}
                             history={history}
                             socket={socket}

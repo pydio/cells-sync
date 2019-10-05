@@ -18,8 +18,7 @@
  */
 import React from 'react'
 import {withTranslation} from 'react-i18next'
-import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
-import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+import { Dialog, DialogType, DialogFooter, Icon, PrimaryButton } from 'office-ui-fabric-react';
 
 class AgentModal extends React.Component {
 
@@ -32,19 +31,35 @@ class AgentModal extends React.Component {
 
     render() {
 
-        const {hidden, connecting, maxAttemptsReached, reconnect, t} = this.props;
-        let dialogText = t('agent.modal.main');
+        const {hidden, firstAttempt, connecting, maxAttemptsReached, reconnect, t} = this.props;
+        const T = (id) => {
+            if(firstAttempt){
+                return t('agent.modal.first.' + id)
+            } else {
+                return t('agent.modal.' + id)
+            }
+        };
+
+        let dialogText = T('main');
         if(maxAttemptsReached) {
-            dialogText += ' ' + t('agent.modal.dead');
+            dialogText += ' ' + T('dead');
         } else {
-            dialogText += ' ' + t('agent.modal.wait');
+            dialogText += ' ' + T('wait');
         }
+        dialogText = (
+            <span>
+                <span style={{display:'flex', justifyContent:'center', marginTop:-20}}>
+                    <Icon styles={{root:{fontSize: 40, color:'#757575'}}} iconName={"PlugDisconnected"}/>
+                </span>
+                <span>{dialogText}</span>
+            </span>
+        );
         return(
             <Dialog
                 hidden={hidden}
                 dialogContentProps={{
                     type: DialogType.normal,
-                    title: t('agent.modal.title'),
+                    title: T('title'),
                     subText: dialogText
                 }}
                 modalProps={{
@@ -55,7 +70,7 @@ class AgentModal extends React.Component {
                 <DialogFooter>
                     <PrimaryButton
                         onClick={() => {reconnect()}}
-                        text={connecting?t('agent.modal.reconnecting'):t('agent.modal.connect')}
+                        text={connecting?T('reconnecting'):T('connect')}
                     />
                 </DialogFooter>
             </Dialog>
