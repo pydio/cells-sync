@@ -136,7 +136,8 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		password, _ := u.User.Password()
 		values := u.Query()
 		normalize := values.Get("normalize") == "true"
-		client, e := s3.NewClient(context.Background(), u.Host, u.User.Username(), password, bucket, rootPath, opts)
+		secure := strings.Contains(u.Hostname(), "amazonaws.com") || values.Get("secure") == "true"
+		client, e := s3.NewClient(context.Background(), u.Host, u.User.Username(), password, bucket, rootPath, secure, opts)
 		if e != nil {
 			return nil, e
 		}
