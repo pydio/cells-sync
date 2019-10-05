@@ -26,6 +26,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/contrib/secure"
+
 	"github.com/pydio/cells/common/sync/model"
 
 	servicecontext "github.com/pydio/cells/common/service/context"
@@ -284,6 +286,14 @@ func (h *HttpServer) Serve() {
 	})
 	Server.Use(gin.Recovery())
 	Server.Use(static.Serve("/", ux.Box))
+	addr, err := config.GetHttpAddress()
+	if err != nil {
+		log.Logger(h.ctx).Error("Cannot start server: " + err.Error())
+		return
+	}
+	Server.Use(secure.Secure(secure.Options{
+		AllowedHosts: []string{addr},
+	}))
 	Server.GET("/status", func(c *gin.Context) {
 		h.WebSocket.HandleRequest(c.Writer, c.Request)
 	})
@@ -311,11 +321,6 @@ func (h *HttpServer) Serve() {
 	Server.GET("/config", h.loadConf)
 	Server.PUT("/config", h.updateConf)
 
-	addr, err := config.GetHttpAddress()
-	if err != nil {
-		log.Logger(h.ctx).Error("Cannot start server: " + err.Error())
-		return
-	}
 	log.Logger(h.ctx).Info("Starting HttpServer on " + addr)
 	if e := http.ListenAndServe(addr, Server); e != nil {
 		log.Logger(h.ctx).Error("Cannot start server: " + e.Error())
