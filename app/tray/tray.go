@@ -23,8 +23,10 @@ package tray
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -47,6 +49,7 @@ var (
 	stateSlots    []*systray.MenuItem
 	activeToggler bool
 	activeDone    chan bool
+	firstRun      bool
 	trayCtx       = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
 )
 
@@ -54,7 +57,19 @@ func Run(url string) {
 	if url != "" {
 		uxUrl = url
 	}
+	checkFirstRun()
 	systray.Run(onReady, onExit)
+}
+
+func checkFirstRun() {
+	if _, e := os.Stat(filepath.Join(config.SyncClientDataDir(), "tray-first-run")); e != nil && os.IsNotExist(e) {
+		firstRun = true
+	}
+}
+
+func disableFirstRun() {
+	firstRun = false
+	ioutil.WriteFile(filepath.Join(config.SyncClientDataDir(), "tray-first-run"), []byte("done"), 0755)
 }
 
 func spawnWebView(path ...string) {
@@ -177,6 +192,12 @@ func onReady() {
 				i := 0
 				if len(tasks) == 0 {
 					setIconIdle()
+				}
+				if firstRun {
+					disableFirstRun()
+					if len(tasks) == 0 {
+						go spawnWebView("/create")
+					}
 				}
 				log.Logger(trayCtx).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
 				var hasError bool
