@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -29,8 +30,9 @@ var (
 )
 
 type Authority struct {
-	Id  string `json:"id"`
-	URI string `json:"uri"`
+	Id                 string `json:"id"`
+	URI                string `json:"uri"`
+	InsecureSkipVerify bool   `json:"insecureSkipVerify"`
 
 	ServerLabel string    `json:"serverLabel"`
 	Username    string    `json:"username"`
@@ -48,6 +50,18 @@ type Authority struct {
 type AuthChange struct {
 	Type      string
 	Authority *Authority
+}
+
+func (a *Authority) getHttpClient() *http.Client {
+	c := http.DefaultClient
+	if a.InsecureSkipVerify {
+		c = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		}
+	}
+	return c
 }
 
 func (a *Authority) RefreshRequired() (in time.Duration, now bool) {
@@ -75,7 +89,7 @@ func (a *Authority) Refresh() error {
 	httpReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	httpReq.Header.Add("Cache-Control", "no-cache")
 
-	client := http.DefaultClient
+	client := a.getHttpClient()
 	res, err := client.Do(httpReq)
 	if err != nil {
 		return err
@@ -107,7 +121,8 @@ func (a *Authority) Refresh() error {
 
 func (a *Authority) LoadInfo() {
 	a.ServerLabel = a.URI
-	if r, e := http.Get(strings.TrimRight(a.URI, "/") + "/a/frontend/bootconf"); e == nil {
+	client := a.getHttpClient()
+	if r, e := client.Get(strings.TrimRight(a.URI, "/") + "/a/frontend/bootconf"); e == nil {
 		var confSample struct {
 			Wording struct {
 				Title      string `json:"title"`

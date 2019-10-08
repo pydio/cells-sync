@@ -97,6 +97,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 			IdToken:      auth.AccessToken,
 			RefreshToken: auth.RefreshToken,
 			ExpiresAt:    auth.ExpiresAt,
+			SkipVerify:   auth.InsecureSkipVerify,
 		}
 		options := cells.Options{
 			EndpointOptions: opts,
