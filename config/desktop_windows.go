@@ -36,6 +36,7 @@ var startupLink = filepath.Join(os.Getenv("APPDATA"), "Microsoft", "Windows", "S
 
 type winShortcuts struct{}
 
+// Install will install .lnk file under APPDATA/Microsoft/Windows/Start Menu/Programms/StartUp.
 func (w winShortcuts) Install(options ShortcutOptions) error {
 
 	runtime.LockOSThread()
@@ -73,10 +74,12 @@ func (w winShortcuts) Install(options ShortcutOptions) error {
 	return err
 }
 
+// Uninstall removes windows .lnk shortcut.
 func (w winShortcuts) Uninstall() error {
 	return os.Remove(startupLink)
 }
 
+// Is Installed checks for .lnk file under APPDATA/Microsoft/Windows/Start Menu/Programms/StartUp.
 func (w winShortcuts) IsInstalled() bool {
 	_, e := os.Stat(startupLink)
 	return e == nil

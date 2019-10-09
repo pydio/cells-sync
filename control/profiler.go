@@ -30,10 +30,12 @@ import (
 	servicecontext "github.com/pydio/cells/common/service/context"
 )
 
+// Profiler is a supervisor service for serving internal golang pprof debugs on 6060
 type Profiler struct {
 	ctx context.Context
 }
 
+// Serve implements supervisor service interface.
 func (p *Profiler) Serve() {
 	p.ctx = servicecontext.WithServiceName(context.Background(), "profiler")
 	p.ctx = servicecontext.WithServiceColor(p.ctx, servicecontext.ServiceColorOther)
@@ -44,6 +46,7 @@ func (p *Profiler) Serve() {
 	select {}
 }
 
+// Stop implements supervisor service interface.
 func (p *Profiler) Stop() {
 	log.Logger(p.ctx).Info("Stopping profiler")
 }

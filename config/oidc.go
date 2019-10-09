@@ -29,6 +29,7 @@ var (
 	oidcContext  = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "oidc"), servicecontext.ServiceColorRest)
 )
 
+// Authority represent an active account where user has logged in using the OpenID Connect workflow.
 type Authority struct {
 	Id                 string `json:"id"`
 	URI                string `json:"uri"`
@@ -47,6 +48,7 @@ type Authority struct {
 	ExpiresAt    int    `json:"expires_at"`
 }
 
+// AuthChange is an event emitted when an Authority is updated.
 type AuthChange struct {
 	Type      string
 	Authority *Authority
@@ -64,6 +66,7 @@ func (a *Authority) getHttpClient() *http.Client {
 	return c
 }
 
+// RefreshRequired checks if the current IdToken is still valid or requires renewal.
 func (a *Authority) RefreshRequired() (in time.Duration, now bool) {
 	expTime := time.Unix(int64(a.ExpiresAt), 0)
 	in = expTime.Sub(time.Now().Add(30 * time.Second))
@@ -74,6 +77,7 @@ func (a *Authority) RefreshRequired() (in time.Duration, now bool) {
 	return
 }
 
+// Refresh uses the RefreshToken to ask for a new IdToken/AccessToken/RefreshToken truple.
 func (a *Authority) Refresh() error {
 
 	log.Logger(oidcContext).Info("Refreshing token for " + a.URI)
@@ -119,6 +123,8 @@ func (a *Authority) Refresh() error {
 	return nil
 }
 
+// LoadInfo performs a REST query to the server to read the application title, and parses the JWT unsafely
+// to just get a display name for the current user.
 func (a *Authority) LoadInfo() {
 	a.ServerLabel = a.URI
 	client := a.getHttpClient()
@@ -205,6 +211,8 @@ func stopMonitoringToken(key string) {
 	monitorsLock.Unlock()
 }
 
+// PublicAuthorities returns the list of Authorities without any sensitive information, and counts the
+// number of active sync tasks on each.
 func (g *Global) PublicAuthorities() []*Authority {
 	var p []*Authority
 	for _, a := range g.Authorities {
@@ -232,6 +240,7 @@ func (g *Global) PublicAuthorities() []*Authority {
 	return p
 }
 
+// CreateAuthority creates or updates an Authority in the config and emits an AuthChange event.
 func (g *Global) CreateAuthority(a *Authority) error {
 	a.LoadInfo()
 	for _, auth := range g.Authorities {
@@ -254,6 +263,7 @@ func (g *Global) CreateAuthority(a *Authority) error {
 	return e
 }
 
+// RemoveAuthority removes an authority from the config and emits an AuthChange event.
 func (g *Global) RemoveAuthority(a *Authority) error {
 	var newAuths []*Authority
 	var notif *Authority
@@ -280,6 +290,7 @@ func (g *Global) RemoveAuthority(a *Authority) error {
 	return nil
 }
 
+// UpdateAuthority updates an Authority in the config and emits an AuthChange event.
 func (g *Global) UpdateAuthority(a *Authority, isRefresh bool) error {
 	if !isRefresh {
 		a.LoginDate = time.Now()

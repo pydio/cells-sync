@@ -28,6 +28,7 @@ import (
 	"github.com/pydio/cells/common/utils/schedule"
 )
 
+// Scheduler is a supervisor service emitting various commands on a timely manner.
 type Scheduler struct {
 	tasks   []*config.Task
 	tickers []*schedule.Ticker
@@ -35,6 +36,7 @@ type Scheduler struct {
 	stop    chan bool
 }
 
+// NewScheduler creates a scheduler and register the schedules from the tasks configs.
 func NewScheduler(tasks []*config.Task) *Scheduler {
 	ctx := context.Background()
 	ctx = servicecontext.WithServiceName(ctx, "scheduler")
@@ -46,6 +48,7 @@ func NewScheduler(tasks []*config.Task) *Scheduler {
 	}
 }
 
+// Serve implements supervisor service interface.
 func (s *Scheduler) Serve() {
 	for _, t := range s.tasks {
 		if t.LoopInterval != "" {
@@ -80,6 +83,7 @@ func (s *Scheduler) Serve() {
 	<-s.stop
 }
 
+// Stop implements supervisor service interface.
 func (s *Scheduler) Stop() {
 	log.Logger(s.logCtx).Info("Stopping all tickers")
 	for _, t := range s.tickers {

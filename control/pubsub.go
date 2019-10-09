@@ -61,10 +61,12 @@ func init() {
 	bus = pubsub.New(1000)
 }
 
+// GetBus returns the global Bus
 func GetBus() *pubsub.PubSub {
 	return bus
 }
 
+// MessageFromString converts string to MessageXXX integers
 func MessageFromString(text string) (int, error) {
 
 	switch text {

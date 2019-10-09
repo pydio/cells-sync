@@ -48,17 +48,24 @@ type TreeRequest struct {
 	endpoint         model.Endpoint
 }
 
+// TreeResponse is a fake protobuf used for marshaling responses to tree requests.
 type TreeResponse struct {
 	Node     *tree.Node
 	Children []*tree.Node
 }
 
+// ProtoMessage implements Proto() interface
 func (l *TreeResponse) ProtoMessage() {}
-func (l *TreeResponse) Reset()        {}
+
+// Reset implements Proto() interface
+func (l *TreeResponse) Reset() {}
+
+// String implements Proto() interface
 func (l *TreeResponse) String() string {
 	return ""
 }
 
+// MarshalJSON uses jsonpb for marshaling struct to JSON
 func (l *TreeResponse) MarshalJSON() ([]byte, error) {
 	encoder := jsonpb.Marshaler{}
 	buffer := bytes.NewBuffer(nil)

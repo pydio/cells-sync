@@ -8,6 +8,7 @@ import (
 	"syscall"
 )
 
+// killableSpawn explicity kills a process by PID on Windows
 func killableSpawn(executable string, args []string) (*exec.Cmd, context.CancelFunc) {
 	cmd := exec.Command(executable, args...)
 	cancel := func() {

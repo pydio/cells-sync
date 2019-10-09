@@ -41,6 +41,7 @@ type ubuntuTplConf struct {
 	Executable  string
 }
 
+// Install will install .desktop files under /usr/share/applications/ and ${HOME}/.config/autostart on Linux.
 func (u ubuntuInstaller) Install(options ShortcutOptions) error {
 	cwd, _ := os.Getwd()
 	conf := &ubuntuTplConf{
@@ -74,6 +75,7 @@ func (u ubuntuInstaller) Install(options ShortcutOptions) error {
 	return nil
 }
 
+// Uninstall removes .desktop files on Linux.
 func (u ubuntuInstaller) Uninstall() error {
 	us, e := user.Current()
 	if e != nil {
@@ -84,6 +86,7 @@ func (u ubuntuInstaller) Uninstall() error {
 	return nil
 }
 
+// IsInstall looks for user .desktop file under ${HOME}/.config/autostart folder.
 func (u ubuntuInstaller) IsInstalled() bool {
 	us, e := user.Current()
 	if e != nil {

@@ -29,6 +29,7 @@ func getPath() string {
 	return filepath.Join(SyncClientDataDir(), "config.json")
 }
 
+// LoadFromFile loads a Global config from a JSON file.
 func LoadFromFile() (*Global, error) {
 	data, err := ioutil.ReadFile(getPath())
 	if err != nil {
@@ -42,6 +43,7 @@ func LoadFromFile() (*Global, error) {
 	}
 }
 
+// WriteToFile stores a Global config JSON-encoded.
 func WriteToFile(config *Global) error {
 	data, e := json.Marshal(config)
 	if e != nil {

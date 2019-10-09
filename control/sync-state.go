@@ -41,6 +41,7 @@ func compareURI(status, config string) bool {
 	return sU.Scheme == cU.Scheme && sU.Host == cU.Host && sU.Path == cU.Path
 }
 
+// StateStore is used to maintain the states of the sync tasks
 type StateStore interface {
 	LastState() common.SyncState
 	BothConnected() bool
@@ -55,12 +56,14 @@ type StateStore interface {
 	UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState
 }
 
+// MemoryStateStore keeps all SyncStates in memory.
 type MemoryStateStore struct {
 	sync.Mutex
 	config *config.Task
 	state  common.SyncState
 }
 
+// NewMemoryStateStore creates a MemoryStateStore.
 func NewMemoryStateStore(config *config.Task) *MemoryStateStore {
 	s := &MemoryStateStore{
 		config: config,
@@ -75,14 +78,17 @@ func NewMemoryStateStore(config *config.Task) *MemoryStateStore {
 	return s
 }
 
+// Close closes the state store
 func (b *MemoryStateStore) Close() {}
 
+// LastState returns the last known state of the task.
 func (b *MemoryStateStore) LastState() common.SyncState {
 	b.Lock()
 	defer b.Unlock()
 	return b.state
 }
 
+// TouchLastOps updates the time of last known operation.
 func (b *MemoryStateStore) TouchLastOpsTime(t ...time.Time) {
 	b.Lock()
 	if len(t) > 0 {
@@ -93,6 +99,7 @@ func (b *MemoryStateStore) TouchLastOpsTime(t ...time.Time) {
 	b.Unlock()
 }
 
+// UpdateSyncStatus updates the internal status.
 func (b *MemoryStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
@@ -100,6 +107,7 @@ func (b *MemoryStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState
 	return b.state
 }
 
+// UpdateProcessStatus updates the status of one endpoint. It is recognized based on its EndpointURI.
 func (b *MemoryStateStore) UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
@@ -118,6 +126,7 @@ func (b *MemoryStateStore) UpdateProcessStatus(processStatus model.Status, statu
 	return b.state
 }
 
+// UpdateConnection updates the connection status of one endpoint.
 func (b *MemoryStateStore) UpdateConnection(c bool, i model.EndpointInfo) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
@@ -130,6 +139,7 @@ func (b *MemoryStateStore) UpdateConnection(c bool, i model.EndpointInfo) common
 	return b.state
 }
 
+// UpdateWatcherActivity updates the watcher status of one endpoint.
 func (b *MemoryStateStore) UpdateWatcherActivity(a bool, i model.EndpointInfo) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
@@ -139,6 +149,7 @@ func (b *MemoryStateStore) UpdateWatcherActivity(a bool, i model.EndpointInfo) c
 	return b.state
 }
 
+// UpdateEndpointStats updates the statistics about the root of one endpoint.
 func (b *MemoryStateStore) UpdateEndpointStats(s *model.EndpointRootStat, i model.EndpointInfo) common.SyncState {
 	b.Lock()
 	defer b.Unlock()
@@ -165,12 +176,16 @@ func (b *MemoryStateStore) internalInfoFromEndpointInfo(info model.EndpointInfo)
 	return nil, false
 }
 
+// BothConnected returns true if both Endpoints have a connected status.
 func (b *MemoryStateStore) BothConnected() bool {
 	b.Lock()
 	defer b.Unlock()
 	return b.state.LeftInfo.Connected && b.state.RightInfo.Connected
 }
 
+// FileStateStore extends MemoryStore by storing the Status inside a file that stays open.
+// It is used at restart to check if the last processing state was Idle, otherwise something may have been
+// stopped in the middle and we trigger a full resync.
 type FileStateStore struct {
 	MemoryStateStore
 	PreviousState model.TaskStatus
@@ -182,6 +197,7 @@ type FileStateStore struct {
 	fileClosed bool
 }
 
+// NewFileStateStore creates a FileStateStore with the state file in the target folder.
 func NewFileStateStore(config *config.Task, folderPath string) *FileStateStore {
 	m := NewMemoryStateStore(config)
 	f := &FileStateStore{
@@ -199,6 +215,7 @@ func NewFileStateStore(config *config.Task, folderPath string) *FileStateStore {
 	return f
 }
 
+// UpdateSyncStatus stores the status in the state file
 func (f *FileStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
 	if f.FileError == nil && f.state.Status != s {
 		go func() {
@@ -210,6 +227,7 @@ func (f *FileStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
 	return f.MemoryStateStore.UpdateSyncStatus(s)
 }
 
+// UpdateProcessStatus stores the status in the state file
 func (f *FileStateStore) UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState {
 	if f.FileError == nil && len(status) > 0 && f.state.Status != status[0] {
 		go func() {
@@ -221,6 +239,7 @@ func (f *FileStateStore) UpdateProcessStatus(processStatus model.Status, status 
 	return f.MemoryStateStore.UpdateProcessStatus(processStatus, status...)
 }
 
+// Close closes the state file
 func (f *FileStateStore) Close() {
 	f.MemoryStateStore.Close()
 	close(f.done)

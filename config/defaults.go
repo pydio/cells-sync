@@ -33,6 +33,7 @@ const (
 	UpdateDefaultPublicKey = "-----BEGIN PUBLIC KEY-----\nMIIBCgKCAQEAwh/ofjZTITlQc4h/qDZMR3RquBxlG7UTunDKLG85JQwRtU7EL90v\nlWxamkpSQsaPeqho5Q6OGkhJvZkbWsLBJv6LZg+SBhk6ZSPxihD+Kfx8AwCcWZ46\nDTpKpw+mYnkNH1YEAedaSfJM8d1fyU1YZ+WM3P/j1wTnUGRgebK9y70dqZEo2dOK\nn98v3kBP7uEN9eP/wig63RdmChjCpPb5gK1/WKnY4NFLQ60rPAOBsXurxikc9N/3\nEvbIB/1vQNqm7yEwXk8LlOC6Fp8W/6A0DIxr2BnZAJntMuH2ulUfhJgw0yJalMNF\nDR0QNzGVktdLOEeSe8BSrASe9uZY2SDbTwIDAQAB\n-----END PUBLIC KEY-----"
 )
 
+// Global is the main struct representing configs.
 type Global struct {
 	Tasks       []*Task
 	Authorities []*Authority
@@ -43,11 +44,13 @@ type Global struct {
 	changes     []chan interface{}
 }
 
+// TaskChange is an event sent when something changes inside the configs tasks.
 type TaskChange struct {
 	Type string
 	Task *Task
 }
 
+// Tasks represents a sync task configuration.
 type Task struct {
 	Uuid           string
 	Label          string
@@ -61,6 +64,7 @@ type Task struct {
 	HardInterval string
 }
 
+// Logs represents the logs configuration.
 type Logs struct {
 	Folder         string
 	MaxFilesNumber int
@@ -68,6 +72,7 @@ type Logs struct {
 	MaxAgeDays     int
 }
 
+// Updates represents the update-mechanism configuration.
 type Updates struct {
 	Frequency       string
 	DownloadAuto    bool
@@ -76,25 +81,30 @@ type Updates struct {
 	UpdatePublicKey string
 }
 
+// Debugging is a simple section for showing/hiding special debug panels.
 type Debugging struct {
 	ShowPanels bool
 }
 
+// Service is a simple section for enabling/disabling shortcuts or service (depending on OS).
 type Service struct {
 	AutoStart bool
 }
 
+// ShortcutOptions defines where to create shortcuts.
 type ShortcutOptions struct {
 	Shortcut  bool
 	AutoStart bool
 }
 
+// ShortcutInstaller provides tools for installing / removing os-shortcuts for automatic startup.
 type ShortcutInstaller interface {
 	Install(options ShortcutOptions) error
 	Uninstall() error
 	IsInstalled() bool
 }
 
+// NewLogs creates defaults for Logs.
 func NewLogs() *Logs {
 	return &Logs{
 		Folder:         filepath.Join(SyncClientDataDir(), "logs"),
@@ -104,6 +114,7 @@ func NewLogs() *Logs {
 	}
 }
 
+// NewUpdates creates defaults for Updates.
 func NewUpdates() *Updates {
 	return &Updates{
 		Frequency:       "restart",
@@ -114,6 +125,7 @@ func NewUpdates() *Updates {
 	}
 }
 
+// CreateTask adds a Task to the config and emits a TaskChange event "create".
 func (g *Global) CreateTask(t *Task) error {
 	g.Tasks = append(g.Tasks, t)
 	e := Save()
@@ -127,6 +139,7 @@ func (g *Global) CreateTask(t *Task) error {
 	return e
 }
 
+// RemoveTask removes a Task from the config and emits a TaskChange event "remove".
 func (g *Global) RemoveTask(task *Task) error {
 	var newTasks []*Task
 	for _, t := range g.Tasks {
@@ -146,6 +159,7 @@ func (g *Global) RemoveTask(task *Task) error {
 	return e
 }
 
+// UpdateTask updates a Task inside the config and emits a TaskChange event "update".
 func (g *Global) UpdateTask(task *Task) error {
 	var newTasks []*Task
 	for _, t := range g.Tasks {
@@ -167,6 +181,7 @@ func (g *Global) UpdateTask(task *Task) error {
 	return e
 }
 
+// UpdateGlobals updates various sections of config (each parameter can be nil).
 func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debugging, service *Service) error {
 	if logs != nil {
 		g.Logs = logs
@@ -189,7 +204,7 @@ func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debuggin
 }
 
 // readAutoStartValue either detects if the app is installed as service or if shortcuts links are created,
-// depending on the platform
+// depending on the platform.
 func (g *Global) readAutoStartValue() bool {
 	if sI := GetOSShortcutInstaller(); sI != nil {
 		return sI.IsInstalled()
@@ -198,6 +213,7 @@ func (g *Global) readAutoStartValue() bool {
 	}
 }
 
+// setAutoStartValue tries to call a ShortcutInstaller or to install a service, depending on the OS.
 func (g *Global) setAutoStartValue(autoStart bool) error {
 	var e error
 	if sI := GetOSShortcutInstaller(); sI != nil {
@@ -218,6 +234,7 @@ func (g *Global) setAutoStartValue(autoStart bool) error {
 	return e
 }
 
+// Items provides a readable list of labels representing sync tasks stored in config.
 func (g *Global) Items() (items []string) {
 	for _, t := range g.Tasks {
 		dir := "<=>"
@@ -233,6 +250,7 @@ func (g *Global) Items() (items []string) {
 
 var def *Global
 
+// Default provides a usable config object. It is loaded from a JSON file.
 func Default() *Global {
 	if def == nil {
 		if c, e := LoadFromFile(); e == nil {
@@ -263,10 +281,12 @@ func Default() *Global {
 	return def
 }
 
+// Save writes the config to the JSON file.
 func Save() error {
 	return WriteToFile(def)
 }
 
+// Watch provides a chan emitting events on config changes.
 func Watch() chan interface{} {
 	changes := make(chan interface{})
 	def.changes = append(def.changes, changes)

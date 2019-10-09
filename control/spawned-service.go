@@ -12,6 +12,7 @@ import (
 	"github.com/pydio/cells/common/log"
 )
 
+// SpawnedService is a supervisor service for launching a command and automatically restarting if it fails.
 type SpawnedService struct {
 	name   string
 	args   []string
@@ -19,6 +20,7 @@ type SpawnedService struct {
 	logCtx context.Context
 }
 
+// NewSpawnedService creates a SpawnedService
 func NewSpawnedService(name string, args []string) *SpawnedService {
 	s := &SpawnedService{
 		name: name,
@@ -30,6 +32,7 @@ func NewSpawnedService(name string, args []string) *SpawnedService {
 	return s
 }
 
+// Serve implements supervisor service interface.
 func (c *SpawnedService) Serve() {
 	log.Logger(c.logCtx).Info("Starting sub-process with args " + strings.Join(c.args, " "))
 	pName := config.ProcessName(os.Args[0])
@@ -64,6 +67,7 @@ func (c *SpawnedService) Serve() {
 	}
 }
 
+// Stop implements supervisor service interface.
 func (c *SpawnedService) Stop() {
 	if c.cancel != nil {
 		c.cancel()

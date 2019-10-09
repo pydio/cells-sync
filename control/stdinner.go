@@ -28,10 +28,12 @@ import (
 	servicecontext "github.com/pydio/cells/common/service/context"
 )
 
+// StdInner is a supervisor service for scanning StdIn
 type StdInner struct {
 	ctx context.Context
 }
 
+// Serve implements supervisor service interface.
 func (s *StdInner) Serve() {
 
 	s.ctx = servicecontext.WithServiceName(context.Background(), "scanner")
@@ -55,6 +57,7 @@ func (s *StdInner) Serve() {
 
 }
 
+// Stop implements supervisor service interface.
 func (s *StdInner) Stop() {
 	log.Logger(s.ctx).Info("Stopping StdIn Scanner")
 }

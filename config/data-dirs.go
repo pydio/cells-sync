@@ -27,6 +27,7 @@ import (
 	"github.com/shibukawa/configdir"
 )
 
+// SyncClientDataDir finds the user directory where to store all application data
 func SyncClientDataDir() string {
 
 	vendor := "Pydio"

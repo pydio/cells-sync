@@ -57,6 +57,7 @@ type HttpServer struct {
 	logWriter *io.PipeWriter
 }
 
+// NewHttpServer creates a supervisor service for spinning the http server.
 func NewHttpServer() *HttpServer {
 	httpServerCtx := servicecontext.WithServiceName(context.Background(), "http-server")
 	httpServerCtx = servicecontext.WithServiceColor(httpServerCtx, servicecontext.ServiceColorRest)
@@ -84,15 +85,18 @@ func NewHttpServer() *HttpServer {
 	return h
 }
 
+// Sync implements the io.Writer method.
 func (h *HttpServer) Sync() error {
 	return nil
 }
 
+// Write implements the io.Writer method (used by logs).
 func (h *HttpServer) Write(p []byte) (n int, err error) {
 	go h.logWriter.Write(p)
 	return len(p), nil
 }
 
+// InitHandlers initialize WebSocket handlers.
 func (h *HttpServer) InitHandlers() {
 
 	h.LogSocket = melody.New()
@@ -235,6 +239,8 @@ func (h *HttpServer) drop(s common.SyncState) bool {
 	return false
 }
 
+// ListenStatus is hooked to the general Bus to listen for SyncStates and UpdateMessages.
+// It should be called as a goroutine
 func (h *HttpServer) ListenStatus() {
 	statuses := GetBus().Sub(TopicState, TopicUpdate)
 	for {
@@ -262,6 +268,8 @@ func (h *HttpServer) ListenStatus() {
 	}
 }
 
+// ListenAuthorities listens to a config watcher for transmitting Authority changes.
+// It should be called as a goroutine.
 func (h *HttpServer) ListenAuthorities() {
 	watches := config.Watch()
 	for w := range watches {
@@ -273,6 +281,7 @@ func (h *HttpServer) ListenAuthorities() {
 	}
 }
 
+// Serve implements supervisor service interface. It basically starts the http server.
 func (h *HttpServer) Serve() {
 
 	h.done = make(chan bool)
@@ -327,6 +336,7 @@ func (h *HttpServer) Serve() {
 	}
 }
 
+// Stop implements supervisor service interface.
 func (h *HttpServer) Stop() {
 	h.done <- true
 }

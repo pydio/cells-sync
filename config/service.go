@@ -32,6 +32,7 @@ func (p *ServiceProgram) Stop(s service.Service) error {
 	return nil
 }
 
+// GetAppService returns a usable kardianos Service.
 func GetAppService(runner func()) (service.Service, error) {
 	if ServiceConfig.Name == "" {
 		return nil, fmt.Errorf("Background service is not supported on this OS")
@@ -40,6 +41,7 @@ func GetAppService(runner func()) (service.Service, error) {
 	return service.New(prg, ServiceConfig)
 }
 
+// ControlAppService sends a command to the service.
 func ControlAppService(cmd ServiceCmd) error {
 	if s, e := GetAppService(nil); e != nil {
 		return e
@@ -48,6 +50,7 @@ func ControlAppService(cmd ServiceCmd) error {
 	}
 }
 
+// AllowedServiceCmd returns a list of acceptable commands for ControlAppService function.
 func AllowedServiceCmd(s string) bool {
 	for _, c := range []string{"start", "stop", "restart", "install", "uninstall"} {
 		if c == s {
@@ -57,10 +60,13 @@ func AllowedServiceCmd(s string) bool {
 	return false
 }
 
+// NotRunningAsService overrides service.Interactive() function by additionally checking if service
+// is really installed, as on MacOS the .app is launched by "launchd" just like the service.
 func NotRunningAsService() bool {
 	return service.Interactive() || (runtime.GOOS == "darwin" && !ServiceInstalled())
 }
 
+// ServiceInstalled checks if background service is installed.
 func ServiceInstalled() bool {
 	s, e := GetAppService(nil)
 	if e != nil {
@@ -72,6 +78,7 @@ func ServiceInstalled() bool {
 	return false
 }
 
+// Status returns the status of the background service.
 func Status() (service.Status, error) {
 	s, e := GetAppService(nil)
 	if e != nil {
