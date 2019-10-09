@@ -176,9 +176,10 @@ type FileStateStore struct {
 	PreviousState model.TaskStatus
 	FileError     error
 
-	filePath  string
-	fileState chan model.TaskStatus
-	done      chan bool
+	filePath   string
+	fileState  chan model.TaskStatus
+	done       chan bool
+	fileClosed bool
 }
 
 func NewFileStateStore(config *config.Task, folderPath string) *FileStateStore {
@@ -201,7 +202,9 @@ func NewFileStateStore(config *config.Task, folderPath string) *FileStateStore {
 func (f *FileStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
 	if f.FileError == nil && f.state.Status != s {
 		go func() {
-			f.fileState <- s
+			if !f.fileClosed {
+				f.fileState <- s
+			}
 		}()
 	}
 	return f.MemoryStateStore.UpdateSyncStatus(s)
@@ -210,7 +213,9 @@ func (f *FileStateStore) UpdateSyncStatus(s model.TaskStatus) common.SyncState {
 func (f *FileStateStore) UpdateProcessStatus(processStatus model.Status, status ...model.TaskStatus) common.SyncState {
 	if f.FileError == nil && len(status) > 0 && f.state.Status != status[0] {
 		go func() {
-			f.fileState <- status[0]
+			if !f.fileClosed {
+				f.fileState <- status[0]
+			}
 		}()
 	}
 	return f.MemoryStateStore.UpdateProcessStatus(processStatus, status...)
@@ -232,6 +237,9 @@ func (f *FileStateStore) readLastState() model.TaskStatus {
 }
 
 func (f *FileStateStore) listenToState(file *os.File) {
+	defer func() {
+		close(f.fileState)
+	}()
 	for {
 		select {
 		case s := <-f.fileState:
@@ -240,7 +248,7 @@ func (f *FileStateStore) listenToState(file *os.File) {
 			file.Sync()
 		case <-f.done:
 			file.Close()
-			close(f.fileState)
+			f.fileClosed = true
 			return
 		}
 	}
