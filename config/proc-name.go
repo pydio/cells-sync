@@ -8,7 +8,7 @@ import (
 )
 
 func ProcessName(name string) string {
-	if os.Getenv("CELLS_SYNC_IN_PATH") == "true" {		
+	if os.Getenv("CELLS_SYNC_IN_PATH") == "true" {
 		return name
 	}
 	dir, _ := os.Getwd()

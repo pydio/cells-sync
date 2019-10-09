@@ -28,7 +28,7 @@ var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display version",
 	Run: func(cmd *cobra.Command, args []string) {
-		common.PrintVersion("Cells Sync")
+		common.PrintVersion()
 	},
 }
 

@@ -41,6 +41,7 @@ var (
 	PackageLabel  = "Cells Sync Client"
 )
 
+// EndpointInfo provides information about a connection to an endpoint
 type EndpointInfo struct {
 	Stats          *model.EndpointRootStat
 	Connected      bool
@@ -48,6 +49,7 @@ type EndpointInfo struct {
 	LastConnection time.Time
 }
 
+// SyncState provides information about a sync task
 type SyncState struct {
 	// Sync Process
 	UUID   string
@@ -65,7 +67,7 @@ type SyncState struct {
 	RightInfo *EndpointInfo
 }
 
-// Used for unmarshaling
+// ConcreteSyncState is used for unmarshaling
 type ConcreteSyncState struct {
 	// Sync Process
 	UUID   string
@@ -83,16 +85,19 @@ type ConcreteSyncState struct {
 	RightInfo *EndpointInfo
 }
 
+// Message is a generic container for RPC
 type Message struct {
 	Type    string
 	Content interface{}
 }
 
+// CmdContent is a generic container for a Cmd sent via RPC
 type CmdContent struct {
 	UUID string
 	Cmd  string
 }
 
+// ConfigContent is a generic container for a Config sent via RPV
 type ConfigContent struct {
 	Cmd       string
 	Task      *config.Task
@@ -103,25 +108,35 @@ type ConfigContent struct {
 type UpdateMessage interface {
 	UpdateMessage()
 }
+
+// UpdateCheckRequest triggers a check for updates
 type UpdateCheckRequest struct {
 	Check   bool
 	Version bool
 }
+
+// UpdateVersion is a binary available for update
 type UpdateVersion struct {
 	PackageName string
 	Version     string
 	Revision    string
 	BuildStamp  string
 }
+
+// UpdateCheckStatus provides a list of available binaries
 type UpdateCheckStatus struct {
 	CheckStatus string
 	Binaries    []*update.Package
 	Error       string `json:"error,omitempty"`
 }
+
+// UpdateApplyRequest triggers an actual update
 type UpdateApplyRequest struct {
 	Package *update.Package
 	DryRun  bool
 }
+
+// UpdateApplyStatus is a response to an UpdateApplyRequest
 type UpdateApplyStatus struct {
 	ApplyStatus string
 	Package     *update.Package
@@ -135,6 +150,7 @@ func (u *UpdateCheckStatus) UpdateMessage()  {}
 func (u *UpdateApplyRequest) UpdateMessage() {}
 func (u *UpdateApplyStatus) UpdateMessage()  {}
 
+// Bytes returns json-marshaled content of the message
 func (m *Message) Bytes() []byte {
 	d, e := json.Marshal(m)
 	if e != nil {
@@ -143,6 +159,7 @@ func (m *Message) Bytes() []byte {
 	return d
 }
 
+// MessageFromData parses generic Message from JSON and tries to cast its content to the according type.
 func MessageFromData(d []byte) *Message {
 	var m Message
 	if e := json.Unmarshal(d, &m); e == nil {
@@ -199,7 +216,8 @@ func MessageFromData(d []byte) *Message {
 
 }
 
-func PrintVersion(appName string) {
+// PrintVersion prints information about the current build
+func PrintVersion() {
 
 	var t time.Time
 	if BuildStamp != "" {
