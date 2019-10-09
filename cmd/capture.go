@@ -38,6 +38,7 @@ var (
 	captureTarget string
 )
 
+// CaptureCmd captures snapshots inside JSON file - do not perform any actual tasks
 var CaptureCmd = &cobra.Command{
 	Use:   "capture",
 	Short: "Capture snapshots inside JSON file - do not perform any actual tasks",

@@ -28,12 +28,15 @@ import (
 
 var url string
 
+// LinkOpener is bound to JS inside the webview
 type LinkOpener struct{}
 
+// Open opens an url (http or file) using OS stuff.
 func (w *LinkOpener) Open(url string) {
 	open.Run(url)
 }
 
+// WebviewCmd opens a webview pointing to the http server URL.
 var WebviewCmd = &cobra.Command{
 	Use:   "webview",
 	Short: "Launch WebView",

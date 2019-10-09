@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// SystrayCmd starts the System Tray
 var SystrayCmd = &cobra.Command{
 	Use:   "systray",
 	Short: "Launch Systray",

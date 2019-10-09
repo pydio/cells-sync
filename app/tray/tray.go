@@ -53,6 +53,7 @@ var (
 	trayCtx       = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
 )
 
+// Run opens the system tray
 func Run(url string) {
 	if url != "" {
 		uxUrl = url
@@ -61,6 +62,7 @@ func Run(url string) {
 	systray.Run(onReady, onExit)
 }
 
+// checkFirstRun looks for a specific file to automatically open the webview at first run.
 func checkFirstRun() {
 	if _, e := os.Stat(filepath.Join(config.SyncClientDataDir(), "tray-first-run")); e != nil && os.IsNotExist(e) {
 		firstRun = true

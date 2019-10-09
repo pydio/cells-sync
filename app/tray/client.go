@@ -17,6 +17,7 @@ import (
 	"github.com/pydio/cells/common/service"
 )
 
+// StatusMessage provides an int representation of Connected/Disconnected status
 type StatusMessage int
 
 const (
@@ -24,6 +25,7 @@ const (
 	StatusDisconnected
 )
 
+// Client is an auto-reconnecting WebSocket client connected to the http server.
 type Client struct {
 	sync.Mutex
 	conn    *websocket.Conn
@@ -35,6 +37,7 @@ type Client struct {
 	tasks   map[string]*common.ConcreteSyncState
 }
 
+// NewClient creates a client
 func NewClient() *Client {
 	c := &Client{
 		Status: make(chan StatusMessage, 10),
@@ -46,6 +49,7 @@ func NewClient() *Client {
 	return c
 }
 
+// Reconnect tries a reconnection of the WebSocket link.
 func (c *Client) Reconnect() {
 	if err := ws.Connect(); err == nil {
 		return
@@ -66,6 +70,7 @@ func (c *Client) Reconnect() {
 	}()
 }
 
+// Connect opens a link to the WebSocket
 func (c *Client) Connect() error {
 	parsed, _ := url.Parse(uxUrl)
 	if parsed.Scheme == "https" {
@@ -87,6 +92,7 @@ func (c *Client) Connect() error {
 	}, 6*time.Second, 30*time.Second)
 }
 
+// Close closes the WebSocket connection
 func (c *Client) Close() {
 	c.closing = true
 	if c.conn != nil {
@@ -95,6 +101,7 @@ func (c *Client) Close() {
 	}
 }
 
+// SendOrderedTasks sends the lists of tasks
 func (c *Client) SendOrderedTasks() {
 	var tasks []*common.ConcreteSyncState
 	c.Lock()
@@ -160,6 +167,7 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 	conn.WriteJSON(&common.Message{Type: "PING"})
 }
 
+// SendCmd sends a command via the WebSocket
 func (c *Client) SendCmd(content *common.CmdContent) {
 	if c.conn != nil {
 		if e := c.conn.WriteJSON(&common.Message{Type: "CMD", Content: content}); e == nil {
@@ -169,6 +177,8 @@ func (c *Client) SendCmd(content *common.CmdContent) {
 	log.Logger(trayCtx).Error("No active connection for sending message")
 }
 
+// SendRoute sends a target route to the websocket. When the WebView is already opened, it will switch the
+// current screen instead of reopening the webview.
 func (c *Client) SendRoute(route string) {
 	if c.conn != nil {
 		if e := c.conn.WriteJSON(&common.Message{Type: "WEBVIEW_ROUTE", Content: route}); e == nil {
@@ -178,6 +188,8 @@ func (c *Client) SendRoute(route string) {
 	log.Logger(trayCtx).Error("No active connection for sending message")
 }
 
+// SendHalt sends a Quit command to the server. The parent process of the systray should be then killed by the server.
+// If send fails or if it is still running after 3 seconds, quit directly this process.
 func (c *Client) SendHalt() {
 	if viewCancel != nil {
 		viewCancel()

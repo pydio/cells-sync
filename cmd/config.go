@@ -40,6 +40,7 @@ func exit(err error) {
 	os.Exit(0)
 }
 
+// AddCmd adds a task to the config via the command line
 var AddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new sync",
@@ -93,6 +94,7 @@ Example
 	},
 }
 
+// EditCmd edits a task via the command line
 var EditCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Exit existing sync",
@@ -126,6 +128,7 @@ var EditCmd = &cobra.Command{
 	},
 }
 
+// DeleteCmd removes a task via the command line.
 var DeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete existing sync",

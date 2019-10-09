@@ -39,6 +39,7 @@ import (
 
 var autoTestSkipClean bool
 
+// AutoTestCmd performs a simple test of a unidirectional sync between two local folders (created inside TmpDir)
 var AutoTestCmd = &cobra.Command{
 	Use:  "autotest",
 	Long: "Performs a simple test of a unidirectional sync between two local folders (created inside TmpDir)",

@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// RootCmd is the Cobra root command
 var RootCmd = &cobra.Command{
 	Use:   os.Args[0],
 	Short: "Cells Sync desktop client",

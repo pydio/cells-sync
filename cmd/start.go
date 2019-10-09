@@ -39,6 +39,7 @@ func runner() {
 	s.Serve()
 }
 
+// StartCmd starts the client.
 var StartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start sync tasks",

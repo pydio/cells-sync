@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// VersionCmd displays the current binary version
 var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display version",

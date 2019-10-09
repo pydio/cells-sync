@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ServiceCmd provides access to the service install, uninstall, start, stop commands.
 var ServiceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Manage service: install,uninstall,stop,start,restart",
