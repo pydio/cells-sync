@@ -54,6 +54,7 @@ func (p patchSorter) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
 
+// PatchStore is a persistence layer for storing patches. It is based on BoltDB
 type PatchStore struct {
 	patches  chan merger.Patch
 	done     chan bool
@@ -66,6 +67,7 @@ type PatchStore struct {
 	folderPath string
 }
 
+// NewPatchStore opens a new PatchStore
 func NewPatchStore(folderPath string, source model.Endpoint, target model.Endpoint) (*PatchStore, error) {
 	p := &PatchStore{
 		patches: make(chan merger.Patch),
@@ -92,6 +94,7 @@ func NewPatchStore(folderPath string, source model.Endpoint, target model.Endpoi
 	return p, nil
 }
 
+// Store pushes the patch to the DB.
 func (p *PatchStore) Store(patch merger.Patch) {
 	p.patches <- patch
 }
@@ -135,6 +138,7 @@ func (p *PatchStore) unmarshalConflict(data []byte, op merger.Operation) (merger
 	return conflict, nil
 }
 
+// Load list all patches
 func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 	var stamps patchSorter
 
@@ -214,6 +218,7 @@ func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 	return
 }
 
+// Stop closes the DB.
 func (p *PatchStore) Stop() {
 	close(p.done)
 	if p.pipeDone != nil {

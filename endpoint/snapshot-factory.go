@@ -31,6 +31,7 @@ import (
 	"github.com/pydio/cells/common/sync/model"
 )
 
+// SnapshotFactory implements model.SnapshotProvider interface for persisting snapshots in a BoltDB.
 type SnapshotFactory struct {
 	sync.Mutex
 	snaps      map[string]model.Snapshoter
@@ -38,6 +39,7 @@ type SnapshotFactory struct {
 	configPath string
 }
 
+// NewSnapshotFactory opens a new SnapshotFactory.
 func NewSnapshotFactory(configPath string, left model.Endpoint, right model.Endpoint) model.SnapshotFactory {
 	uris := map[string]string{
 		left.GetEndpointInfo().URI:  "left",
@@ -67,6 +69,7 @@ func (f *SnapshotFactory) Load(source model.PathSyncSource) (model.Snapshoter, e
 	return s, nil
 }
 
+// Close closes the BoltDB.
 func (f *SnapshotFactory) Close(ctx context.Context) error {
 	for _, name := range []string{"left", "right"} {
 		if s, ok := f.snaps[name]; ok {

@@ -49,12 +49,14 @@ import (
 	"github.com/pydio/cells/common/utils/net"
 )
 
+// Updater is a supervisor service for checking for available updates
 type Updater struct {
 	ctx   context.Context
 	done  chan bool
 	debug bool
 }
 
+// NewUpdater creates a new Updater service
 func NewUpdater() *Updater {
 	ctx := servicecontext.WithServiceName(context.Background(), "update.service")
 	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
@@ -322,6 +324,7 @@ func (u *Updater) dispatch(done chan bool) {
 	}
 }
 
+// Serve implements supervisor interface.
 func (u *Updater) Serve() {
 	log.Logger(u.ctx).Info("Starting Updater Service")
 	dispatchFinished := make(chan bool, 1)
@@ -336,6 +339,7 @@ func (u *Updater) Serve() {
 	close(dispatchFinished)
 }
 
+// Stop implements supervisor interface.
 func (u *Updater) Stop() {
 	log.Logger(u.ctx).Info("Stopping Updater Service")
 	u.done <- true

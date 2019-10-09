@@ -37,6 +37,7 @@ import (
 	"github.com/pydio/cells/common/sync/task"
 )
 
+// Syncer is a supervisor service wrapping a sync task.
 type Syncer struct {
 	task    *task.Sync
 	stop    chan bool
@@ -61,6 +62,7 @@ type Syncer struct {
 	cleanAllAfterStop   bool
 }
 
+// NewSyncer creates a new running sync task.
 func NewSyncer(conf *config.Task) (syncer *Syncer) {
 
 	var startError error
@@ -408,6 +410,7 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 
 }
 
+// Serve implements supervisor interface.
 func (s *Syncer) Serve() {
 
 	ctx := s.serviceCtx
@@ -457,6 +460,7 @@ func (s *Syncer) Serve() {
 
 }
 
+// Stop implements supervisor interface.
 func (s *Syncer) Stop() {
 	s.stop <- true
 }

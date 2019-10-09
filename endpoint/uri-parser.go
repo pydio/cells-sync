@@ -153,6 +153,8 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 
 }
 
+// DefaultDirForURI tries to find a default directory to display to user when they choose a specific endpoint.
+// Currently only used for FS, returning ${HOMEDIR}/Cells
 func DefaultDirForURI(uri string) string {
 	p, e := url.Parse(uri)
 	if e != nil {
