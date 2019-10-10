@@ -1,5 +1,3 @@
-// +build !darwin
-
 /*
  * Copyright 2019 Abstrium SAS
  *
@@ -30,21 +28,13 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells-sync/control"
 	"github.com/pydio/cells/common/log"
 )
 
-var startNoUi bool
-
-func runner() {
-	s := control.NewSupervisor(startNoUi)
-	s.Serve()
-}
-
 // StartCmd starts the client.
-var StartCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Start sync tasks",
+var BgStartCmd = &cobra.Command{
+	Use:   "bgstart",
+	Short: "Start sync tasks from within service",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logs := config.Default().Logs
 		os.MkdirAll(logs.Folder, 0755)
@@ -56,12 +46,24 @@ var StartCmd = &cobra.Command{
 		}))
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		s := control.NewSupervisor(startNoUi)
-		s.Serve()
+		config.SetMacService(true)
+		s, err := config.GetAppService(runner)
+		if err != nil {
+			log.Fatal(err.Error())
+			return
+		}
+		l, err := s.Logger(nil)
+		if err != nil {
+			log.Fatal(err.Error())
+			return
+		}
+		err = s.Run()
+		if err != nil {
+			l.Error(err)
+		}
 	},
 }
 
 func init() {
-	StartCmd.Flags().BoolVar(&startNoUi, "headless", false, "Start sync tasks without UI components")
-	RootCmd.AddCommand(StartCmd)
+	RootCmd.AddCommand(BgStartCmd)
 }

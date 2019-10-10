@@ -1,5 +1,3 @@
-// +build !darwin
-
 /*
  * Copyright 2019 Abstrium SAS
  *
@@ -22,8 +20,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/net/context"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
@@ -56,8 +57,13 @@ var StartCmd = &cobra.Command{
 		}))
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		s := control.NewSupervisor(startNoUi)
-		s.Serve()
+		if config.ServiceInstalled() {
+			log.Logger(context.Background()).Info("Sending service start command")
+			config.ControlAppService(config.ServiceCmdStart)
+		} else {
+			log.Logger(context.Background()).Info(fmt.Sprintf("Starting runner with Parent ID %d", os.Getppid()))
+			runner()
+		}
 	},
 }
 

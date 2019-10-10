@@ -21,6 +21,7 @@
 package config
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/pydio/cells/common/log"
@@ -195,7 +196,9 @@ func (g *Global) UpdateGlobals(logs *Logs, updates *Updates, debugging *Debuggin
 	if service != nil {
 		if g.Service != nil {
 			if service.AutoStart != g.Service.AutoStart {
-				g.setAutoStartValue(service.AutoStart)
+				if e := g.setAutoStartValue(service.AutoStart); e != nil {
+					service.AutoStart = g.Service.AutoStart
+				}
 			}
 		}
 		g.Service = service
@@ -227,8 +230,9 @@ func (g *Global) setAutoStartValue(autoStart bool) error {
 			log.Logger(context.Background()).Info("Installing Cells-Sync as service")
 			e = ControlAppService(ServiceCmdInstall)
 		} else {
-			log.Logger(context.Background()).Info("Uninstalling Cells-Sync as service")
-			e = ControlAppService(ServiceCmdUninstall)
+			//e = ControlAppService(ServiceCmdUninstall)
+			log.Logger(context.Background()).Info("We should uninstall Cells-Sync as service but it stops the current process!")
+			return fmt.Errorf("cannot uninstall service from within the application")
 		}
 	}
 	return e

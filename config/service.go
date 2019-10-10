@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"runtime"
 
 	"github.com/kardianos/service"
 )
@@ -14,6 +13,8 @@ const ServiceCmdStop ServiceCmd = "stop"
 const ServiceCmdRestart ServiceCmd = "restart"
 const ServiceCmdInstall ServiceCmd = "install"
 const ServiceCmdUninstall ServiceCmd = "uninstall"
+
+var macService = false
 
 type ServiceProgram struct {
 	runner func()
@@ -60,10 +61,14 @@ func AllowedServiceCmd(s string) bool {
 	return false
 }
 
+func SetMacService(s bool) {
+	macService = s
+}
+
 // NotRunningAsService overrides service.Interactive() function by additionally checking if service
 // is really installed, as on MacOS the .app is launched by "launchd" just like the service.
-func NotRunningAsService() bool {
-	return service.Interactive() || (runtime.GOOS == "darwin" && !ServiceInstalled())
+func RunningAsService() bool {
+	return macService //  service.Interactive() || (runtime.GOOS == "darwin" && !ServiceInstalled())
 }
 
 // ServiceInstalled checks if background service is installed.
