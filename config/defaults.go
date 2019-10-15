@@ -278,6 +278,7 @@ func Default() *Global {
 		def.Service.AutoStart = def.readAutoStartValue()
 		if len(def.Authorities) > 0 {
 			for _, a := range def.Authorities {
+				a.AfterLoad()
 				go monitorToken(a)
 			}
 		}
@@ -287,7 +288,13 @@ func Default() *Global {
 
 // Save writes the config to the JSON file.
 func Save() error {
-	return WriteToFile(def)
+	// Copy def and update Authorities before saving
+	toSave := *def
+	toSave.Authorities = []*Authority{}
+	for _, a := range def.Authorities {
+		toSave.Authorities = append(toSave.Authorities, a.BeforeSave())
+	}
+	return WriteToFile(&toSave)
 }
 
 // Watch provides a chan emitting events on config changes.
