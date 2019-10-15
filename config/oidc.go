@@ -275,6 +275,7 @@ func (g *Global) RemoveAuthority(a *Authority) error {
 		}
 	}
 	if notif != nil {
+		ClearKeyring(notif)
 		g.Authorities = newAuths
 		e := Save()
 		if e == nil {
@@ -319,4 +320,25 @@ func (g *Global) UpdateAuthority(a *Authority, isRefresh bool) error {
 		}()
 	}
 	return e
+}
+
+// BeforeSave tries to save tokens in keyring and returns a copy of the Authority without tokens
+func (a *Authority) BeforeSave() *Authority {
+	// Filter token to place them in keyring
+	if a.IdToken != "" && a.RefreshToken != "" {
+		if b, err := AuthToKeyring(*a); err == nil {
+			return &b
+		}
+	}
+	return a
+}
+
+// AfterLoad tries to read tokens from keyring and replace them in the Authority
+func (a *Authority) AfterLoad() {
+	// Load tokens from keyring if possible
+	if b, err := AuthFromKeyring(*a); err == nil {
+		a.IdToken = b.IdToken
+		a.AccessToken = b.AccessToken
+		a.RefreshToken = b.RefreshToken
+	}
 }
