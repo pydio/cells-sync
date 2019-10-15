@@ -29,6 +29,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/pydio/cells-sync/common"
+
 	"github.com/pydio/cells-sync/config"
 
 	"github.com/pydio/cells/common/sync/endpoints/cells"
@@ -93,11 +95,12 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		}
 		// Warning, we use the ACCESSS TOKEN as IdToken
 		conf := cells.RemoteConfig{
-			Url:          fmt.Sprintf("%s://%s", u.Scheme, u.Host),
-			IdToken:      auth.AccessToken,
-			RefreshToken: auth.RefreshToken,
-			ExpiresAt:    auth.ExpiresAt,
-			SkipVerify:   auth.InsecureSkipVerify,
+			Url:           fmt.Sprintf("%s://%s", u.Scheme, u.Host),
+			IdToken:       auth.AccessToken,
+			RefreshToken:  auth.RefreshToken,
+			ExpiresAt:     auth.ExpiresAt,
+			SkipVerify:    auth.InsecureSkipVerify,
+			CustomHeaders: map[string]string{"User-Agent": "cells-sync/" + common.Version},
 		}
 		options := cells.Options{
 			EndpointOptions: opts,
