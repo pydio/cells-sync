@@ -50,6 +50,7 @@ var (
 	activeToggler bool
 	activeDone    chan bool
 	firstRun      bool
+	pauseToggle   bool
 	trayCtx       = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
 )
 
@@ -151,6 +152,13 @@ func setIconError() {
 	systray.SetIcon(iconErrorData)
 }
 
+func setIconPause() {
+	if activeDone != nil {
+		close(activeDone)
+	}
+	systray.SetIcon(iconPauseData)
+}
+
 func onReady() {
 	systray.SetIcon(iconData)
 	setIconActive()
@@ -158,6 +166,7 @@ func onReady() {
 	systray.SetTooltip(i18n.T("application.title"))
 	mOpen := systray.AddMenuItem(i18n.T("tray.menu.open"), i18n.T("tray.menu.open.legend"))
 	mOpen.Disable()
+	mPause := systray.AddMenuItem(i18n.T("main.all.pause"), i18n.T("main.all.pause.legend"))
 	systray.AddSeparator()
 	// Prepare slots for tasks
 	for i := 0; i < 10; i++ {
@@ -168,8 +177,6 @@ func onReady() {
 	mNewTasks := systray.AddMenuItem(i18n.T("main.create"), i18n.T("main.create.legend"))
 	systray.AddSeparator()
 	mResync := systray.AddMenuItem(i18n.T("main.all.resync"), i18n.T("main.all.resync.legend"))
-	pauseToggle := false
-	mPause := systray.AddMenuItem(i18n.T("main.all.pause"), i18n.T("main.all.pause.legend"))
 	mAbout := systray.AddMenuItem(i18n.T("nav.about"), "")
 	mQuit := systray.AddMenuItem(i18n.T("tray.menu.exit"), i18n.T("tray.menu.exit.legend"))
 	ws = NewClient()
@@ -216,6 +223,7 @@ func onReady() {
 				log.Logger(trayCtx).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
 				var hasError bool
 				var hasProcessing bool
+				allPaused := true
 				for _, t := range tasks {
 					label := t.Config.Label
 					switch t.Status {
@@ -234,6 +242,7 @@ func onReady() {
 						label += " (" + i18n.T("tray.task.status.disconnected") + ")"
 						hasError = true
 					}
+					allPaused = allPaused && (t.Status == model.TaskStatusPaused)
 					stateSlots[i].SetTitle(label)
 					stateSlots[i].SetTooltip(t.Config.Uuid)
 					stateSlots[i].Show()
@@ -258,6 +267,16 @@ func onReady() {
 					if k >= len(tasks) {
 						slot.Hide()
 					}
+				}
+				if allPaused {
+					setIconPause()
+					mPause.SetTitle(i18n.T("main.all.resume"))
+					mPause.SetTooltip(i18n.T("main.all.resume.legend"))
+					pauseToggle = true
+				} else {
+					mPause.SetTitle(i18n.T("main.all.pause"))
+					mPause.SetTooltip(i18n.T("main.all.pause.legend"))
+					pauseToggle = false
 				}
 			case e := <-ws.Errors:
 				log.Logger(trayCtx).Error("Received error from client " + e.Error())
@@ -292,14 +311,9 @@ func onReady() {
 			case <-mPause.ClickedCh:
 				if pauseToggle {
 					ws.SendCmd(&common.CmdContent{Cmd: "resume"})
-					mPause.SetTitle(i18n.T("main.all.pause"))
-					mPause.SetTooltip(i18n.T("main.all.pause.legend"))
 				} else {
 					ws.SendCmd(&common.CmdContent{Cmd: "pause"})
-					mPause.SetTitle(i18n.T("main.all.resume"))
-					mPause.SetTooltip(i18n.T("main.all.resume.legend"))
 				}
-				pauseToggle = !pauseToggle
 			case <-mQuit.ClickedCh:
 				log.Logger(trayCtx).Info("Closing systray now...")
 				ws.SendHalt()
