@@ -44,7 +44,7 @@ import (
 var (
 	viewCancel    context.CancelFunc
 	uxUrl         = "http://localhost:3636"
-	closing       bool
+	cancelling    bool
 	ws            *Client
 	stateSlots    []*systray.MenuItem
 	activeToggler bool
@@ -76,11 +76,17 @@ func disableFirstRun() {
 
 func spawnWebView(path ...string) {
 	if viewCancel != nil {
-		// It is already opened - do nothing
-		if len(path) > 0 {
-			ws.SendRoute(path[0])
-		}
-		return
+		// It is already opened, but probably out of sight. Close and reopen
+		viewCancel()
+		viewCancel = nil
+		<-time.After(200 * time.Millisecond)
+		/*
+			// Or other option : send a message to change page
+				if len(path) > 0 {
+					ws.SendRoute(path[0])
+				}
+				return
+		*/
 	}
 	c, cancel := context.WithCancel(context.Background())
 	url := uxUrl
@@ -90,9 +96,13 @@ func spawnWebView(path ...string) {
 	cmd := exec.CommandContext(c, config.ProcessName(os.Args[0]), "webview", "--url", url)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
-	viewCancel = cancel
+	viewCancel = func() {
+		cancelling = true
+		cancel()
+	}
+	cancelling = false
 	if e := cmd.Run(); e != nil {
-		if !closing {
+		if !cancelling {
 			log.Logger(trayCtx).Error("Error while starting WebView - Opening in browser instead: " + e.Error())
 			open.Run(uxUrl)
 		}
@@ -158,6 +168,8 @@ func onReady() {
 	mNewTasks := systray.AddMenuItem(i18n.T("main.create"), i18n.T("main.create.legend"))
 	systray.AddSeparator()
 	mResync := systray.AddMenuItem(i18n.T("main.all.resync"), i18n.T("main.all.resync.legend"))
+	pauseToggle := false
+	mPause := systray.AddMenuItem(i18n.T("main.all.pause"), i18n.T("main.all.pause.legend"))
 	mAbout := systray.AddMenuItem(i18n.T("nav.about"), "")
 	mQuit := systray.AddMenuItem(i18n.T("tray.menu.exit"), i18n.T("tray.menu.exit.legend"))
 	ws = NewClient()
@@ -277,6 +289,17 @@ func onReady() {
 				go spawnWebView("/")
 			case <-mResync.ClickedCh:
 				ws.SendCmd(&common.CmdContent{Cmd: "loop"})
+			case <-mPause.ClickedCh:
+				if pauseToggle {
+					ws.SendCmd(&common.CmdContent{Cmd: "resume"})
+					mPause.SetTitle(i18n.T("main.all.pause"))
+					mPause.SetTooltip(i18n.T("main.all.pause.legend"))
+				} else {
+					ws.SendCmd(&common.CmdContent{Cmd: "pause"})
+					mPause.SetTitle(i18n.T("main.all.resume"))
+					mPause.SetTooltip(i18n.T("main.all.resume.legend"))
+				}
+				pauseToggle = !pauseToggle
 			case <-mQuit.ClickedCh:
 				log.Logger(trayCtx).Info("Closing systray now...")
 				ws.SendHalt()
@@ -289,7 +312,6 @@ func onReady() {
 }
 
 func beforeExit() {
-	closing = true
 	if ws != nil {
 		ws.Close()
 	}
