@@ -32,9 +32,11 @@ class EndpointPicker extends React.Component {
 
     constructor(props){
         super(props);
+        const {value} = props;
         this.state = {
             auths:[],
             dialog: false,
+            createServer: value === "http://",
             pathDisabled: this.pathIsDisabled(parse(props.value, {}, true)),
         };
     }
@@ -137,7 +139,7 @@ class EndpointPicker extends React.Component {
             const parsed = parse(id, {}, true);
             return { key: id, text: `${parsed.host} (${username})`, data:parsed}
         });
-        authValues.push({key:'__CREATE__', text:t('server.create.legend')});
+        authValues.unshift({key:'__CREATE__', text:t('server.create.legend')});
 
         return (
             <React.Fragment>

@@ -32,6 +32,8 @@ import {
 } from 'office-ui-fabric-react';
 import moment from 'moment'
 import parse from "url-parse";
+import {withRouter} from 'react-router-dom'
+
 /*
 const sampleServer = {
     uri:"http://local.pydio:8080",
@@ -103,11 +105,20 @@ class AccountsList extends Component{
 
     }
 
-    deleteServer(id){
+    deleteServer(s){
         const {t} = this.props;
-        if(window.confirm(t('task.action.delete.confirm'))){
-            Storage.getInstance(this.props.socket).deleteServer(id);
+        if (s.tasksCount > 0) {
+            window.alert(t('server.delete.action.cannot'));
+            return
         }
+        if(window.confirm(t('server.delete.action.confirm'))){
+            Storage.getInstance(this.props.socket).deleteServer(s.id);
+        }
+    }
+
+    createSyncTask(id){
+        const {history} = this.props;
+        history.push('/create?id=' + id);
     }
 
     refreshLogin(serverUrl){
@@ -136,7 +147,7 @@ class AccountsList extends Component{
             text:t('server.create'),
             title:t('server.create.legend'),
             primary:true,
-            iconProps:{iconName:'Add'},
+            iconProps:{iconName:'CloudAdd'},
             onClick:()=>{this.setState({addMode: true})},
         };
         let content;
@@ -166,10 +177,13 @@ class AccountsList extends Component{
                             </div>
                             <div style={styles.serverActions}>
                                 <TooltipHost id={"button-refresh"} key={"button-refresh"} content={t('server.refresh.button')} delay={TooltipDelay.zero}>
-                                    <IconButton iconProps={{iconName:'Refresh'}} onClick={()=>{this.refreshLogin(s.uri)}} styles={styles.buttons}/>
+                                    <IconButton iconProps={{iconName:'UserSync'}} onClick={()=>{this.refreshLogin(s.uri)}} styles={styles.buttons}/>
+                                </TooltipHost>
+                                <TooltipHost id={"button-add"} key={"button-add"} content={t('server.add-task.button')} delay={TooltipDelay.zero}>
+                                    <IconButton iconProps={{iconName:'SyncFolder'}} onClick={()=>{this.createSyncTask(s.id)}} styles={styles.buttons}/>
                                 </TooltipHost>
                                 <TooltipHost id={"button-delete"} key={"button-delete"} content={t('server.delete.button')} delay={TooltipDelay.zero}>
-                                    <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s.id)}} styles={styles.buttons} disabled={s.tasksCount > 0}/>
+                                    <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s)}} styles={styles.buttons}/>
                                 </TooltipHost>
                             </div>
                         </div>
@@ -196,6 +210,7 @@ class AccountsList extends Component{
 
 }
 
+AccountsList = withRouter(AccountsList);
 AccountsList = withTranslation()(AccountsList);
 
 export default AccountsList;

@@ -51,6 +51,13 @@ class Editor extends React.Component {
             localStorage.removeItem("Editor.SavedState");
         }
         t = JSON.parse(JSON.stringify(t));
+        if(isNew) {
+            // Pre-select server if page is called via /create?id=serverID
+            const p = parse(window.location.href, {}, true);
+            if(p.query && p.query["id"]) {
+                t.Config.LeftURI = p.query["id"];
+            }
+        }
         const proxy = ObservableSlim.create(t, true, () => {
             this.setState({task: proxy});
         });
@@ -60,7 +67,9 @@ class Editor extends React.Component {
             this.state.RightURIInvalid = true;
             DefaultDirLoader.getInstance().onDefaultDir().then(defaultPath => {
                 if(defaultPath){
-                    proxy.Config.RightURI += defaultPath;
+                    const p = parse(proxy.Config.RightURI, {}, true);
+                    p.set('pathname', defaultPath);
+                    proxy.Config.RightURI = p.toString();
                     this.setState({RightURIInvalid: false});
                 }
             })

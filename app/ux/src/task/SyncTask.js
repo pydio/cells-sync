@@ -154,11 +154,11 @@ class SyncTask extends React.Component {
 
                 return (
                     <Fragment>
-                        {LastProcessStatus &&
+                        {LastProcessStatus && LastProcessStatus.StatusString !== "Idle" &&
                             <span>{LastProcessStatus.StatusString}</span>
                         }
                         {LastSyncTime && LastSyncTime !== emptyTime &&
-                            <span> - {t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>
+                            <span>{t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>
                         }
                         {LastOpsTime && LastOpsTime !== emptyTime &&
                             <span> - {t('task.last-ops')} : <Link onClick={()=>{this.setState({lastPatch:true})}}>{moment(LastOpsTime).fromNow()}</Link></span>
