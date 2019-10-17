@@ -42,16 +42,26 @@ class TreeDialog extends React.Component {
         }
     }
 
+    onError(err) {
+        if (err){
+            // Try to translate error message
+            const {t} = this.props;
+            this.setState({errorMessage: t(err.message)});
+        } else {
+            this.setState({errorMessage: null});
+        }
+    }
+
     render() {
         const {uri, t, initialSelection, unique, allowCreate, ...dialogProps} = this.props;
-        const {error} = this.state;
+        const {errorMessage} = this.state;
         return (
             <Dialog {...dialogProps} minWidth={700} title={t('tree.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
                 <DialogContent styles={{innerContent:{minHeight: 400}, inner:{padding:0}, title:{display:'none'}}}>
                     <ScrollablePane styles={{contentContainer:{maxHeight:400, backgroundColor:'#fafafa'}}}>
-                        {error &&
-                        <MessageBar messageBarType={MessageBarType.error} isMultiline={false} onDismiss={()=>{this.setState({error: null})}} dismissButtonAriaLabel="Dismiss">
-                            {error.message}
+                        {errorMessage &&
+                        <MessageBar messageBarType={MessageBarType.error} isMultiline={false} onDismiss={()=>{this.setState({errorMessage: null})}} dismissButtonAriaLabel="Dismiss">
+                            {errorMessage}
                         </MessageBar>
                         }
                         {uri &&
@@ -60,7 +70,7 @@ class TreeDialog extends React.Component {
                                 uri={uri}
                                 allowCreate={allowCreate}
                                 initialSelection={initialSelection}
-                                onError={(err) => {this.setState({error: err})}}
+                                onError={this.onError.bind(this)}
                                 onSelectionChanged={(sel) => {this.setState({selection: sel})}}
                             />
                         }

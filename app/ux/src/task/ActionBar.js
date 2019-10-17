@@ -60,7 +60,7 @@ class ActionBar extends React.Component {
             {key:'more', iconName:'MoreVertical', menu:[
                 { key:'resync', disabled: disabled, iconName:'SyncToPC'},
                 { key: paused ? 'resume' : 'pause', iconName: paused?'PlayResume': 'Pause'},
-                { key: 'edit', iconName: 'Edit'},
+                { key: 'edit', iconName: 'Settings'},
                 { key: 'delete', iconName: 'Delete' }
             ]}
         );
