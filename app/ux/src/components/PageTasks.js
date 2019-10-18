@@ -80,7 +80,7 @@ class PageTasks extends Component {
                         onClick:()=>history.push('create'),
                     });
                     return (
-                        <Page title={""} barItems={cmdBarItems}>
+                        <Page title={t("nav.tasks")} barItems={cmdBarItems}>
                             {tasksArray.map(task =>
                                 <SyncTask
                                     key={task.Config.Uuid}
