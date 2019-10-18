@@ -33,6 +33,14 @@ h1, h2, h3, h4, h5, .ms-Dialog-title {
     font-weight: normal !important;
 }
 
+.ms-ContextualMenu-icon{
+    margin-top: 5px !important;
+}
+
+.ms-TextField-fieldGroup > i {
+    bottom: 3px;
+}
+
 @font-face {
     font-family: 'Roboto';
     src: local('Roboto'), url(./fonts/roboto.woff) format('woff');

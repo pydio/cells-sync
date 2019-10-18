@@ -93,14 +93,14 @@ class NavMenu extends React.Component {
                 backgroundColor:'transparent',
                 selectors:{
                     "& .ms-Button":{height: 40},
-                    "&.is-selected .ms-Button":{backgroundColor:'white'},
+                    "&.is-selected .ms-Button":{backgroundColor:'white', fontFamily:'Roboto Medium'},
                     "& .ms-Button-icon":{color: colors.icon},
                 }
             },
             link:{
                 backgroundColor:'transparent',
                 color: colors.title,
-                fontFamily: 'Roboto Medium'
+                fontFamily: 'Roboto Medium',
             }
         };
 
