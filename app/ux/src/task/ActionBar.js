@@ -66,7 +66,7 @@ class ActionBar extends React.Component {
         );
         const buttonStyles = {
             root:{borderRadius: '50%', width: 48, height: 48, backgroundColor: '#F5F5F5', padding: '0 8px;'},
-            icon:{fontSize: 24},
+            icon:{fontSize: 24, height: 24},
             menuIcon:{display:'none'}};
 
         return (

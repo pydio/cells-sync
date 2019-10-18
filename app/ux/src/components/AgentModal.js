@@ -66,6 +66,7 @@ class AgentModal extends React.Component {
                     isBlocking: true,
                     styles: { main: { maxWidth: 450 } },
                 }}
+
             >
                 <DialogFooter>
                     <PrimaryButton
