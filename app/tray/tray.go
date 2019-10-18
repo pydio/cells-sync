@@ -27,6 +27,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -42,16 +43,17 @@ import (
 )
 
 var (
-	viewCancel    context.CancelFunc
-	uxUrl         = "http://localhost:3636"
-	cancelling    bool
-	ws            *Client
-	stateSlots    []*systray.MenuItem
-	activeToggler bool
-	activeDone    chan bool
-	firstRun      bool
-	pauseToggle   bool
-	trayCtx       = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
+	viewCancel context.CancelFunc
+	uxUrl      = "http://localhost:3636"
+	cancelling bool
+	ws         *Client
+	stateSlots []*systray.MenuItem
+
+	firstRun    bool
+	pauseToggle bool
+	trayCtx     = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
+
+	ErrNotSupported = fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 )
 
 // Run opens the system tray
@@ -110,53 +112,6 @@ func spawnWebView(path ...string) {
 	}
 	// Clear cancel after Run finish
 	viewCancel = nil
-}
-
-func setIconActive() {
-	if activeDone != nil {
-		// already active
-		return
-	}
-	activeDone = make(chan bool, 1)
-	go func() {
-		defer func() {
-			activeDone = nil
-		}()
-		for {
-			select {
-			case <-time.After(750 * time.Millisecond):
-				if !activeToggler {
-					systray.SetIcon(iconActiveData)
-				} else {
-					systray.SetIcon(iconActive2Data)
-				}
-				activeToggler = !activeToggler
-			case <-activeDone:
-				return
-			}
-		}
-	}()
-}
-
-func setIconIdle() {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	systray.SetIcon(iconData)
-}
-
-func setIconError() {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	systray.SetIcon(iconErrorData)
-}
-
-func setIconPause() {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	systray.SetIcon(iconPauseData)
 }
 
 func onReady() {
@@ -220,7 +175,6 @@ func onReady() {
 						go spawnWebView("/create")
 					}
 				}
-				log.Logger(trayCtx).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
 				var hasError bool
 				var hasProcessing bool
 				allPaused := true
@@ -252,7 +206,7 @@ func onReady() {
 						stateSlots[i].Enable()
 					}
 					if hasError {
-						setIconError()
+						setIconError(label)
 					} else if hasProcessing {
 						setIconActive()
 					} else {
