@@ -63,7 +63,7 @@ export default class EndpointLabel extends React.Component {
                 overflow: 'hidden',
             },
             type: {
-                padding: '6px 10px 0px 8px',
+                padding: '8px 10px 0px 8px',
                 backgroundColor: '#607D8B',
                 color: 'white',
                 fontSize: 20,
@@ -86,7 +86,8 @@ export default class EndpointLabel extends React.Component {
             },
             labelInt: {
                 paddingLeft: 10,
-                fontSize: 18,
+                fontSize: 16,
+                fontFamily:'Roboto Medium',
                 color: '#607D8B',
             },
             pg: {
@@ -113,12 +114,12 @@ export default class EndpointLabel extends React.Component {
             openIcon: {
                 display:'none',
                 color: '#60748B',
-                padding: '11px',
+                padding: '11px 11px 6px',
                 cursor: 'pointer'
             },
             errorIcon: {
                 color: errorColor,
-                padding: '11px',
+                padding: '11px 11px 6px',
                 cursor: 'pointer'
             }
         };

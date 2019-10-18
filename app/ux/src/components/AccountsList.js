@@ -66,6 +66,7 @@ const styles = {
     },
     buttons: {
         root:{borderRadius: '50%', width: 48, height: 48, backgroundColor: '#F5F5F5', padding: '0 8px;', margin: '0 5px'},
+        rootDisabled:{backgroundColor:'#fafafa'},
         icon:{fontSize: 24, height: 24},
         menuIcon:{display:'none'}
     },
@@ -172,7 +173,7 @@ class AccountsList extends Component{
                                 <h4 style={{margin:'10px 0'}}>{s.uri}</h4>
                                 <div style={{lineHeight:'1.5em'}}>
                                     {t('server.info.description').replace('%1', s.username).replace('%2', moment(new Date(s.loginDate)).fromNow())}.<br/>
-                                    {s.tasksCount > 0 ? ( s.tasksCount === 1 ? t('server.tasksCount.one') : t('server.tasksCount.plural').replace('%s', s.tasksCount)) : t('server.tasksCount.zero')}
+                                    {s.tasksCount > 0 ? ( s.tasksCount === 1 ? t('server.tasksCount.one') : t('server.tasksCount.plural').replace('%', s.tasksCount)) : t('server.tasksCount.zero')}
                                 </div>
                             </div>
                             <div style={styles.serverActions}>
@@ -183,7 +184,7 @@ class AccountsList extends Component{
                                     <IconButton iconProps={{iconName:'SyncFolder'}} onClick={()=>{this.createSyncTask(s.id)}} styles={styles.buttons}/>
                                 </TooltipHost>
                                 <TooltipHost id={"button-delete"} key={"button-delete"} content={t('server.delete.button')} delay={TooltipDelay.zero}>
-                                    <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s)}} styles={styles.buttons}/>
+                                    <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s)}} styles={styles.buttons} disabled={s.tasksCount > 0}/>
                                 </TooltipHost>
                             </div>
                         </div>

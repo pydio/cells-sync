@@ -28,8 +28,8 @@ import EditorPanel from "./components/EditorPanel";
 import Socket from "./models/Socket"
 import { registerIcons } from '@uifabric/styling';
 import {AccountCircleOutlined, Sync, Description, Code, InfoOutlined, SettingsOutlined, FlagOutlined,
-    KeyboardArrowDown, KeyboardArrowUp, KeyboardArrowRight, KeyboardArrowLeft, WarningRounded,
-    ErrorOutline, DeleteOutline, AddCircleOutline,
+    KeyboardArrowDown, KeyboardArrowUp, KeyboardArrowRight, KeyboardArrowLeft,
+    ErrorOutlineOutlined, DeleteOutline, AddCircleOutline,
     PlayArrow, Pause, Stop, SaveOutlined, SettingsBackupRestoreOutlined, MoreVert, OpenInNew,
     CloseOutlined, SyncAltOutlined, ArrowRightAltOutlined, PersonAddOutlined, Replay, Edit,
     FolderOpen, FolderOpenOutlined, CreateNewFolder, ArrowForward, Check,
@@ -50,7 +50,7 @@ registerIcons({
         'ServerEnviroment':<WifiTetheringOutlined style={{fontSize:'1em'}}/>,
         'Close':<CloseOutlined style={{fontSize:'1em'}}/>,
         'Cancel':<CloseOutlined style={{fontSize:'1em'}}/>,
-        'Warning':<WarningRounded style={{fontSize:'1em'}}/>,
+        'Warning':<ErrorOutlineOutlined style={{fontSize:'1em'}}/>,
         'Sort':<SyncAltOutlined style={{fontSize:'1em', transform:'rotate(90deg)'}}/>,
         'SortDown':<ArrowRightAltOutlined style={{fontSize:'1em', transform:'rotate(90deg)'}}/>,
         'SortUp':<ArrowRightAltOutlined style={{fontSize:'1em', transform:'rotate(-90deg)'}}/>,
@@ -83,8 +83,11 @@ registerIcons({
         'ChevronRight':<KeyboardArrowRight style={{fontSize:'1em'}}/>,
         'ChevronLeft':<KeyboardArrowLeft style={{fontSize:'1em'}}/>,
         'Edit':<Edit style={{fontSize:'1em'}}/>,
-        'Error':<ErrorOutline style={{fontSize:'1em'}}/>,
+        'Error':<ErrorOutlineOutlined style={{fontSize:'1em'}}/>,
         'CheckMark':<Check style={{fontSize:'1em'}}/>,
+        // Used in tree view
+        'ChevronRightMed':<KeyboardArrowRight style={{fontSize:'1em', height: 32}}/>,
+        'StatusCircleCheckMark':<Check style={{fontSize:'0.8em', margin:'0.2em'}}/>,
     }
 });
 
@@ -116,7 +119,8 @@ class App extends React.Component{
             settings: {
                 theme: createTheme({
                     defaultFontStyle: {
-                        fontFamily: 'Roboto'
+                        fontFamily: 'Roboto',
+                        color:'rgba(0,0,0,.87)'
                     },
                 })
             },
