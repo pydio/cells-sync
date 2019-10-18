@@ -149,7 +149,7 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 							c.tasks[content.Config.Uuid] = content
 						}
 						c.Unlock()
-						if !hasPrev || prev.Status != content.Status {
+						if !hasPrev || ( prev.Status != content.Status || prev.LeftInfo.Connected != content.LeftInfo.Connected || prev.RightInfo.Connected != content.RightInfo.Connected ) {
 							c.SendOrderedTasks()
 						}
 					}
