@@ -1,3 +1,22 @@
+/*
+ * Copyright 2019 Abstrium SAS
+ *
+ *  This file is part of Cells Sync.
+ *
+ *  Cells Sync is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Cells Sync is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package config
 
 import (
@@ -22,7 +41,7 @@ func AuthToKeyring(a Authority) (Authority, error) {
 		if e := keyring.Set(keyringService, key, value); e != nil {
 			return a, e
 		}
-		log.Logger(oidcContext).Info("Saved token in keyring for authority " + a.Id)
+		log.Logger(oidcContext).Debug("Saved token in keyring for authority " + a.Id)
 		a.AccessToken = ""
 		a.IdToken = ""
 		a.RefreshToken = ""
@@ -42,7 +61,7 @@ func AuthFromKeyring(a Authority) (Authority, error) {
 			a.AccessToken = parts[0]
 			a.IdToken = parts[1]
 			a.RefreshToken = parts[2]
-			log.Logger(oidcContext).Info("Loaded token from keyring for authority " + a.Id)
+			log.Logger(oidcContext).Debug("Loaded token from keyring for authority " + a.Id)
 		} else {
 			return a, e
 		}

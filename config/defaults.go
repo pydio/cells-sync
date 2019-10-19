@@ -279,7 +279,6 @@ func Default() *Global {
 		if len(def.Authorities) > 0 {
 			for _, a := range def.Authorities {
 				a.AfterLoad()
-				go monitorToken(a)
 			}
 		}
 	}
