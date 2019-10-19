@@ -1,3 +1,22 @@
+/*
+ * Copyright 2019 Abstrium SAS
+ *
+ *  This file is part of Cells Sync.
+ *
+ *  Cells Sync is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Cells Sync is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package config
 
 import (
@@ -19,14 +38,12 @@ import (
 )
 
 func init() {
-	monitors = make(map[string]chan bool)
+	monitors = make(map[string]*tokenMonitor)
 	monitorsLock = &sync.Mutex{}
 }
 
 var (
-	monitors     map[string]chan bool
-	monitorsLock *sync.Mutex
-	oidcContext  = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "oidc"), servicecontext.ServiceColorRest)
+	oidcContext = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "oidc"), servicecontext.ServiceColorRest)
 )
 
 // Authority represent an active account where user has logged in using the OpenID Connect workflow.
@@ -69,7 +86,7 @@ func (a *Authority) getHttpClient() *http.Client {
 // RefreshRequired checks if the current IdToken is still valid or requires renewal.
 func (a *Authority) RefreshRequired() (in time.Duration, now bool) {
 	expTime := time.Unix(int64(a.ExpiresAt), 0)
-	in = expTime.Sub(time.Now().Add(30 * time.Second))
+	in = expTime.Sub(time.Now().Add(10 * time.Second))
 	if in <= 0 {
 		in = 0
 		now = true
@@ -169,48 +186,6 @@ func (a *Authority) is(a2 *Authority) bool {
 	return a.key() == a2.key()
 }
 
-func monitorToken(a *Authority, wait ...time.Duration) {
-
-	var done chan bool
-	monitorsLock.Lock()
-	if d, ok := monitors[a.key()]; ok {
-		done = d
-	} else {
-		done = make(chan bool, 1)
-		monitors[a.key()] = done
-	}
-	monitorsLock.Unlock()
-	d, now := a.RefreshRequired()
-	if now && len(wait) > 0 {
-		d = wait[0]
-	}
-	for {
-		select {
-		case <-time.After(d):
-			if e := a.Refresh(); e != nil {
-				log.Logger(oidcContext).Error("Error while refreshing token, will retry in 10s (" + e.Error() + ")")
-				//stopMonitoringToken(a.key())
-				go monitorToken(a, 10*time.Second)
-			} else {
-				go monitorToken(a)
-			}
-			return
-		case <-done:
-			log.Logger(oidcContext).Info("Stopping monitor on " + a.key())
-			return
-		}
-	}
-}
-
-func stopMonitoringToken(key string) {
-	monitorsLock.Lock()
-	if done, ok := monitors[key]; ok {
-		close(done)
-		delete(monitors, key)
-	}
-	monitorsLock.Unlock()
-}
-
 // PublicAuthorities returns the list of Authorities without any sensitive information, and counts the
 // number of active sync tasks on each.
 func (g *Global) PublicAuthorities() []*Authority {
@@ -258,7 +233,7 @@ func (g *Global) CreateAuthority(a *Authority) error {
 				c <- &AuthChange{Type: "create", Authority: a}
 			}
 		}()
-		go monitorToken(a)
+		getTokenMonitor(a)
 	}
 	return e
 }
@@ -341,4 +316,5 @@ func (a *Authority) AfterLoad() {
 		a.AccessToken = b.AccessToken
 		a.RefreshToken = b.RefreshToken
 	}
+	getTokenMonitor(a)
 }
