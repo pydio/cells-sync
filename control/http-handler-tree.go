@@ -29,6 +29,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/jsonpb"
@@ -195,6 +196,13 @@ func (h *HttpServer) mkdir(c *gin.Context) {
 	if e := target.CreateNode(context.Background(), newNode, false); e != nil {
 		h.writeError(c, e)
 		return
+	}
+	// Special case for cells : block until folder is correctly indexed
+	if strings.HasPrefix(target.GetEndpointInfo().URI, "http") {
+		model.Retry(func() error {
+			_, e := target.LoadNode(context.Background(), newNode.Path)
+			return e
+		}, 2*time.Second, 10*time.Second)
 	}
 
 	log.Logger(context.Background()).Info("Created folder on " + request.endpoint.GetEndpointInfo().URI + " at path " + request.Path)

@@ -17,7 +17,7 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import * as React from 'react';
-import { GroupedList, GroupHeader, FocusZone, Selection, SelectionMode, SelectionZone, Icon, IconButton, TextField } from 'office-ui-fabric-react';
+import { GroupedList, GroupHeader, FocusZone, Selection, SelectionMode, SelectionZone, Icon, IconButton, TextField, Spinner, SpinnerSize } from 'office-ui-fabric-react';
 import {TreeNode, Loader} from "../models/TreeNode";
 import {withTranslation} from 'react-i18next'
 
@@ -162,9 +162,11 @@ class TreeView extends React.Component {
 
         const onNewFolder = (group, newName) => {
             if(newName){
-                group.node.parent.createChildFolder(newName).catch((e) => {
+                return group.node.parent.createChildFolder(newName).catch((e) => {
                     onError(e);
                 });
+            } else {
+                return Promise.reject(new Error('Please provide a name'))
             }
         };
 
@@ -219,18 +221,42 @@ class TreeView extends React.Component {
 class FolderPrompt extends React.Component{
     constructor(props){
         super(props);
-        this.state = {open: false, value: ""};
+        this.state = {loading: false, open: false, value: "", error: ""};
     }
+
+    close(){
+        this.setState({loading: false, open: false, value: "", error:""})
+    }
+
+    submit(){
+        const {onFinish} = this.props;
+        this.setState({loading: true});
+        const {value} = this.state;
+        onFinish(value).then(()=> {
+            this.close();
+        }).catch(e => {
+            this.setState({error: e.message, loading: false})
+        })
+    }
+
     render(){
-        const {t, onFinish} = this.props;
-        const {open, value} = this.state;
+        const {t} = this.props;
+        const {open, value, error, loading} = this.state;
         let content;
         if(open){
             content = (
                 <React.Fragment>
-                    <TextField autoFocus={true} placeholder={t('tree.create.folder.placeholder')} value={value} onChange={(e,v)=>{this.setState({value: v})}}/>
-                    <IconButton iconProps={{iconName:'CheckMark'}} onClick={() => {onFinish(value); this.setState({open: false, value: ""})}}/>
-                    <IconButton iconProps={{iconName:'Cancel'}} onClick={() => {this.setState({open: false})}}/>
+                    <TextField
+                        autoFocus={true}
+                        placeholder={t('tree.create.folder.placeholder')}
+                        value={value}
+                        disabled={loading}
+                        onChange={(e,v)=>{this.setState({value: v})}}
+                    />
+                    {error && <span style={{color: '#E53935',fontFamily: 'Roboto Medium', marginLeft: 5}}>{error}</span>}
+                    <IconButton iconProps={{iconName:'CheckMark'}} onClick={() => this.submit()} disabled={loading || !value}/>
+                    <IconButton iconProps={{iconName:'Cancel'}} onClick={() => this.close()} disabled={loading}/>
+                    {loading && <Spinner size={SpinnerSize.xSmall}/>}
                 </React.Fragment>
             );
         } else {
