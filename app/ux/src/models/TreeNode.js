@@ -43,7 +43,7 @@ class TreeNode {
             let nextChild;
             children.forEach(child => {
                 if (child.Type === 'COLLECTION'){
-                    const treeChild = this.appendChild(child.Path);
+                    const treeChild = this.appendChild(child.Path, child);
                     let compKey = child.Path;
                     if(compKey.length > 0 && compKey[0] !== "/"){
                         compKey = "/" + compKey
@@ -87,8 +87,11 @@ class TreeNode {
             this.onChange();
         }
     }
-    appendChild(name){
+    appendChild(name, child = null){
         const c = new TreeNode(name, this.loader, this);
+        if(child && child.MetaStore && child.MetaStore['ws_label']) {
+            c.label = child.MetaStore['ws_label'].replace(/"/g, '');
+        }
         this.children.push(c);
         return c;
     }
@@ -167,9 +170,7 @@ class Loader {
             })
         }).then(response => {
             if (response.status === 500) {
-                console.log(response);
                 return response.json().then(data => {
-                    console.log(data);
                     if(data && data.error) {
                         throw new Error(data.error);
                     }
@@ -177,9 +178,12 @@ class Loader {
             }
             return response.json();
         }).then(data => {
-            return data.Children || [];
+            const children = data.Children || [];
+            if ( (path === "/" || path === "") && children.length === 0) {
+                throw new Error("tree.error.empty-root");
+            }
+            return children;
         }).catch(reason => {
-            console.log(reason);
             this.errorHandler(reason);
             throw reason;
         });

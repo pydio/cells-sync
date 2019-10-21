@@ -154,11 +154,11 @@ class SyncTask extends React.Component {
 
                 return (
                     <Fragment>
-                        {LastProcessStatus &&
+                        {LastProcessStatus && LastProcessStatus.StatusString !== "Idle" &&
                             <span>{LastProcessStatus.StatusString}</span>
                         }
                         {LastSyncTime && LastSyncTime !== emptyTime &&
-                            <span> - {t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>
+                            <span>{t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>
                         }
                         {LastOpsTime && LastOpsTime !== emptyTime &&
                             <span> - {t('task.last-ops')} : <Link onClick={()=>{this.setState({lastPatch:true})}}>{moment(LastOpsTime).fromNow()}</Link></span>
@@ -241,7 +241,7 @@ class SyncTask extends React.Component {
                         <div style={{marginBottom: 10, marginTop:30}}>
                             <div style={{display:'flex'}}>
                                 <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
-                                <div style={styles.dirIcon}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortDown' : 'SortUp')}/></div>
+                                <div style={styles.dirIcon}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortUp' : 'SortDown')}/></div>
                                 <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
                             </div>
                         </div>

@@ -179,7 +179,11 @@ class TreeView extends React.Component {
                 if(group.name === TreeNode.CREATE_FOLDER) {
                     return <FolderPrompt onFinish={(newName) => onNewFolder(group, newName)}/>
                 }else{
-                    return <div>{group.name}</div>
+                    let label = group.name;
+                    if (group.node && group.node.label){
+                        label = group.node.label;
+                    }
+                    return <div>{label}</div>
                 }
             }}
         />

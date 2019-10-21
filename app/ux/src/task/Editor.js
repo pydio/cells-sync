@@ -51,6 +51,13 @@ class Editor extends React.Component {
             localStorage.removeItem("Editor.SavedState");
         }
         t = JSON.parse(JSON.stringify(t));
+        if(isNew) {
+            // Pre-select server if page is called via /create?id=serverID
+            const p = parse(window.location.href, {}, true);
+            if(p.query && p.query["id"]) {
+                t.Config.LeftURI = p.query["id"];
+            }
+        }
         const proxy = ObservableSlim.create(t, true, () => {
             this.setState({task: proxy});
         });
@@ -60,7 +67,9 @@ class Editor extends React.Component {
             this.state.RightURIInvalid = true;
             DefaultDirLoader.getInstance().onDefaultDir().then(defaultPath => {
                 if(defaultPath){
-                    proxy.Config.RightURI += defaultPath;
+                    const p = parse(proxy.Config.RightURI, {}, true);
+                    p.set('pathname', defaultPath);
+                    proxy.Config.RightURI = p.toString();
                     this.setState({RightURIInvalid: false});
                 }
             })
@@ -177,7 +186,7 @@ class Editor extends React.Component {
                             >
                                 <div
                                     onClick={()=>{this.setState({editDir: true})}}
-                                    style={{textAlign:'center', cursor:'pointer', fontSize: 20, backgroundColor:'#607D8B', width:40, height: 40, borderRadius: '50%', padding: 8, boxSizing: 'border-box', color:'white'}}>
+                                    style={{textAlign:'center', cursor:'pointer', fontSize: 24, backgroundColor:'#607D8B', width:40, height: 40, borderRadius: '50%', padding: 8, boxSizing: 'border-box', color:'white'}}>
                                     <Icon iconName={"Sort" + (task.Config.Direction === 'Bi' ? '' : (task.Config.Direction === 'Right' ? 'Down' : 'Up'))}/>
                                 </div>
                             </TooltipHost>

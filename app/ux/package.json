@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
+    "@material-ui/core": "^4.5.1",
+    "@material-ui/icons": "^4.5.1",
     "@uifabric/fluent-theme": "^0.16.7",
     "ansi_up": "^4.0.3",
     "basename": "^0.1.2",

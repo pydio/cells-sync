@@ -136,7 +136,11 @@ func (h *HttpServer) InitHandlers() {
 
 			m := &common.Message{Type: "PONG", Content: "Hello new client!"}
 			session.Write(m.Bytes())
+			// Publish sync states
 			GetBus().Pub(MessagePublishState, TopicSyncAll)
+			// Publish Authorities list
+			message := &common.Message{Type: "AUTHORITIES", Content: config.Default().PublicAuthorities()}
+			session.Write(message.Bytes())
 
 		case "WEBVIEW_ROUTE":
 

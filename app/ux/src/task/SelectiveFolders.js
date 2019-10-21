@@ -109,7 +109,7 @@ class SelectiveFolders extends React.Component{
                                 <Stack horizontal tokens={{childrenGap: 8}} key={k} >
                                     <Stack.Item>
                                         <IconButton
-                                            iconProps={{ iconName: 'Remove' }}
+                                            iconProps={{ iconName: 'Delete' }}
                                             title={t('editor.selective.remove')}
                                             onClick={(e) => {this.remove(e, k)}}
                                         />
@@ -120,7 +120,6 @@ class SelectiveFolders extends React.Component{
                                             autoFocus={false}
                                             value={f}
                                             onChange={(e,v) => {this.update(e, v, 'folder', k)}}
-                                            iconProps={{ iconName: 'FolderList' }}
                                         /></Stack.Item>
                                 </Stack>
                             )

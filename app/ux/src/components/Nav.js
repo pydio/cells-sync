@@ -63,15 +63,19 @@ class NavMenu extends React.Component {
         const {showDebug} = this.state;
 
         const links = {
-            '/': {label:'tasks', icon:'SyncToPC'},
-            '/servers': {label:'servers', icon:'Server'},
-            '/settings': {label:'settings', icon:'Settings'},
+            '/': {label:'tasks', icon:'RecurringTask'},
+            '/servers': {label:'servers', icon:'AccountBox'},
+            /*'/settings': {label:'settings', icon:'Settings'},*/
         };
         if(showDebug){
             links['/logs'] = {label:'logs', icon:'CustomList'};
             links['/debugger'] = {label:'debugger', icon:'Code'};
         }
-        links['/about'] = {label:'about', icon:'Help'};
+        links['/about'] = {label:'about', icon:'Info'};
+
+        const bottomLinks = {
+            '/settings': {label:'settings', icon:'Settings'}
+        };
 
         const colors = {
             title: '#61869e',
@@ -89,14 +93,14 @@ class NavMenu extends React.Component {
                 backgroundColor:'transparent',
                 selectors:{
                     "& .ms-Button":{height: 40},
-                    "&.is-selected .ms-Button":{backgroundColor:'white'},
+                    "&.is-selected .ms-Button":{backgroundColor:'white', fontFamily:'Roboto Medium'},
                     "& .ms-Button-icon":{color: colors.icon},
                 }
             },
             link:{
                 backgroundColor:'transparent',
                 color: colors.title,
-                fontWeight: 600
+                fontFamily: 'Roboto Medium',
             }
         };
 
@@ -118,7 +122,7 @@ class NavMenu extends React.Component {
                     <React.Fragment>
                         <div style={{display:'flex', alignItems:'center'}}>
                             <span className={"cells-logo"} style={{width: 24, height: 24, marginLeft: 6, display:'block'}}/>
-                            <span style={{flex: 1, fontSize: FontSizes.size20, fontWeight: 600, padding: 8, paddingLeft: 4, color:colors.title}}>{t('application.title')}</span>
+                            <span style={{flex: 1, fontSize: FontSizes.size20, fontFamily: 'Roboto Medium', padding: 8, paddingLeft: 4, color:colors.title}}>{t('application.title')}</span>
                             <TooltipHost content={t("language.switch")} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
                                 <IconButton
                                     iconProps={{iconName:'Flag'}}
@@ -142,6 +146,19 @@ class NavMenu extends React.Component {
                                 {
                                     links: Object.keys(links).map((k) => {
                                         return {name:t('nav.' + links[k].label), key:k, icon: links[k].icon}
+                                    })
+                                }
+                            ]}
+                        />
+                        <div style={{flex: 1}}></div>
+                        <OfficeNav
+                            onLinkClick={(e, item)=>{history.push(item.key)}}
+                            selectedKey={location.pathname}
+                            styles={{...tStyles, groupContent:{marginBottom: 0}, navItems:{marginBottom: 0}}}
+                            groups={[
+                                {
+                                    links: Object.keys(bottomLinks).map((k) => {
+                                        return {name:t('nav.' + bottomLinks[k].label), key:k, icon: bottomLinks[k].icon}
                                     })
                                 }
                             ]}

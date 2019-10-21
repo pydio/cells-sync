@@ -60,13 +60,14 @@ class ActionBar extends React.Component {
             {key:'more', iconName:'MoreVertical', menu:[
                 { key:'resync', disabled: disabled, iconName:'SyncToPC'},
                 { key: paused ? 'resume' : 'pause', iconName: paused?'PlayResume': 'Pause'},
-                { key: 'edit', iconName: 'Edit'},
+                { key: 'edit', iconName: 'Settings'},
                 { key: 'delete', iconName: 'Delete' }
             ]}
         );
         const buttonStyles = {
             root:{borderRadius: '50%', width: 48, height: 48, backgroundColor: '#F5F5F5', padding: '0 8px;'},
-            icon:{fontSize: 24},
+            rootDisabled:{backgroundColor:'#fafafa'},
+            icon:{fontSize: 24, height: 24},
             menuIcon:{display:'none'}};
 
         return (

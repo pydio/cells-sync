@@ -27,6 +27,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -42,15 +43,17 @@ import (
 )
 
 var (
-	viewCancel    context.CancelFunc
-	uxUrl         = "http://localhost:3636"
-	closing       bool
-	ws            *Client
-	stateSlots    []*systray.MenuItem
-	activeToggler bool
-	activeDone    chan bool
-	firstRun      bool
-	trayCtx       = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
+	viewCancel context.CancelFunc
+	uxUrl      = "http://localhost:3636"
+	cancelling bool
+	ws         *Client
+	stateSlots []*systray.MenuItem
+
+	firstRun    bool
+	pauseToggle bool
+	trayCtx     = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
+
+	ErrNotSupported = fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 )
 
 // Run opens the system tray
@@ -76,11 +79,17 @@ func disableFirstRun() {
 
 func spawnWebView(path ...string) {
 	if viewCancel != nil {
-		// It is already opened - do nothing
-		if len(path) > 0 {
-			ws.SendRoute(path[0])
-		}
-		return
+		// It is already opened, but probably out of sight. Close and reopen
+		viewCancel()
+		viewCancel = nil
+		<-time.After(200 * time.Millisecond)
+		/*
+			// Or other option : send a message to change page
+				if len(path) > 0 {
+					ws.SendRoute(path[0])
+				}
+				return
+		*/
 	}
 	c, cancel := context.WithCancel(context.Background())
 	url := uxUrl
@@ -90,55 +99,19 @@ func spawnWebView(path ...string) {
 	cmd := exec.CommandContext(c, config.ProcessName(os.Args[0]), "webview", "--url", url)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
-	viewCancel = cancel
+	viewCancel = func() {
+		cancelling = true
+		cancel()
+	}
+	cancelling = false
 	if e := cmd.Run(); e != nil {
-		if !closing {
+		if !cancelling {
 			log.Logger(trayCtx).Error("Error while starting WebView - Opening in browser instead: " + e.Error())
 			open.Run(uxUrl)
 		}
 	}
 	// Clear cancel after Run finish
 	viewCancel = nil
-}
-
-func setIconActive() {
-	if activeDone != nil {
-		// already active
-		return
-	}
-	activeDone = make(chan bool, 1)
-	go func() {
-		defer func() {
-			activeDone = nil
-		}()
-		for {
-			select {
-			case <-time.After(750 * time.Millisecond):
-				if !activeToggler {
-					systray.SetIcon(iconActiveData)
-				} else {
-					systray.SetIcon(iconActive2Data)
-				}
-				activeToggler = !activeToggler
-			case <-activeDone:
-				return
-			}
-		}
-	}()
-}
-
-func setIconIdle() {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	systray.SetIcon(iconData)
-}
-
-func setIconError() {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	systray.SetIcon(iconErrorData)
 }
 
 func onReady() {
@@ -148,6 +121,7 @@ func onReady() {
 	systray.SetTooltip(i18n.T("application.title"))
 	mOpen := systray.AddMenuItem(i18n.T("tray.menu.open"), i18n.T("tray.menu.open.legend"))
 	mOpen.Disable()
+	mPause := systray.AddMenuItem(i18n.T("main.all.pause"), i18n.T("main.all.pause.legend"))
 	systray.AddSeparator()
 	// Prepare slots for tasks
 	for i := 0; i < 10; i++ {
@@ -201,9 +175,9 @@ func onReady() {
 						go spawnWebView("/create")
 					}
 				}
-				log.Logger(trayCtx).Info(fmt.Sprintf("Systray received %d tasks", len(tasks)))
 				var hasError bool
 				var hasProcessing bool
+				allPaused := true
 				for _, t := range tasks {
 					label := t.Config.Label
 					switch t.Status {
@@ -222,6 +196,7 @@ func onReady() {
 						label += " (" + i18n.T("tray.task.status.disconnected") + ")"
 						hasError = true
 					}
+					allPaused = allPaused && (t.Status == model.TaskStatusPaused)
 					stateSlots[i].SetTitle(label)
 					stateSlots[i].SetTooltip(t.Config.Uuid)
 					stateSlots[i].Show()
@@ -231,7 +206,7 @@ func onReady() {
 						stateSlots[i].Enable()
 					}
 					if hasError {
-						setIconError()
+						setIconError(label)
 					} else if hasProcessing {
 						setIconActive()
 					} else {
@@ -246,6 +221,16 @@ func onReady() {
 					if k >= len(tasks) {
 						slot.Hide()
 					}
+				}
+				if allPaused {
+					setIconPause()
+					mPause.SetTitle(i18n.T("main.all.resume"))
+					mPause.SetTooltip(i18n.T("main.all.resume.legend"))
+					pauseToggle = true
+				} else {
+					mPause.SetTitle(i18n.T("main.all.pause"))
+					mPause.SetTooltip(i18n.T("main.all.pause.legend"))
+					pauseToggle = false
 				}
 			case e := <-ws.Errors:
 				log.Logger(trayCtx).Error("Received error from client " + e.Error())
@@ -277,6 +262,12 @@ func onReady() {
 				go spawnWebView("/")
 			case <-mResync.ClickedCh:
 				ws.SendCmd(&common.CmdContent{Cmd: "loop"})
+			case <-mPause.ClickedCh:
+				if pauseToggle {
+					ws.SendCmd(&common.CmdContent{Cmd: "resume"})
+				} else {
+					ws.SendCmd(&common.CmdContent{Cmd: "pause"})
+				}
 			case <-mQuit.ClickedCh:
 				log.Logger(trayCtx).Info("Closing systray now...")
 				ws.SendHalt()
@@ -289,7 +280,6 @@ func onReady() {
 }
 
 func beforeExit() {
-	closing = true
 	if ws != nil {
 		ws.Close()
 	}
