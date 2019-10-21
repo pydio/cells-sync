@@ -41,8 +41,8 @@ var autoTestSkipClean bool
 
 // AutoTestCmd performs a simple test of a unidirectional sync between two local folders (created inside TmpDir)
 var AutoTestCmd = &cobra.Command{
-	Use:  "autotest",
-	Long: "Performs a simple test of a unidirectional sync between two local folders (created inside TmpDir)",
+	Use:   "autotest",
+	Short: "Basic unidirectional sync between two local folders (under your temporary directory)",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		tmpDir := os.TempDir()

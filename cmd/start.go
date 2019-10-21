@@ -44,7 +44,7 @@ func runner() {
 // StartCmd starts the client.
 var StartCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start sync tasks",
+	Short: "Start Cells Sync and fork a process for starting system tray",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logs := config.Default().Logs
 		os.MkdirAll(logs.Folder, 0755)

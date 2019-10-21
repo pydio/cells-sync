@@ -43,7 +43,7 @@ func exit(err error) {
 // AddCmd adds a task to the config via the command line
 var AddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add a new sync",
+	Short: "Add a new task via command line",
 	Long: `Define a new sync task using two URI and a direction.
 
 Endpoint URI support the following schemes: 
@@ -97,7 +97,7 @@ Example
 // EditCmd edits a task via the command line
 var EditCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "Exit existing sync",
+	Short: "Exit existing sync via command line",
 	Run: func(cmd *cobra.Command, args []string) {
 		tS := promptui.Select{Label: "Select Sync to Edit", Items: config.Default().Items()}
 		i, _, e := tS.Run()
@@ -131,7 +131,7 @@ var EditCmd = &cobra.Command{
 // DeleteCmd removes a task via the command line.
 var DeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete existing sync",
+	Short: "Delete existing sync via command line",
 	Run: func(cmd *cobra.Command, args []string) {
 		tS := promptui.Select{Label: "Select Sync to Edit", Items: config.Default().Items()}
 		i, _, e := tS.Run()

@@ -32,7 +32,11 @@ import (
 var RootCmd = &cobra.Command{
 	Use:   os.Args[0],
 	Short: "Cells Sync desktop client",
-	Long:  `Cells Sync Desktop Client`,
+	Long: `Cells Sync desktop client.
+
+Realtime, bidirectional synchronization tool for Pydio Cells server. 
+Launching without command is the same as './cells-sync start' on Mac and Windows. 
+`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		handleSignals()
 	},

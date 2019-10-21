@@ -14,14 +14,14 @@ Cells Sync is a desktop synchronization client for Pydio Cells server.
 
 - 100% GO
 - Windows, MacOSX, Linux
-- Realtime propagation of changes _(only when your local machine can connect to your server)_
+- Realtime propagation of changes _(when your local machine can connect to your server)_
 - Configurable sync direction (bi-directional / unidirectional)
 - Selective Folders synchronization
 - Supports various types of end points for syncing (any source/target can be combined):
   - Cells Server (over HTTP/HTTPS)
   - Local Folder
   - Local Cells server (accessed directly if deployed inside the microservices mesh)
-  - S3-compatible storage service (including AWS S3 and Minio)
+  - S3-compatible storage service (tested with AWS S3)
   - BoltDB storage (used for storing tree snapshots)
   - Cells GRPC indexation services (implementing NodeProvider/NodeReceiver grpc endpoints).
 
@@ -39,25 +39,25 @@ In order to compile and run the Cells-Sync client, you must fulfill the followin
 #### Compilation instructions
 
 - Get the code: `go get -u github.com/pydio/cells-sync`
-- To compile the frontend, enter the `app/` folder and run `npm run build`
-- To pack the frontend inside the binary (not mandatory if you are running on the same machine where $GOPATH is available), install github.com/gobufallo/packr/packr tool and run `make clean pack` at the root of the repository.
-- Compile binary by running `make ui`
+- To compile the frontend, enter the `app/ux/` folder and run `npm run build`
+- To pack the frontend inside the binary (not mandatory if you are running on the same machine where $GOPATH is available), install github.com/gobuffalo/packr/packr tool and run `make clean pack` at the root of the repository.
+- Compile binary by running `make cli`
 
 The resulting `cells-sync` binary should be good to go.
 
 ### Using pre-compiled binaries
 
-TODO: list and links to the pre-compiled binaries download server
+Coming soon: list and links to the pre-compiled binaries download server
 
 ### Running cells-sync
 
 Once you have downloaded or compiled cells-sync for your platform, simply run:
 
 ```sh
-./cells-sync
+./cells-sync start
 ```
 
-This both starts the system tray icon and the synchronization agent in background. If you want to simply run the agent without any UX, run `cells-sync start`.
+This both starts the system tray icon and the synchronization agent in background. To run the agent without any UX, use `cells-sync start --headless`.
 
 ### Other available commands
 
@@ -65,18 +65,19 @@ Use help to display the available commands:
 
 ```sh
 $ ./cells-sync --help
-Opens system tray by default
-
 Usage:
   ./cells-sync [flags]
   ./cells-sync [command]
 
 Available Commands:
-  add         Add a new sync
+  add         Add a new task via command line
+  autotest    Basic unidirectional sync between two local folders (under your temporary directory)
+  bgstart     Start sync tasks from within service
   capture     Capture snapshots inside JSON file - do not perform any actual tasks
-  delete      Delete existing sync
-  edit        Exit existing sync
+  delete      Delete existing sync via command line
+  edit        Exit existing sync via command line
   help        Help about any command
+  service     Manage service: install,uninstall,stop,start,restart
   start       Start sync tasks
   systray     Launch Systray
   version     Display version
