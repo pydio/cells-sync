@@ -20,17 +20,18 @@ import * as React from 'react';
 import { GroupedList, GroupHeader, FocusZone, Selection, SelectionMode, SelectionZone, Icon, IconButton, TextField, Spinner, SpinnerSize } from 'office-ui-fabric-react';
 import {TreeNode, Loader} from "../models/TreeNode";
 import {withTranslation} from 'react-i18next'
+import parse from "url-parse";
 
 class TreeView extends React.Component {
 
     constructor(props) {
         super(props);
-        const {unique, t, onError, allowCreate, uri} = props;
+        const {unique, t, onError, allowCreate, uri, parallelUri} = props;
         let label = t('tree.root.select.multiple');
         if(unique){
             label = t('tree.root.select.unique');
         }
-        this.loader = new Loader(label, uri, allowCreate, onError);
+        this.loader = new Loader(label, uri, allowCreate, onError, parallelUri);
         const {initialSelection} = this.props;
         const selection = new Selection({onSelectionChanged:()=>{
             this.setState({selection: selection}, () => {
@@ -75,7 +76,7 @@ class TreeView extends React.Component {
     }
 
     nodesToGroups(items, groups, node, level = 0, startIndex = 0) {
-        items.push({key:node.getPath(), name:node.getPath()});
+        items.push({key:node.getPath(), name:node.getPath(), node: node});
         let totalChildren = 0;
         node.walk(()=>{totalChildren++});
         const group = {
@@ -97,6 +98,7 @@ class TreeView extends React.Component {
 
     filterSelection(){
         const {selection} = this.state;
+        const {parallelUri} = this.props;
         if(selection.isIndexSelected(0)){
             selection.setAllSelected(false);
             this.forceUpdate();
@@ -108,10 +110,31 @@ class TreeView extends React.Component {
             if(k.length && k[0] !== '/') {
                 k = '/' + k;
             }
-            return k;
+            if(parallelUri) {
+                return {
+                    path: k,
+                    node:item.node && item.node.fromTree?item.node:null
+                }
+            } else {
+                return k;
+            }
         });
     }
 
+    creationLabel(node){
+        const {uri, parallelUri, t} = this.props;
+        let type;
+        if(node.fromTree === 'left'){
+            type = parse(parallelUri, {}, true)['protocol'].replace(":", "")
+        } else {
+            type = parse(uri, {}, true)['protocol'].replace(":", "")
+        }
+        let tLabel = type;
+        if(t('editor.picker.type.' + type)){
+            tLabel = t('editor.picker.type.' + type).toLowerCase()
+        }
+        return t('tree.selective.will-be-created').replace('%s', tLabel);
+    }
 
     componentDidMount(){
         const {tree} = this.state;
@@ -177,7 +200,7 @@ class TreeView extends React.Component {
             onToggleCollapse={toggleCollapse}
             onToggleSelectGroup={toggleSelectGroup}
             expandButtonProps={expandProps}
-            onRenderTitle={({group})=> {
+            onRenderTitle={({group, isSelected})=> {
                 if(group.name === TreeNode.CREATE_FOLDER) {
                     return <FolderPrompt onFinish={(newName) => onNewFolder(group, newName)}/>
                 }else{
@@ -185,7 +208,11 @@ class TreeView extends React.Component {
                     if (group.node && group.node.label){
                         label = group.node.label;
                     }
-                    return <div>{label}</div>
+                    let create;
+                    if (isSelected && group.node && group.node.fromTree && group.node.fromTree !== "both") {
+                        create = <span style={{opacity:.47, fontStyle:'italic'}}>{this.creationLabel(group.node)}</span>
+                    }
+                    return <div>{label} {create}</div>
                 }
             }}
         />

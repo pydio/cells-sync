@@ -74,10 +74,19 @@ class TreeNode {
             this.notify();
         });
     }
-    createChildFolder(newName){
-        return this.loader.mkdir(this.name + '/' + newName).then(() => {
+    createChildFolder(newName, uri = null){
+        return this.loader.mkdir(this.name + '/' + newName, uri || this.loader.uri).then(() => {
             return this.load();
         })
+    }
+    createIfNotExists() {
+        let uri;
+        if(this.fromTree === 'left') {
+            uri = this.loader.parallelUri
+        } else {
+            uri = this.loader.uri;
+        }
+        return this.parent.createChildFolder(this.getName(), uri);
     }
     notify(){
         if(this.parent){
@@ -91,6 +100,9 @@ class TreeNode {
         const c = new TreeNode(name, this.loader, this);
         if(child && child.MetaStore && child.MetaStore['ws_label']) {
             c.label = child.MetaStore['ws_label'].replace(/"/g, '');
+        }
+        if(child && child.MetaStore && child.MetaStore && child.MetaStore["FROM_TREE"]){
+            c.fromTree = child.MetaStore["FROM_TREE"];
         }
         this.children.push(c);
         return c;
@@ -136,10 +148,11 @@ class TreeNode {
 TreeNode.CREATE_FOLDER = "__CREATE_FOLDER__";
 
 class Loader {
-    constructor(rootLabel, uri, allowCreate, errorHandler) {
+    constructor(rootLabel, uri, allowCreate, errorHandler, parallelURI = null) {
         this.rootLabel = rootLabel;
         this.uri = uri;
         this.allowCreate = allowCreate;
+        this.parallelUri = parallelURI;
         if (!errorHandler) {
             this.errorHandler = (e) => {console.log(e, 'no error handler set')}
         } else {
@@ -158,6 +171,36 @@ class Loader {
     }
 
     ls(path) {
+        if(this.parallelUri) {
+            // Browse both trees in parallel
+            return Promise.all([this.lsUri(path, this.uri, true), this.lsUri(path, this.parallelUri, true)]).then(([lefts, rights]) => {
+                const merged = {};
+                lefts.forEach((n) => {
+                    if(!n.MetaStore){
+                        n.MetaStore = {}
+                    }
+                    n.MetaStore["FROM_TREE"] = "left";
+                    merged[n.Path] = n
+                });
+                rights.forEach((n) => {
+                    if(merged[n.Path]) {
+                        merged[n.Path].MetaStore["FROM_TREE"] = "both";
+                    } else {
+                        if(!n.MetaStore) n.MetaStore = {};
+                        n.MetaStore["FROM_TREE"] = "right";
+                        merged[n.Path] = n;
+                    }
+                });
+                return Object.keys(merged).map(p => merged[p]).sort((a,b) => {
+                    return a.Path.toLowerCase() === b.Path.toLowerCase() ? 0 : (a.Path.toLowerCase() > b.Path.toLowerCase() ? 1 : -1)
+                });
+            });
+        } else {
+            return this.lsUri(path, this.uri);
+        }
+    }
+
+    lsUri(path, uri, ignoreNotExists = false) {
         return window.fetch(buildUrl('/tree'), {
             method: 'POST',
             headers: {
@@ -165,11 +208,14 @@ class Loader {
             },
             credentials: 'omit',
             body: JSON.stringify({
-                EndpointURI: this.uri,
+                EndpointURI: uri,
                 Path: path,
             })
         }).then(response => {
             if (response.status === 500) {
+                if (ignoreNotExists) {
+                    return {Children:[]}; // Return fake empty childrens
+                }
                 return response.json().then(data => {
                     if(data && data.error) {
                         throw new Error(data.error);
@@ -189,7 +235,7 @@ class Loader {
         });
     }
 
-    mkdir(path){
+    mkdir(path, uri){
         return window.fetch(buildUrl('/tree'), {
             method: 'PUT',
             headers: {
@@ -197,7 +243,7 @@ class Loader {
             },
             credentials: 'omit',
             body: JSON.stringify({
-                EndpointURI: this.uri,
+                EndpointURI: uri,
                 Path: path,
             })
         }).then(response => {

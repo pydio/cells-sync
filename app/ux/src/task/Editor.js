@@ -229,8 +229,13 @@ class Editor extends React.Component {
                 {showAdvanced &&
                     <Stack vertical tokens={{childrenGap: 8}} styles={sectionStyles}>
                         <Stack.Item>
-                            {task.Config.LeftURI &&
-                            <SelectiveFolders leftURI={task.Config.LeftURI} value={task.Config.SelectiveRoots} onChange={(e,v) => {task.Config.SelectiveRoots = v}}/>
+                            {task.Config.LeftURI && task.Config.RightURI &&
+                            <SelectiveFolders
+                                    leftURI={task.Config.LeftURI}
+                                    rightURI={task.Config.RightURI}
+                                    value={task.Config.SelectiveRoots}
+                                    onChange={(e,v) => {task.Config.SelectiveRoots = v}}
+                                />
                             }
                         </Stack.Item>
                         <Stack.Item>

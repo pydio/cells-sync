@@ -53,7 +53,7 @@ class TreeDialog extends React.Component {
     }
 
     render() {
-        const {uri, t, initialSelection, unique, allowCreate, ...dialogProps} = this.props;
+        const {uri, parallelUri, t, initialSelection, unique, allowCreate, ...dialogProps} = this.props;
         const {errorMessage} = this.state;
         return (
             <Dialog {...dialogProps} minWidth={700} title={t('tree.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
@@ -68,6 +68,7 @@ class TreeDialog extends React.Component {
                             <TreeView
                                 unique={unique}
                                 uri={uri}
+                                parallelUri={parallelUri}
                                 allowCreate={allowCreate}
                                 initialSelection={initialSelection}
                                 onError={this.onError.bind(this)}

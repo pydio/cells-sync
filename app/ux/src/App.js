@@ -29,7 +29,7 @@ import Socket from "./models/Socket"
 import { registerIcons } from '@uifabric/styling';
 import {AccountCircleOutlined, Sync, Description, Code, InfoOutlined, SettingsOutlined, FlagOutlined,
     KeyboardArrowDown, KeyboardArrowUp, KeyboardArrowRight, KeyboardArrowLeft,
-    ErrorOutlineOutlined, DeleteOutline, AddCircleOutline,
+    ErrorOutlineOutlined, DeleteOutline, AddCircleOutline, ArrowRightOutlined, ArrowLeftOutlined,
     PlayArrow, Pause, Stop, SaveOutlined, SettingsBackupRestoreOutlined, MoreVert, OpenInNew,
     CloseOutlined, SyncAltOutlined, ArrowRightAltOutlined, PersonAddOutlined, Replay, Edit,
     FolderOpen, FolderOpenOutlined, CreateNewFolder, ArrowForward, Check,
@@ -82,6 +82,8 @@ registerIcons({
         'ChevronUp':<KeyboardArrowUp style={{fontSize:'1em'}}/>,
         'ChevronRight':<KeyboardArrowRight style={{fontSize:'1em'}}/>,
         'ChevronLeft':<KeyboardArrowLeft style={{fontSize:'1em'}}/>,
+        'ArrowRight':<ArrowRightOutlined style={{fontSize:'1em'}}/>,
+        'ArrowLeft':<ArrowLeftOutlined style={{fontSize:'1em'}}/>,
         'Edit':<Edit style={{fontSize:'1em'}}/>,
         'Error':<ErrorOutlineOutlined style={{fontSize:'1em'}}/>,
         'CheckMark':<Check style={{fontSize:'1em'}}/>,

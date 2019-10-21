@@ -28,7 +28,7 @@ class SelectiveFolders extends React.Component{
 
     constructor(props) {
         super(props);
-        this.state = {newFolder:''};
+        this.state = {newFolder:'', creates:{}};
     }
 
 
@@ -71,10 +71,20 @@ class SelectiveFolders extends React.Component{
     onSelect(selection){
         let {folders} = this.parsed();
         const {onChange} = this.props;
+        const creates = [];
         selection.forEach(folder => {
-            folders.push(folder);
+            if (folder instanceof Object){
+                if(folder.node && folder.node.fromTree !== 'both') {
+                    creates.push(folder.node);
+                }
+                folders.push(folder.path);
+            } else {
+                folders.push(folder);
+            }
         });
-        onChange(null, folders);
+        Promise.all(creates.map(n => n.createIfNotExists())).then(
+            onChange(null, folders)
+        );
     }
 
     remove(event, key){
@@ -90,7 +100,7 @@ class SelectiveFolders extends React.Component{
     render(){
         const {folders, enabled} = this.parsed();
         const {dialog} = this.state;
-        const {t} = this.props;
+        const {t, leftURI, rightURI} = this.props;
 
         return (
             <React.Fragment>
@@ -136,7 +146,8 @@ class SelectiveFolders extends React.Component{
                     }
                 </Stack>
                 <TreeDialog
-                    uri={this.props.leftURI}
+                    uri={leftURI}
+                    parallelUri={rightURI}
                     hidden={!dialog}
                     onDismiss={()=>{this.setState({dialog: false})}}
                     onSelect={this.onSelect.bind(this)}

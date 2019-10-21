@@ -109,6 +109,7 @@
   "tree.create.folder" : "Create Folder",
   "tree.alert.selection.empty" : "Please select a folder!",
   "tree.error.empty-root":"No workspaces detected! You may not be allowed to sync on your workspaces.",
+  "tree.selective.will-be-created":"will be created on %s",
   "button.cancel":"Cancel",
   "button.save":"Save",
   "button.select":"Select",
