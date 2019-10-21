@@ -21,11 +21,11 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 
 	"github.com/pydio/cells/common/log"
-	"golang.org/x/net/context"
 )
 
 const (
