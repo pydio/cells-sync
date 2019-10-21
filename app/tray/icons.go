@@ -53,8 +53,8 @@ var (
 	iconErrorData   = colorerror.Data
 	iconPauseData   = colorpause.Data
 	activeToggler   bool
-	activeDone      chan bool
-	lastStatus      string
+	crtStatus       string
+	status          chan string
 )
 
 func init() {
@@ -80,58 +80,59 @@ func init() {
 			iconPauseData = darkpause.Data
 		}
 	}
-}
-
-func setIconActive() {
-	if activeDone != nil {
-		// already active
-		return
-	}
-	activeDone = make(chan bool, 1)
+	status = make(chan string, 1)
 	go func() {
-		defer func() {
-			activeDone = nil
-		}()
 		for {
 			select {
 			case <-time.After(750 * time.Millisecond):
+				if crtStatus != "active" {
+					break
+				}
 				if !activeToggler {
 					systray.SetIcon(iconActiveData)
 				} else {
 					systray.SetIcon(iconActive2Data)
 				}
 				activeToggler = !activeToggler
-			case <-activeDone:
-				return
+
+			case s := <-status:
+				if crtStatus == s {
+					break
+				}
+				var data []byte
+				crtStatus = s
+				switch s {
+				case "active":
+					activeToggler = false
+					data = iconActiveData
+				case "idle":
+					data = iconData
+				case "error":
+					data = iconErrorData
+				case "pause":
+					data = iconPauseData
+				}
+				systray.SetIcon(data)
 			}
 		}
 	}()
-	lastStatus = "active"
+}
+
+func setIconActive() {
+	status <- "active"
 }
 
 func setIconIdle() {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	systray.SetIcon(iconData)
-	lastStatus = "idle"
+	status <- "idle"
 }
 
 func setIconError(msg ...string) {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	if len(msg) > 0 && lastStatus != "error" {
+	if len(msg) > 0 && crtStatus != "error" {
 		notify("CellsSync", msg[0])
 	}
-	systray.SetIcon(iconErrorData)
-	lastStatus = "error"
+	status <- "error"
 }
 
 func setIconPause() {
-	if activeDone != nil {
-		close(activeDone)
-	}
-	systray.SetIcon(iconPauseData)
-	lastStatus = "pause"
+	status <- "pause"
 }
