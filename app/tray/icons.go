@@ -128,7 +128,8 @@ func setIconIdle() {
 
 func setIconError(msg ...string) {
 	if len(msg) > 0 && crtStatus != "error" {
-		notify("CellsSync", msg[0])
+		// TODO
+		// notify("CellsSync", msg[0])
 	}
 	status <- "error"
 }

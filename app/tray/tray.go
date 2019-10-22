@@ -222,7 +222,7 @@ func onReady() {
 						slot.Hide()
 					}
 				}
-				if allPaused {
+				if len(tasks) > 0 && allPaused {
 					setIconPause()
 					mPause.SetTitle(i18n.T("main.all.resume"))
 					mPause.SetTooltip(i18n.T("main.all.resume.legend"))

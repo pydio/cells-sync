@@ -52,10 +52,19 @@ var WebviewCmd = &cobra.Command{
 			Title:     i18n.T("application.title"),
 			URL:       url,
 			Debug:     true, // Enable JS Debugger
+			ExternalInvokeCallback: func(w webview.WebView, data string) {
+				switch data {
+				case "DOMContentLoaded":
+					w.Bind("linkOpener", &LinkOpener{})
+					break
+				}
+			},
 		})
-		w.Dispatch(func() {
-			w.Bind("linkOpener", &LinkOpener{})
-		})
+		/*
+			w.Dispatch(func() {
+				w.Bind("linkOpener", &LinkOpener{})
+			})
+		*/
 		w.Run()
 	},
 }
