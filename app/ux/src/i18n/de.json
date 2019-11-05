@@ -109,7 +109,7 @@
   "tree.create.folder": "Ordner erstellen",
   "tree.alert.selection.empty": "Bitte wählen Sie einen Ordner aus!",
   "tree.error.empty-root": "Keine Workspace erkannt! Sie dürfen möglicherweise nicht auf Ihren Workspace synchronisieren.",
-  "tree.selective.will-be-created": "will be created on %s",
+  "tree.selective.will-be-created": "wird am %s erstellt",
   "button.cancel": "Abbrechen",
   "button.save": "Speichern",
   "button.select": "Wählen",
