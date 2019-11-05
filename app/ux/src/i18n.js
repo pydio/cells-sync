@@ -20,6 +20,7 @@ import i18n from "i18next";
 import en from "./i18n/en"
 import fr from "./i18n/fr"
 import de from "./i18n/de"
+import it from "./i18n/it"
 import { initReactI18next } from "react-i18next";
 import moment from 'moment';
 import 'moment/locale/de';
@@ -38,6 +39,9 @@ const resources = {
     },
     de: {
         translation: de
+    },
+    it: {
+        translation: it
     }
 };
 let local = 'en';
