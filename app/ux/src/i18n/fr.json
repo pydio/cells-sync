@@ -109,7 +109,7 @@
   "tree.create.folder": "Créer un dossier",
   "tree.alert.selection.empty": "Veuillez sélectionner un dossier!",
   "tree.error.empty-root": "Pas de workspaces détectés! Vous n'avez peut-être pas l'autorisation de synchroniser.",
-  "tree.selective.will-be-created": "will be created on %s",
+  "tree.selective.will-be-created": "sera créé sur %s",
   "button.cancel": "Annuler",
   "button.save": "Sauver",
   "button.select": "Selectionner",
