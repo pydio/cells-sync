@@ -33,6 +33,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/jsonpb"
+	"github.com/pkg/errors"
 
 	"github.com/pydio/cells-sync/endpoint"
 	"github.com/pydio/cells/common"
@@ -76,7 +77,13 @@ func (l *TreeResponse) MarshalJSON() ([]byte, error) {
 
 func (h *HttpServer) writeError(i *gin.Context, e error) {
 	log.Logger(h.ctx).Error("Request error :" + e.Error())
-	i.JSON(http.StatusInternalServerError, map[string]string{"error": e.Error()})
+	data := map[string]string{
+		"error": e.Error(),
+	}
+	if c := errors.Cause(e); c != e {
+		data["stack"] = fmt.Sprintf("%+v\n", e)
+	}
+	i.JSON(http.StatusInternalServerError, data)
 }
 
 func (h *HttpServer) applyWindowsTransformation(request *TreeRequest) error {
