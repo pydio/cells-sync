@@ -43,10 +43,11 @@ class TreeDialog extends React.Component {
     }
 
     onError(err) {
-        if (err){
+        if (err && err.message){
             // Try to translate error message
             const {t} = this.props;
-            this.setState({errorMessage: t(err.message)});
+            const msgs = err.message.split(":").map(e => t(e)).join(":");
+            this.setState({errorMessage: msgs});
         } else {
             this.setState({errorMessage: null});
         }
@@ -60,7 +61,12 @@ class TreeDialog extends React.Component {
                 <DialogContent styles={{innerContent:{minHeight: 400}, inner:{padding:0}, title:{display:'none'}}}>
                     <ScrollablePane styles={{contentContainer:{maxHeight:400, backgroundColor:'#fafafa'}}}>
                         {errorMessage &&
-                        <MessageBar messageBarType={MessageBarType.error} isMultiline={false} onDismiss={()=>{this.setState({errorMessage: null})}} dismissButtonAriaLabel="Dismiss">
+                        <MessageBar
+                            messageBarType={MessageBarType.error}
+                            isMultiline={true}
+                            onDismiss={()=>{this.setState({errorMessage: null})}}
+                            dismissButtonAriaLabel="Dismiss"
+                        >
                             {errorMessage}
                         </MessageBar>
                         }
