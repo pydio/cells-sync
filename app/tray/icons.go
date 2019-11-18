@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/getlantern/systray"
+	"github.com/pydio/systray"
 
 	coloricon "github.com/pydio/cells-sync/app/tray/color/icon"
 	coloractive "github.com/pydio/cells-sync/app/tray/color/iconactive"

@@ -7,14 +7,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pydio/cells/common/sync/model"
-
-	"github.com/getlantern/systray"
 	"github.com/gorilla/websocket"
+	"github.com/pydio/systray"
 
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/service"
+	"github.com/pydio/cells/common/sync/model"
 )
 
 // StatusMessage provides an int representation of Connected/Disconnected status
@@ -149,7 +148,7 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 							c.tasks[content.Config.Uuid] = content
 						}
 						c.Unlock()
-						if !hasPrev || ( prev.Status != content.Status || prev.LeftInfo.Connected != content.LeftInfo.Connected || prev.RightInfo.Connected != content.RightInfo.Connected ) {
+						if !hasPrev || (prev.Status != content.Status || prev.LeftInfo.Connected != content.LeftInfo.Connected || prev.RightInfo.Connected != content.RightInfo.Connected) {
 							c.SendOrderedTasks()
 						}
 					}
