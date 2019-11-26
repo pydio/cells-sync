@@ -30,10 +30,14 @@ pack:
 rsrc:
 	${GOPATH}/bin/rsrc -arch amd64 -ico app/resources/icon.ico
 
+
+# To limit build to a given minimal version of MacOS, rather use:
+# --targets darwin-10.11/amd64 \
+
 xgo:
 	${GOPATH}/bin/xgo -go 1.12 \
 	-out "cells-sync" \
-	--image  ${XGO_IMAGE} \
+	--image ${XGO_IMAGE} \
 	--targets darwin/amd64 \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
@@ -42,7 +46,7 @@ xgo:
 
 	${GOPATH}/bin/xgo -go 1.12 \
 	-out "cells-sync" \
-	--image  ${XGO_IMAGE} \
+	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
 	-ldflags "-H=windowsgui \
 	-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
@@ -52,7 +56,7 @@ xgo:
 
 	${GOPATH}/bin/xgo -go 1.12 \
 	-out "cells-sync-noui" \
-	--image  ${XGO_IMAGE} \
+	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \

@@ -104,7 +104,7 @@ class NavMenu extends React.Component {
             }
         };
 
-        const languages = {'en':'English','fr':'Français', 'de':'Deutsch', 'it':'Italiano'};
+        const languages = {'en':'English','fr':'Français', 'de':'Deutsch', 'it':'Italiano', 'es-es':'Español'};
         const menuItems = (i18n) => {
             return Object.keys(languages).map(key => {
                 return {key, text:languages[key], iconProps:{iconName:i18n.language === key ?'CheckboxComposite':'Checkbox'}, onClick:()=>{
