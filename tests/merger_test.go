@@ -46,7 +46,7 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 		dir, _ := os.Getwd()
 		source, _ := filesystem.NewFSClient(dir, model.EndpointOptions{})
 
-		nodes := make(map[string]*tree.Node)
+		nodes := make(map[string]tree.Node)
 
 		target := index.NewClient("test", &tree.NodeProviderMock{nodes}, &tree.NodeReceiverMock{nodes}, &tree.SessionIndexerMock{})
 		target.CreateNode(context.Background(), &tree.Node{
