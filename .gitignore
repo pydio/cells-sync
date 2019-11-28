@@ -3,6 +3,7 @@ csync
 cells-sync*
 sync.exe*
 .vscode
+.pydio
 debug
 package-lock.json
 *-packr.go
