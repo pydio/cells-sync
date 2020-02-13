@@ -225,7 +225,7 @@ class Loader {
             return response.json();
         }).then(data => {
             const children = data.Children || [];
-            if ( (path === "/" || path === "") && children.length === 0) {
+            if ( (path === "/" || path === "") && children.length === 0 && !ignoreNotExists) {
                 throw new Error("tree.error.empty-root");
             }
             return children;

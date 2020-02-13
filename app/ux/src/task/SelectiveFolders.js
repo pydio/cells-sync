@@ -23,6 +23,7 @@ import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { IconButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button'
 import TreeDialog from "./TreeDialog"
 import {withTranslation} from 'react-i18next'
+import parse from 'url-parse'
 
 class SelectiveFolders extends React.Component{
 
@@ -34,7 +35,7 @@ class SelectiveFolders extends React.Component{
 
     parsed(){
         const {value} = this.props;
-        let folders, enabled;
+        let folders = [], enabled = false;
         if (value !== undefined && value !== null && value.length !== undefined){ // check it's an array, even if empty
             folders = value;
             enabled = true;
@@ -97,16 +98,23 @@ class SelectiveFolders extends React.Component{
         onChange(event, folders);
     }
 
+    validUri(uri){
+        const p = parse(uri, {}, true);
+        return !!p['pathname'];
+    }
+
     render(){
         const {folders, enabled} = this.parsed();
         const {dialog} = this.state;
         const {t, leftURI, rightURI} = this.props;
+        const selectiveDisable = !this.validUri(leftURI) || !this.validUri(rightURI);
 
         return (
             <React.Fragment>
                 <Stack vertical tokens={{childrenGap: 8}}>
                     <Toggle
-                        label={t('editor.selective')}
+                        label={t('editor.selective') + (selectiveDisable ? ' ('+t('editor.selective.disabled')+')' : '')}
+                        disabled={selectiveDisable}
                         defaultChecked={enabled}
                         onText={t('editor.selective.on')}
                         offText={t('editor.selective.off')}

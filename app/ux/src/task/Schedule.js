@@ -191,7 +191,10 @@ class Schedule extends React.Component {
                 <TextField
                     label={label}
                     onClick={() => this.setState({open:true})}
-                    onFocus={() => this.setState({open:true})}
+                    onFocus={(e) => {
+                        this.setState({open:true});
+                        e.currentTarget.blur();
+                    }}
                     readOnly={true}
                     value={Schedule.makeReadableString(t, this.state, false)}
                 />
@@ -245,6 +248,7 @@ class Schedule extends React.Component {
                                 <Label>{t('schedule.detail.daytime')}</Label>
                                 <div style={{display:'flex', alignItems:'center'}}>
                                     <TextField
+                                        styles={{root:{width:150}}}
                                         value={moment(daytime).format('HH')}
                                         type={"number"}
                                         onChange={(e, val) => {

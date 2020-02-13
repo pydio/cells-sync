@@ -30,7 +30,7 @@ const Config = {
         Realtime: true,
         LoopInterval:"",
         HardInterval:"",
-        SelectiveRoots:undefined,
+        SelectiveRoots:null,
     },
     Status:0,
     LastSyncTime:"2019-05-03T11:54:40.775684+02:00",

@@ -95,6 +95,7 @@
   "editor.selective.off":"Disabled (all folders)",
   "editor.selective.remove":"Remove",
   "editor.selective.add":"Select Folder(s)",
+  "editor.selective.disabled":"select source and target first",
   "editor.triggers.realtime": "Realtime Sync",
   "editor.triggers.realtime.enabled": "Enabled (listening for events)",
   "editor.triggers.realtime.disabled": "Disabled (launch sync manually or use resync intervals)",
