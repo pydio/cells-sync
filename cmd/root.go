@@ -25,6 +25,8 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/pydio/cells/common/log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +40,7 @@ Realtime, bidirectional synchronization tool for Pydio Cells server.
 Launching without command is the same as './cells-sync start' on Mac and Windows. 
 `,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		log.Init()
 		handleSignals()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
