@@ -27,7 +27,7 @@ Cells Sync is a desktop synchronization client for Pydio Cells server.
 
 ## Getting Started
 
-If you are using a Mac or Windows personal computer, you might directly download a pre-packaged installer for your OS from our [Download Server](https://download.pydio.com/latest/cells-sync/release/{latest}/).
+If you are using a Mac or Windows personal computer, you might directly download a pre-packaged installer for your OS from our [Download Server](https://download.pydio.com/latest/cells-sync/release/{latest}/). Furthermore, you should read this [page of our documentation](https://pydio.com/en/docs/cells/v2/connect-desktop-sync) to get a functionnal overview of the tool.
 
 We also provide pre-compiled binaries for [Linux](https://download.pydio.com/latest/cells-sync/release/{latest}/linux-amd64/cells-sync), [MacOS](https://download.pydio.com/latest/cells-sync/release/{latest}/darwin-amd64/cells-sync) and [Windows](https://download.pydio.com/latest/cells-sync/release/{latest}/windows-amd64/cells-sync.exe): simply download the tool and launch it.  
 See [the instructions below](#running-cells-sync) for further details.
