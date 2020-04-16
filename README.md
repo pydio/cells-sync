@@ -23,33 +23,49 @@ Cells Sync is a desktop synchronization client for Pydio Cells server.
   - Local Cells server (accessed directly if deployed inside the microservices mesh)
   - S3-compatible storage service (tested with AWS S3)
   - BoltDB storage (used for storing tree snapshots)
-  - Cells GRPC indexation services (implementing NodeProvider/NodeReceiver grpc endpoints).
+  - Cells gRPC indexation services (implementing NodeProvider/NodeReceiver gRPC endpoints).
 
 ## Getting Started
 
-### Compiling from sources
+If you are using a Mac or Windows personal computer, you might directly download a pre-packaged installer for your OS from our [Download Server](https://download.pydio.com/latest/cells-sync/release/{latest}/).
 
-#### Pre-requisites
+We also provide pre-compiled binaries for [Linux](https://download.pydio.com/latest/cells-sync/release/{latest}/linux-amd64/cells-sync), [MacOS](https://download.pydio.com/latest/cells-sync/release/{latest}/darwin-amd64/cells-sync) and [Windows](https://download.pydio.com/latest/cells-sync/release/{latest}/windows-amd64/cells-sync.exe): simply download the tool and launch it.  
+See [the instructions below](#running-cells-sync) for further details.
+
+Note that synchronization must be configured and enabled **on the server side**: if you are running in a non-vanilla environment (e.g. behind a reverse proxy), we have gathered [some tips in our knowledge base](https://pydio.com/en/docs/kb/client-applications/setup-cells-server-cellssync) that should help you fix usual networking issues.
+
+## Compiling from sources
+
+The below instructions will get you a copy of the project up and running on your local machine for **development** and testing purposes. To simply deploy a running binary, see the [previous section](#getting-started).
+
+### Pre-requisites
 
 In order to compile and run the Cells-Sync client, you must fulfill the following requirements:
 
 - GOLANG developement toolchain properly installed (tested with 1.12 and higher)
 - NodeJS/NPM environment in order to compile the frontend, you need an up-to-date version of NPM (tested with node version 12.X)
 
-#### Compilation instructions
+### Compilation instructions
 
-- Get the code: `go get -u github.com/pydio/cells-sync`
+- Get the code: `go get github.com/pydio/cells-sync/...`
 - To compile the frontend, enter the `app/ux/` folder and run `npm run build`
 - To pack the frontend inside the binary (not mandatory if you are running on the same machine where $GOPATH is available), install github.com/gobuffalo/packr/packr tool and run `make clean pack` at the root of the repository.
+
+[ Update 04/16/2020 ]  
+Due to a dependency issue, until we switch to modules or until this dependency master is stable again, you have to apply the following before calling the make command: 
+
+```sh
+cd github.com/zserge/webview
+git checkout 9c1b0a888aa40039d501c1ea9f60b22a076a25ea
+```
+
+[ to be continued ]
+
 - Compile binary by running `make cli`
 
 The resulting `cells-sync` binary should be good to go.
 
-### Using pre-compiled binaries
-
-Coming soon: list and links to the pre-compiled binaries download server
-
-### Running cells-sync
+## Running cells-sync
 
 Once you have downloaded or compiled cells-sync for your platform, simply run:
 
