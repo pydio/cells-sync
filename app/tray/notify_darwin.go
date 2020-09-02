@@ -32,6 +32,6 @@ func notify(title, message string) error {
 		return err
 	}
 
-	cmd := exec.Command(osa, "-e", `display notification "`+message+`" with title "`+title+`"`)
+	cmd := exec.Command(osa, "-e", `'display notification "`+message+`" with title "`+title+`"'`)
 	return cmd.Run()
 }

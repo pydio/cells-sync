@@ -28,6 +28,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/skratchdot/open-golang/open"
@@ -114,6 +115,50 @@ func spawnWebView(path ...string) {
 	viewCancel = nil
 }
 
+var (
+	knownDisconnections map[string]bool
+	kcLock              *sync.Mutex
+)
+
+func taskStatus(t *common.ConcreteSyncState) (hasError, isProcessing bool, label string) {
+
+	label = t.Config.Label
+	switch t.Status {
+	case model.TaskStatusDisabled:
+		label += " (" + i18n.T("tray.task.status.disabled") + ")"
+	case model.TaskStatusPaused:
+		label += " (" + i18n.T("tray.task.status.paused") + ")"
+	case model.TaskStatusProcessing:
+		label += " (" + i18n.T("tray.task.status.processing") + ")"
+		isProcessing = true
+	case model.TaskStatusError:
+		label += " (" + i18n.T("tray.task.status.error") + ")"
+		hasError = true
+		return
+	}
+	disconnected := !t.LeftInfo.Connected || !t.RightInfo.Connected
+	if kcLock == nil {
+		knownDisconnections = make(map[string]bool)
+		kcLock = &sync.Mutex{}
+	}
+	kcLock.Lock()
+	if prevDisconnected, ok := knownDisconnections[t.Config.Uuid]; disconnected && ok && prevDisconnected {
+		// Previous state was already disconnected (=> twice)
+		label += " (" + i18n.T("tray.task.status.disconnected") + ")"
+		hasError = true
+		//notify("CellsSync", "Server is disconnected")
+	} else if disconnected && ok && !prevDisconnected {
+		// first disconnection detected => recheck in 10s
+		go func() {
+			<-time.After(10 * time.Second)
+			ws.Poll()
+		}()
+	}
+	knownDisconnections[t.Config.Uuid] = disconnected
+	kcLock.Unlock()
+	return
+}
+
 func onReady() {
 	systray.SetIcon(iconData)
 	setIconActive()
@@ -176,25 +221,16 @@ func onReady() {
 					}
 				}
 				var hasError bool
+				var errorLabel string
 				var hasProcessing bool
 				allPaused := true
 				for _, t := range tasks {
-					label := t.Config.Label
-					switch t.Status {
-					case model.TaskStatusDisabled:
-						label += " (" + i18n.T("tray.task.status.disabled") + ")"
-					case model.TaskStatusProcessing:
-						label += " (" + i18n.T("tray.task.status.processing") + ")"
+					tErr, tProc, label := taskStatus(t)
+					if tErr {
+						hasError = true
+						errorLabel = label
+					} else if tProc {
 						hasProcessing = true
-					case model.TaskStatusPaused:
-						label += " (" + i18n.T("tray.task.status.paused") + ")"
-					case model.TaskStatusError:
-						label += " (" + i18n.T("tray.task.status.error") + ")"
-						hasError = true
-					}
-					if !hasError && (!t.LeftInfo.Connected || !t.RightInfo.Connected) {
-						label += " (" + i18n.T("tray.task.status.disconnected") + ")"
-						hasError = true
 					}
 					allPaused = allPaused && (t.Status == model.TaskStatusPaused)
 					stateSlots[i].SetTitle(label)
@@ -205,17 +241,17 @@ func onReady() {
 					} else {
 						stateSlots[i].Enable()
 					}
-					if hasError {
-						setIconError(label)
-					} else if hasProcessing {
-						setIconActive()
-					} else {
-						setIconIdle()
-					}
 					i++
 					if i >= len(stateSlots) {
 						break
 					}
+				}
+				if hasError {
+					setIconError(errorLabel)
+				} else if hasProcessing {
+					setIconActive()
+				} else {
+					setIconIdle()
 				}
 				for k, slot := range stateSlots {
 					if k >= len(tasks) {

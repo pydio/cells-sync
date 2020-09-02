@@ -91,6 +91,12 @@ func (c *Client) Connect() error {
 	}, 6*time.Second, 30*time.Second)
 }
 
+func (c *Client) Poll() {
+	if c.conn != nil && !c.closing {
+		c.conn.WriteJSON(&common.Message{Type: "PING"})
+	}
+}
+
 // Close closes the WebSocket connection
 func (c *Client) Close() {
 	c.closing = true
