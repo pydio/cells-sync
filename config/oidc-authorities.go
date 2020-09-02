@@ -52,12 +52,13 @@ type Authority struct {
 	URI                string `json:"uri"`
 	InsecureSkipVerify bool   `json:"insecureSkipVerify"`
 
-	ServerLabel string    `json:"serverLabel"`
-	Username    string    `json:"username"`
-	LoginDate   time.Time `json:"loginDate"`
-	RefreshDate time.Time `json:"refreshDate"`
-	TokenStatus string    `json:"tokenStatus"`
-	TasksCount  int       `json:"tasksCount"`
+	ServerLabel   string         `json:"serverLabel"`
+	Username      string         `json:"username"`
+	LoginDate     time.Time      `json:"loginDate"`
+	RefreshDate   time.Time      `json:"refreshDate"`
+	TokenStatus   string         `json:"token_status,omitempty"` // Kept for backward compat
+	RefreshStatus *RefreshStatus `json:"refreshStatus,omitempty"`
+	TasksCount    int            `json:"tasksCount"`
 
 	IdToken      string `json:"id_token"`
 	AccessToken  string `json:"access_token"`
@@ -192,13 +193,14 @@ func (g *Global) PublicAuthorities() []*Authority {
 	var p []*Authority
 	for _, a := range g.Authorities {
 		pA := &Authority{
-			Id:          a.key(),
-			URI:         a.URI,
-			ServerLabel: a.ServerLabel,
-			Username:    a.Username,
-			RefreshDate: a.RefreshDate,
-			LoginDate:   a.LoginDate,
-			ExpiresAt:   a.ExpiresAt,
+			Id:            a.key(),
+			URI:           a.URI,
+			ServerLabel:   a.ServerLabel,
+			Username:      a.Username,
+			RefreshDate:   a.RefreshDate,
+			LoginDate:     a.LoginDate,
+			ExpiresAt:     a.ExpiresAt,
+			RefreshStatus: a.RefreshStatus,
 		}
 		// Associate number of sync tasks
 		pU, _ := url.Parse(a.URI)
@@ -233,7 +235,7 @@ func (g *Global) CreateAuthority(a *Authority) error {
 				c <- &AuthChange{Type: "create", Authority: a}
 			}
 		}()
-		getTokenMonitor(a)
+		getTokenMonitor(a, g.changes)
 	}
 	return e
 }
@@ -316,5 +318,5 @@ func (a *Authority) AfterLoad() {
 		a.AccessToken = b.AccessToken
 		a.RefreshToken = b.RefreshToken
 	}
-	getTokenMonitor(a)
+	getTokenMonitor(a, nil)
 }

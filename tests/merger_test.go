@@ -75,8 +75,8 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 
 			diffNoErrors := merger.NewTreeDiff(context.Background(), target, capture)
 			Convey("Test computing diff with no errors and no changes", func() {
-				// Diffing between the target and its catpure shouldn't give anything
-				e := diffNoErrors.Compute("/", nil)
+				// Diffing between the target and its capture shouldn't give anything
+				e := diffNoErrors.Compute("/", nil, nil)
 				So(e, ShouldBeNil)
 			})
 
@@ -93,7 +93,7 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 					return nil
 				})
 
-				e := diffErrors.Compute("/", nil)
+				e := diffErrors.Compute("/", nil, nil)
 				So(e, ShouldNotBeNil)
 			})
 

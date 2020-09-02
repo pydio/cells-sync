@@ -28,7 +28,7 @@ import {
     Stack,
     IconButton,
     TooltipDelay,
-    TooltipHost, CompoundButton
+    TooltipHost, CompoundButton, DirectionalHint, Icon
 } from 'office-ui-fabric-react';
 import moment from 'moment'
 import parse from "url-parse";
@@ -41,7 +41,7 @@ const sampleServer = {
     username:"admin",
     loginDate:"2019-09-18T15:54:59.328434+02:00",
     refreshDate:"0001-01-01T00:00:00Z",
-    tokenStatus:"",
+    refreshStatus:{valid:false, error:"errorString"},
     expires_at:1568818498
 };
 const emptyDate = '0001-01-01T00:00:00Z';
@@ -59,6 +59,17 @@ const styles = {
         flex: 1,
         display:'flex',
         flexDirection:'column'
+    },
+    serverLabel: {
+        color:'#607D8B',
+        display:'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    errorIcon: {
+        color: '#d32f2f',
+        padding: '0 10px',
+        cursor: 'pointer'
     },
     serverActions:{
         marginTop: 40,
@@ -168,7 +179,19 @@ class AccountsList extends Component{
                 <div style={styles.serverCont}>
                     {servers.map(s =>
                         <div key={s.id} style={styles.server}>
-                            <h2 style={{color:'#607D8B'}}>{s.serverLabel}</h2>
+                            <h2 style={styles.serverLabel}>
+                                {s.refreshStatus && s.refreshStatus.valid === false &&
+                                <TooltipHost
+                                    styles={{root:{height: 22}}}
+                                    id={s.id}
+                                    directionalHint={DirectionalHint.bottomCenter}
+                                    content={<span style={{color: styles.errorIcon.color}}>{s.refreshStatus.error}</span>}
+                                >
+                                    <Icon aria-labelledby={s.id} iconName={"Warning"} styles={{root: styles.errorIcon}}/>
+                                </TooltipHost>
+                                }
+                                {s.serverLabel}
+                            </h2>
                             <div style={{flex: '1 1 auto'}}>
                                 <h4 style={{margin:'10px 0'}}>{s.uri}</h4>
                                 <div style={{lineHeight:'1.5em'}}>
@@ -181,7 +204,7 @@ class AccountsList extends Component{
                                     <IconButton iconProps={{iconName:'UserSync'}} onClick={()=>{this.refreshLogin(s.uri)}} styles={styles.buttons}/>
                                 </TooltipHost>
                                 <TooltipHost id={"button-add"} key={"button-add"} content={t('server.add-task.button')} delay={TooltipDelay.zero}>
-                                    <IconButton iconProps={{iconName:'SyncFolder'}} onClick={()=>{this.createSyncTask(s.id)}} styles={styles.buttons}/>
+                                    <IconButton iconProps={{iconName:'SyncFolder'}} onClick={()=>{this.createSyncTask(s.id)}} styles={styles.buttons} disabled={s.refreshStatus && s.refreshStatus.valid === false}/>
                                 </TooltipHost>
                                 <TooltipHost id={"button-delete"} key={"button-delete"} content={t('server.delete.button')} delay={TooltipDelay.zero}>
                                     <IconButton iconProps={{iconName:'Delete'}} onClick={()=>{this.deleteServer(s)}} styles={styles.buttons} disabled={s.tasksCount > 0}/>

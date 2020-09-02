@@ -32,12 +32,18 @@ var monitorsLock *sync.Mutex
 
 // tokenMonitor automatically refresh IdToken as needed
 type tokenMonitor struct {
-	a       *Authority
-	trigger chan struct{}
-	done    chan bool
+	a             *Authority
+	trigger       chan struct{}
+	done          chan bool
+	statusWatches []chan interface{}
 }
 
-func getTokenMonitor(a *Authority) *tokenMonitor {
+type RefreshStatus struct {
+	Valid bool   `json:"valid"`
+	Error string `json:"error,omitempty"`
+}
+
+func getTokenMonitor(a *Authority, watchers []chan interface{}) *tokenMonitor {
 	monitorsLock.Lock()
 	defer func() {
 		monitorsLock.Unlock()
@@ -51,6 +57,7 @@ func getTokenMonitor(a *Authority) *tokenMonitor {
 			done:    make(chan bool, 1),
 		}
 		monitors[a.key()] = monitor
+		monitor.statusWatches = watchers
 		go monitor.Start()
 		return monitor
 	}
@@ -77,10 +84,23 @@ func (t *tokenMonitor) Start() {
 			t.trigger <- struct{}{}
 		case <-t.trigger:
 			if e := t.a.Refresh(); e != nil {
-				log.Logger(oidcContext).Info("Refreshing token failed for " + t.a.key() + ", will retry in 10s")
+				log.Logger(oidcContext).Info("Refreshing token failed for " + t.a.key() + ", will retry in 10s :" + e.Error())
+				t.a.RefreshStatus = &RefreshStatus{
+					Valid: false,
+					Error: e.Error(),
+				}
 				nextTick = 10 * time.Second
 			} else {
+				t.a.RefreshStatus = &RefreshStatus{
+					Valid: true,
+				}
 				nextTick, _ = t.a.RefreshRequired()
+			}
+			for _, w := range t.statusWatches {
+				w <- &AuthChange{
+					Type:      "token",
+					Authority: t.a,
+				}
 			}
 		case <-t.done:
 			log.Logger(oidcContext).Info("Stopping token monitoring for " + t.a.key())
@@ -100,4 +120,12 @@ func stopMonitoringToken(key string) {
 		delete(monitors, key)
 	}
 	monitorsLock.Unlock()
+}
+
+func appendMonitorsWatch(w chan interface{}) {
+	monitorsLock.Lock()
+	defer monitorsLock.Unlock()
+	for _, m := range monitors {
+		m.statusWatches = append(m.statusWatches, w)
+	}
 }

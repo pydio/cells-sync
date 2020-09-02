@@ -300,5 +300,6 @@ func Save() error {
 func Watch() chan interface{} {
 	changes := make(chan interface{})
 	def.changes = append(def.changes, changes)
+	appendMonitorsWatch(changes)
 	return changes
 }
