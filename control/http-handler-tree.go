@@ -20,7 +20,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -32,7 +31,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 
 	"github.com/pydio/cells-sync/endpoint"
@@ -56,23 +54,35 @@ type TreeResponse struct {
 	Children []*tree.Node
 }
 
-// ProtoMessage implements Proto() interface
-func (l *TreeResponse) ProtoMessage() {}
-
-// Reset implements Proto() interface
-func (l *TreeResponse) Reset() {}
-
-// String implements Proto() interface
-func (l *TreeResponse) String() string {
-	return ""
+// MarshalJSON manually marshal protobuf to JSON
+func (l *TreeResponse) MarshalJSON() ([]byte, error) {
+	data := make(map[string]interface{})
+	if l.Node != nil {
+		data["Node"] = l.marshalNode(l.Node)
+	}
+	var encC []map[string]interface{}
+	for _, c := range l.Children {
+		encC = append(encC, l.marshalNode(c))
+	}
+	if len(encC) > 0 {
+		data["Children"] = encC
+	}
+	return json.Marshal(data)
 }
 
-// MarshalJSON uses jsonpb for marshaling struct to JSON
-func (l *TreeResponse) MarshalJSON() ([]byte, error) {
-	encoder := jsonpb.Marshaler{}
-	buffer := bytes.NewBuffer(nil)
-	e := encoder.Marshal(buffer, l)
-	return buffer.Bytes(), e
+func (l *TreeResponse) marshalNode(n *tree.Node) map[string]interface{} {
+	d := make(map[string]interface{})
+	d["Path"] = n.Path
+	d["Size"] = n.Size
+	d["Uuid"] = n.Uuid
+	d["MTime"] = n.MTime
+	d["Etag"] = n.Etag
+	d["MetaStore"] = n.MetaStore
+	d["Type"] = "LEAF"
+	if !n.IsLeaf() {
+		d["Type"] = "COLLECTION"
+	}
+	return d
 }
 
 func (h *HttpServer) writeError(i *gin.Context, e error) {

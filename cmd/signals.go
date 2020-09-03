@@ -22,6 +22,7 @@ package cmd
 import (
 	"os"
 	"os/signal"
+	"runtime/pprof"
 	"syscall"
 
 	"github.com/pydio/cells-sync/control"
@@ -29,7 +30,7 @@ import (
 
 func handleSignals() {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGHUP)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGHUP, syscall.SIGUSR1)
 
 	go func() {
 
@@ -42,6 +43,10 @@ func handleSignals() {
 			case syscall.SIGHUP:
 				// Restart all sync
 				control.GetBus().Pub(control.MessageRestart, control.TopicGlobal)
+
+			case syscall.SIGUSR1:
+
+				pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
 
 			}
 		}
