@@ -156,7 +156,7 @@ export default class EndpointLabel extends React.Component {
                 </span>
                 <div style={styles.label}>
                     <span style={styles.labelInt}>{data.host}{data.pathname}{status.StatusString &&
-                    <span style={styles.statusString}> ({status.StatusString.toLowerCase()})</span>}</span>
+                    <span style={styles.statusString}> {status.StatusString.toLowerCase()}</span>}</span>
                     {status.Progress > 0 &&
                     <ProgressIndicator percentComplete={status.Progress}
                                        styles={{root: styles.pg, progressTrack: {backgroundColor: 'transparent'}}}/>

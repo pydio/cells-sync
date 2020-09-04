@@ -186,14 +186,14 @@ class Editor extends React.Component {
                             >
                                 <div
                                     onClick={()=>{this.setState({editDir: true})}}
-                                    style={{textAlign:'center', cursor:'pointer', fontSize: 24, backgroundColor:'#607D8B', width:40, height: 40, borderRadius: '50%', padding: 8, boxSizing: 'border-box', color:'white'}}>
+                                    style={{textAlign:'center', cursor:'pointer', fontSize: 24, backgroundColor:'rgb(0, 120, 212)', width:40, height: 40, borderRadius: '50%', padding: 8, boxSizing: 'border-box', color:'white', paddingTop: 6}}>
                                     <Icon iconName={"Sort" + (task.Config.Direction === 'Bi' ? '' : (task.Config.Direction === 'Right' ? 'Down' : 'Up'))}/>
                                 </div>
                             </TooltipHost>
                         }
                         {editDir &&
                             <Dropdown
-                                styles={{root:{minWidth:250, padding:4, backgroundColor:'#607D8B', borderRadius: 4}}}
+                                styles={{root:{minWidth:250, padding:4, backgroundColor:'rgb(0, 120, 212)', borderRadius: 4}}}
                                 selectedKey={task.Config.Direction}
                                 onChange={(e, item)=>{
                                     task.Config.Direction = item.key;

@@ -206,13 +206,13 @@ class SyncTask extends React.Component {
     render() {
 
         const {state, t} = this.props;
-        const {LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo} = state;
+        const {LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo, Config} = state;
         const {lastPatch} = this.state;
 
         const styles =  {
             dirIcon:{
-                padding: 9,
-                fontSize: 20,
+                padding: 6,
+                fontSize: 24,
                 color: '#607D8B',
                 transform: 'rotate(90deg)',
                 width: 36,
@@ -226,23 +226,31 @@ class SyncTask extends React.Component {
         };
         const status = this.computeStatus();
         const stats = this.computeStatistics();
+        const directionStyle = {...styles.dirIcon}
+        if(Config.Realtime && Status !== 1){
+            if(!LeftInfo.Connected || !RightInfo.Connected){
+                directionStyle.color = '#d32f2f'
+            } else {
+                directionStyle.color = '#4CAF50';
+            }
+        }
 
         return (
             <React.Fragment>
                 <PatchDialog
-                    syncUUID={lastPatch ? state.Config.Uuid : ''}
+                    syncUUID={lastPatch ? Config.Uuid : ''}
                     hidden={!lastPatch}
                     onDismiss={()=>{this.setState({lastPatch: false})}}
                     openPath={(path)=>{this.openPath(path, false)}}
                 />
                 <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
                     <div style={{padding: '0px 16px 10px'}}>
-                        <h2 style={{display:'none', alignItems:'flex-end', fontWeight:400}}>{state.Config.Label}</h2>
+                        <h2 style={{display:'none', alignItems:'flex-end', fontWeight:400}}>{Config.Label}</h2>
                         <div style={{marginBottom: 10, marginTop:30}}>
                             <div style={{display:'flex'}}>
-                                <EndpointLabel uri={state.Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
-                                <div style={styles.dirIcon}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (state.Config.Direction === 'Right' ? 'SortUp' : 'SortDown')}/></div>
-                                <EndpointLabel uri={state.Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
+                                <EndpointLabel uri={Config.LeftURI} info={LeftInfo} status={LeftProcessStatus || {}} t={t} style={{flex: 1, marginRight: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
+                                <div style={directionStyle}><Icon iconName={state.Config.Direction === 'Bi' ? 'Sort' : (Config.Direction === 'Right' ? 'SortUp' : 'SortDown')}/></div>
+                                <EndpointLabel uri={Config.RightURI} info={RightInfo} status={RightProcessStatus || {}} t={t} style={{flex: 1, marginLeft: 5}} openRoot={this.openEndpointRoot.bind(this)}/>
                             </div>
                         </div>
                         <div style={{color:'#212121'}}>
@@ -256,7 +264,7 @@ class SyncTask extends React.Component {
                             }
                         </div>
                     </div>
-                    <ActionBar triggerAction={this.triggerAction.bind(this)} LeftConnected={LeftInfo.Connected} RightConnected={RightInfo.Connected} Status={Status}/>
+                    <ActionBar triggerAction={this.triggerAction.bind(this)} LeftConnected={LeftInfo.Connected} RightConnected={RightInfo.Connected} Status={Status} Realtime={Config.Realtime}/>
                 </Stack>
             </React.Fragment>
         );

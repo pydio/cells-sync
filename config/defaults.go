@@ -60,7 +60,9 @@ type Task struct {
 	Direction      string
 	SelectiveRoots []string
 
-	Realtime     bool
+	Realtime       bool
+	RealtimePaused bool
+
 	LoopInterval string
 	HardInterval string
 }
@@ -171,15 +173,30 @@ func (g *Global) UpdateTask(task *Task) error {
 		}
 	}
 	g.Tasks = newTasks
-	e := Save()
-	if e == nil {
-		go func() {
-			for _, c := range g.changes {
-				c <- &TaskChange{Type: "update", Task: task}
-			}
-		}()
+	if e := Save(); e != nil {
+		return e
 	}
-	return e
+	go func() {
+		for _, c := range g.changes {
+			c <- &TaskChange{Type: "update", Task: task}
+		}
+	}()
+	return nil
+}
+
+func (g *Global) UpdateTaskPaused(taskUuid string, paused bool) error {
+	for _, t := range g.Tasks {
+		if t.Uuid == taskUuid {
+			if t.RealtimePaused == paused {
+				return nil // Nothing to do!
+			}
+			t.RealtimePaused = paused
+		}
+	}
+	if e := Save(); e != nil {
+		return e
+	}
+	return nil
 }
 
 // UpdateGlobals updates various sections of config (each parameter can be nil).

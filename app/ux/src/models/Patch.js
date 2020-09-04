@@ -103,6 +103,9 @@ class Patch {
     constructor(data, timeStamp = undefined) {
         this.Root = new PatchTreeNode(data.Root, timeStamp);
         this.Stats = data.Stats;
+        if(data.Error){
+            this.Error = data.Error;
+        }
     }
 }
 

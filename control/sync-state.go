@@ -65,12 +65,16 @@ type MemoryStateStore struct {
 
 // NewMemoryStateStore creates a MemoryStateStore.
 func NewMemoryStateStore(config *config.Task) *MemoryStateStore {
+	startStatus := model.TaskStatusIdle
+	if config.RealtimePaused {
+		startStatus = model.TaskStatusPaused
+	}
 	s := &MemoryStateStore{
 		config: config,
 		state: common.SyncState{
 			UUID:      config.Uuid,
 			Config:    config,
-			Status:    model.TaskStatusIdle,
+			Status:    startStatus,
 			LeftInfo:  &common.EndpointInfo{Connected: false},
 			RightInfo: &common.EndpointInfo{Connected: false},
 		},

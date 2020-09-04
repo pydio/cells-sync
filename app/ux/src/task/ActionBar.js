@@ -42,7 +42,7 @@ class ActionBar extends React.Component {
 
     render() {
 
-        const {LeftConnected, RightConnected, Status, triggerAction, t} = this.props;
+        const {LeftConnected, RightConnected, Status, Realtime, triggerAction, t} = this.props;
         const paused = Status === 1;
         let disabled = !(LeftConnected && RightConnected);
         let loopButton = {key:'loop', disabled: disabled, iconName:'Sync'};
@@ -56,13 +56,14 @@ class ActionBar extends React.Component {
         if (paused){
             menu.push({ key: paused ? 'resume' : 'pause', iconName: paused?'PlayResume': 'Pause'},)
         }
-        menu.push(
-            {key:'more', iconName:'MoreVertical', menu:[
-                { key:'resync', disabled: disabled, iconName:'SyncToPC'},
-                { key: paused ? 'resume' : 'pause', iconName: paused?'PlayResume': 'Pause'},
-                { key: 'edit', iconName: 'Settings'},
-                { key: 'delete', iconName: 'Delete' }
-            ]}
+
+        const mores = [{ key:'resync', disabled: disabled, iconName:'SyncToPC'}];
+        if (Realtime) {
+            mores.push({ key: paused ? 'resume' : 'pause', iconName: paused?'PlayResume': 'Pause'})
+        }
+        mores.push({ key: 'edit', iconName: 'Settings'}, { key: 'delete', iconName: 'Delete' })
+
+        menu.push({key:'more', iconName:'MoreVertical', menu:mores}
         );
         const buttonStyles = {
             root:{borderRadius: '50%', width: 48, height: 48, backgroundColor: '#F5F5F5', padding: '0 8px;'},

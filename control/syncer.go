@@ -133,6 +133,9 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 
 	syncer.task = syncTask
 	syncer.watches = conf.Realtime
+	if conf.RealtimePaused {
+		syncer.taskPaused = true
+	}
 	syncer.eventsChan = make(chan interface{})
 	syncer.patchStatus = make(chan model.Status)
 	syncer.patchDone = make(chan interface{})
@@ -164,7 +167,7 @@ func (s *Syncer) dispatchStatus(ctx context.Context) {
 			}
 			status := model.TaskStatusProcessing
 			if l.IsError() {
-				//status = common.TaskStatusError
+				status = model.TaskStatusError
 				log.Logger(ctx).Error(msg)
 			} else {
 				log.Logger(ctx).Debug(msg)
@@ -204,7 +207,9 @@ func (s *Syncer) dispatchStatus(ctx context.Context) {
 				} else if err, ok := patch.HasErrors(); ok {
 					msg := fmt.Sprintf("Processing ended with %d errors!", len(err))
 					log.Logger(ctx).Error(msg)
-					stateStore.UpdateProcessStatus(model.NewProcessingStatus(msg), model.TaskStatusError)
+					erStatus := model.NewProcessingStatus(msg)
+					erStatus.SetError(err[0])
+					stateStore.UpdateProcessStatus(erStatus, model.TaskStatusError)
 					deferIdle = false
 				} else if val, ok := stats["Processed"]; ok {
 					processed := val.(map[string]int)
@@ -343,12 +348,16 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 				s.task.Pause(ctx)
 				s.taskPaused = true
 				state := s.stateStore.UpdateSyncStatus(model.TaskStatusPaused)
+				config.Default().UpdateTaskPaused(s.uuid, true)
 				bus.Pub(state, TopicState)
 			case MessageResume:
 				// Start watching for events
-				s.task.Resume(ctx)
+				if s.watches {
+					s.task.Resume(ctx)
+				}
 				s.taskPaused = false
 				state := s.stateStore.UpdateSyncStatus(model.TaskStatusIdle)
+				config.Default().UpdateTaskPaused(s.uuid, false)
 				bus.Pub(state, TopicState)
 				s.task.Run(ctx, false, false)
 			case MessageDisable:
@@ -434,13 +443,15 @@ func (s *Syncer) Serve() {
 				s.stateStore.TouchLastOpsTime(s.lastPatch.GetStamp())
 				if errs, b := s.lastPatch.HasErrors(); b {
 					s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Previous sync ended on error!").SetError(errs[0]), model.TaskStatusError)
+				} else if s.taskPaused {
+					s.stateStore.UpdateSyncStatus(model.TaskStatusPaused)
 				} else {
 					s.stateStore.UpdateSyncStatus(model.TaskStatusIdle)
 				}
 			}
 		}
 
-		s.task.Start(ctx, s.watches)
+		s.task.Start(ctx, s.watches && !s.taskPaused)
 
 	} else {
 

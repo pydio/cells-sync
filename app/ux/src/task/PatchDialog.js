@@ -17,7 +17,19 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import React from 'react'
-import {ScrollablePane, PrimaryButton, Spinner, SpinnerSize, Dialog, DialogFooter, DialogContent, Sticky, StickyPositionType, Link} from "office-ui-fabric-react";
+import {
+    ScrollablePane,
+    PrimaryButton,
+    Spinner,
+    SpinnerSize,
+    Dialog,
+    DialogFooter,
+    DialogContent,
+    Sticky,
+    StickyPositionType,
+    Link,
+    Icon
+} from "office-ui-fabric-react";
 import {withTranslation} from 'react-i18next'
 import {load} from '../models/Patch'
 import PatchNode from "./PatchNode";
@@ -87,6 +99,11 @@ class PatchDialog extends React.Component {
                             patches.map((patch, k) => {
                                 return (
                                     <div key={k} style={{paddingBottom: 2, borderTop: k > 0 ? '1px solid #e0e0e0' : null}}>
+                                        {patch.Error &&
+                                        <div style={{padding:'8px 6px 6px', display:'flex', alignItems:'end',color:'#d32f2f', fontWeight:500}}>
+                                            <Icon iconName={"Warning"} styles={{root: {}}}/> &nbsp; {patch.Error}
+                                        </div>
+                                        }
                                         <PatchNode patch={patch.Root} stats={patch.Stats} level={0} open={k === 0} openPath={openPath}/>
                                     </div>
                                 );
