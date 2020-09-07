@@ -18,21 +18,14 @@
  */
 import React from 'react'
 import {
-    ScrollablePane,
     PrimaryButton,
-    Spinner,
-    SpinnerSize,
     Dialog,
     DialogFooter,
     DialogContent,
-    Sticky,
-    StickyPositionType,
-    Link,
-    Icon
 } from "office-ui-fabric-react";
 import {withTranslation} from 'react-i18next'
 import {load} from '../models/Patch'
-import PatchNode from "./PatchNode";
+import PatchActivities from './PatchActivities'
 
 const listSize = 5;
 
@@ -88,36 +81,12 @@ class PatchDialog extends React.Component {
         return (
             <Dialog {...dialogProps} onDismiss={onDismiss} minWidth={700} title={t('patch.title')} modalProps={{...dialogProps.modalProps,isBlocking: false}}>
                 <DialogContent styles={{innerContent:{minHeight: 350}, inner:{padding:0}, title:{display:'none'}}}>
-                    <ScrollablePane styles={{contentContainer:{maxHeight:350, backgroundColor:'#fafafa'}}}>
-                        <Sticky stickyPosition={StickyPositionType.Header}>
-                            <div style={{borderBottom: '1px solid #EEEEEE', backgroundColor: '#F5F5F5', fontFamily: 'Roboto Medium', display:'flex', alignItems:'center', padding:'8px 0'}}>
-                                <span style={{flex: 1, paddingLeft: 8}}>{t('patch.header.nodes')}</span>
-                                <span style={{width: 130, marginRight: 8, textAlign:'center'}}>{t('patch.header.operations')}</span>
-                            </div>
-                        </Sticky>
-                        {patches &&
-                            patches.map((patch, k) => {
-                                return (
-                                    <div key={k} style={{paddingBottom: 2, borderTop: k > 0 ? '1px solid #e0e0e0' : null}}>
-                                        {patch.Error &&
-                                        <div style={{padding:'8px 6px 6px', display:'flex', alignItems:'end',color:'#d32f2f', fontWeight:500}}>
-                                            <Icon iconName={"Warning"} styles={{root: {}}}/> &nbsp; {patch.Error}
-                                        </div>
-                                        }
-                                        <PatchNode patch={patch.Root} stats={patch.Stats} level={0} open={k === 0} openPath={openPath}/>
-                                    </div>
-                                );
-                            })
-                        }
-                        {!loading && hasMore &&
-                            <div style={{padding: 10, textAlign:'center'}}><Link onClick={() => {this.loadMore()}}>{t('patch.more.load')}</Link></div>
-                        }
-                        {loading &&
-                        <div style={{height:(patches && patches.length?50:400), display:'flex', alignItems:'center', justifyContent:'center'}}>
-                            <Spinner size={SpinnerSize.large} />
-                        </div>
-                        }
-                    </ScrollablePane>
+                    <PatchActivities
+                        patches={patches}
+                        loading={loading}
+                        openPath={openPath}
+                        loadMore={hasMore?this.loadMore.bind(this):null}
+                    />
                 </DialogContent>
                 <DialogFooter>
                     <PrimaryButton onClick={onDismiss} text={t('button.close')}/>

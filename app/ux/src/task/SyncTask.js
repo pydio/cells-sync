@@ -29,7 +29,7 @@ import humanize from 'humanize'
 import moment from 'moment'
 import {withTranslation} from 'react-i18next'
 import PatchDialog from "./PatchDialog";
-import parse from 'url-parse'
+import {openPath} from '../models/Open'
 
 const emptyTime = "0001-01-01T00:00:00Z";
 
@@ -70,48 +70,9 @@ class SyncTask extends React.Component {
         this.openPath(lnk, true)
     }
 
-    uriToOpenLink(uri){
-        let data = parse(uri);
-        data.query = {};
-        if (data.protocol === 'fs:') {
-            return {url: data.toString().replace('fs://', ''), isFs: true}
-        } else if(data.protocol.indexOf('http') === 0) {
-            return {url: data.toString(), isFs: false}
-        }
-        return {};
-    }
-
-    bestRootForOpen() {
-        const {state} = this.props;
-        const {url, isFs} = this.uriToOpenLink(state.Config.LeftURI);
-        if (url && isFs){
-            return url;
-        } else {
-            const {url:url2} = this.uriToOpenLink(state.Config.RightURI);
-            if (url2) {
-                return url2
-            }
-        }
-        return "";
-    }
-
     openPath(path, isURI = false){
-        let lnk = path;
-        if (!isURI) {
-            // Detect best option: if FS, use FS, otherwise use HTTP
-            let root = this.bestRootForOpen();
-            if (!root) {
-                return;
-            }
-            lnk = root + '/' + path;
-        }
-        console.log('opening link', lnk);
-        if (window.linkOpener) {
-            window.linkOpener.open(lnk);
-        } else {
-            window.open(lnk);
-        }
-
+        const {state} = this.props;
+        openPath(path, state, isURI);
     }
 
     computeStatus() {
@@ -132,7 +93,7 @@ class SyncTask extends React.Component {
                 return (
                     <Fragment>
                         &nbsp;
-                        <Icon iconName={"Error"} styles={{root:{color:'red', marginRight:5}}}/> {t('task.status.paused')}
+                        <Icon iconName={"Error"} styles={{root:{color:'#d32f2f', marginRight:5}}}/> {t('task.status.paused')}
                         {LastOpsTime && LastOpsTime !== emptyTime &&
                             <span>&nbsp;-&nbsp;<Link onClick={()=>{this.setState({lastPatch:true})}}>{"Display errors"}</Link></span>
                         }

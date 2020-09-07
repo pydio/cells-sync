@@ -33,21 +33,21 @@ class EditorPanel extends React.Component {
         return (
             <Route render={({history, location}) =>
                 <Translation>{(t) => {
-                    const isOpen = location.pathname.indexOf('/create') === 0 || location.pathname.indexOf('/edit') === 0 || location.pathname === '/debugger';
+                    const isOpen = location.pathname.indexOf('/tasks/create') === 0 || location.pathname.indexOf('/tasks/edit') === 0 || location.pathname === '/debugger';
                     let title;
                     if(location.pathname !== '/debugger'){
-                        title = location.pathname.indexOf('/create') === 0 ? t('editor.title.new') : t('editor.title.update')
+                        title = location.pathname.indexOf('/tasks/create') === 0 ? t('editor.title.new') : t('editor.title.update')
                     }
                     return(
                         <Panel
                             isOpen={isOpen}
                             type={PanelType.smallFluid}
                             onDismiss={() => {
-                                history.push('/')
+                                history.push('/tasks')
                             }}
                             headerText={title}
                         >
-                            <Route path={"/create"} render={({history}) =>
+                            <Route path={"/tasks/create"} render={({history}) =>
                                 <Editor
                                     task={true}
                                     onDismiss={() => {
@@ -56,7 +56,7 @@ class EditorPanel extends React.Component {
                                     socket={socket}
                                 />
                             }/>
-                            <Route path={"/edit/:uuid"} render={({match, history}) =>
+                            <Route path={"/tasks/edit/:uuid"} render={({match, history}) =>
                                 syncTasks[match.params['uuid']] ?
                                     <Editor
                                         task={syncTasks[match.params['uuid']]}

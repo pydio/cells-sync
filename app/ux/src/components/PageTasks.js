@@ -17,7 +17,7 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import React, {Component} from 'react'
-import {CompoundButton} from "office-ui-fabric-react";
+import {CompoundButton, Spinner, SpinnerSize} from "office-ui-fabric-react";
 import {Route} from 'react-router-dom'
 import {withTranslation} from "react-i18next";
 import SyncTask from "../task/SyncTask";
@@ -68,16 +68,31 @@ class PageTasks extends Component {
             }
         };
 
+        const loading = socket.firstLoad();
+
         return (
             <Route render={({history}) => {
-                if (tasksArray.length){
+                if (loading) {
+                    return (
+                        <div style={{height:'100%', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                            <div style={{
+                                height:40, width:40,
+                                backgroundColor:'white',
+                                borderRadius:'50%',
+                                display:'flex',
+                                alignItems:'center',
+                                justifyContent:'center'
+                            }}><Spinner size={SpinnerSize.large} /></div>
+                        </div>
+                    )
+                } else if (tasksArray.length){
                     cmdBarItems.push({
                         key:'create',
                         text:t('main.create'),
                         title:t('main.create.legend'),
                         primary:true,
                         iconProps:{iconName:'Add'},
-                        onClick:()=>history.push('create'),
+                        onClick:()=>history.push('/tasks/create'),
                     });
                     return (
                         <Page title={t("nav.tasks")} barItems={cmdBarItems}>
@@ -87,7 +102,7 @@ class PageTasks extends Component {
                                     state={task}
                                     socket={socket}
                                     openEditor={() => {
-                                        history.push('/edit/' + task.Config.Uuid)
+                                        history.push('/tasks/edit/' + task.Config.Uuid)
                                     }}
                                 />
                             )}
@@ -101,7 +116,7 @@ class PageTasks extends Component {
                                 iconProps={{iconName: 'Add'}}
                                 secondaryText={t('main.create.legend')}
                                 onClick={() => {
-                                    history.push('/create')
+                                    history.push('/tasks/create')
                                 }}
                             >{t('main.create')}</CompoundButton>
                         </div>

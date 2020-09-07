@@ -28,6 +28,7 @@ import PageLogs from "./PageLogs";
 import PageAbout from "./PageAbout";
 import Settings from '../models/Settings'
 import moment from 'moment';
+import PageActivities from "./PageActivities";
 
 class NavMenu extends React.Component {
 
@@ -63,7 +64,8 @@ class NavMenu extends React.Component {
         const {showDebug} = this.state;
 
         const links = {
-            '/': {label:'tasks', icon:'RecurringTask'},
+            '/': {label:'activities', icon:'Sort'},
+            '/tasks': {label:'tasks', icon:'RecurringTask'},
             '/servers': {label:'servers', icon:'AccountBox'},
             /*'/settings': {label:'settings', icon:'Settings'},*/
         };
@@ -181,7 +183,8 @@ class NavRoutes extends React.Component {
         return (
             <Route render={({history, location}) =>
                 <Switch>
-                    <Route exact path={["/", "/create", "/edit/uuid:"]} render={() => <PageTasks syncTasks={syncTasks} socket={socket}/>}/>
+                    <Route exact path={"/"} render={(p) => <PageActivities syncTasks={syncTasks} socket={socket}/>}/>
+                    <Route path={["/tasks", "/tasks/create", "/tasks/edit/uuid:"]} render={() => <PageTasks syncTasks={syncTasks} socket={socket}/>}/>
                     <Route path={"/settings"} component={PageSettings}/>
                     <Route path={"/servers"} render={(p) => <PageAccounts {...p} socket={socket}/>}/>
                     <Route path={"/about"} render={() => <PageAbout socket={socket}/>}/>

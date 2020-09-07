@@ -35,12 +35,12 @@ const ops = {
 class PatchNode extends React.Component {
     constructor(props) {
         super(props);
-        const {open} = props;
-        this.state = {open};
+        const {open, flatMode} = props;
+        this.state = {open: open || flatMode};
     }
 
     render(){
-        const {patch, level, stats, openPath, t} = this.props;
+        const {patch, patchError, level, stats, openPath, t, flatMode} = this.props;
         const {open} = this.state;
         if(!patch.hasOperations()){
             return null;
@@ -70,7 +70,7 @@ class PatchNode extends React.Component {
         } else if(patch.DataOperation) {
             action = t('patch.operation.' + ops[patch.DataOperation.OpType]);
             if (patch.DataOperation.ErrorString){
-                action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
+                action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"} styles={{root:{color:'#d32f2f'}}}/> <span style={{color:'#d32f2f'}}>{action}</span></TooltipHost>
             }
         } else if(patch.Conflict) {
             action = t('patch.operation.' + ops[patch.Conflict.OpType]);
@@ -82,7 +82,8 @@ class PatchNode extends React.Component {
             hasMore = children.length;
             children = children.slice(0, 20);
         }
-        let label = patch.Stamp ? moment(patch.Stamp).fromNow() : patch.Base;
+        const fullPath = flatMode && !(patch.PathOperation || patch.DataOperation) ? patch.Node.Path : patch.Base;
+        let label = patch.Stamp ? moment(patch.Stamp).fromNow() : fullPath;
         if (stats) {
             if(stats.Errors){
                 label +=  ' (' + stats.Errors.Total + ' '+t('patch.errors.' + (stats.Errors.Total > 1 ? 'multiple': 'one'))+')';
@@ -90,12 +91,17 @@ class PatchNode extends React.Component {
                 label +=  ' (' + stats.Processed.Total + ')';
             }
         }
+        if (patchError) {
+            label = <span>{label} : <span style={{color:'#d32f2f'}}>{patchError}</span></span>;
+        }
         if (patch.MoveTargetPath){
-            let target = basename(patch.MoveTargetPath);
-            if(target === patch.Base) {
-                target = '/' + patch.MoveTargetPath
+            let target
+            let base = basename(patch.MoveTargetPath);
+            let dir = patch.MoveTargetPath.replace(`${base}$`, '')
+            if(base === basename(patch.Node.Path)){
+                target = dir
             } else {
-                target = './' + target
+                target = base
             }
             label = <span>{label} &rarr; {target}</span>;
         }
@@ -108,24 +114,36 @@ class PatchNode extends React.Component {
                 openLink = patch.MoveTargetPath;
             }
         }
+        let hideMain = false;
+        let paddingLeft = (level > 0 ? 20 : 0)
+        let newLevel = level + 1
+        if(flatMode && patch.Base !== "." && !(patch.PathOperation || patch.DataOperation || patchError) && patch.Children) {
+            hideMain = patch.Children.filter((c) => c.PathOperation || c.DataOperation).length === 0
+            if (hideMain){
+                newLevel = level > 0 ? level -1  : level;
+            }
+        }
+        //console.log(hideMain, patch, level, newLevel);
         return (
-            <div style={{paddingLeft:(level > 0 ? 20 : 0)}}>
-                <div onClick={()=>{this.setState({open:!open})}} style={{display:'flex', alignItems:'center', fontSize:15, paddingTop: 8, paddingBottom: 8}}>
-                    {!isLeaf && children.length > 0 &&
+            <div style={{paddingLeft}}>
+                {!hideMain &&
+                    <div onClick={()=>{this.setState({open:!open})}} style={{display:'flex', alignItems:'center', fontSize:15, paddingTop: 8, paddingBottom: 8}}>
+                        {!isLeaf && children.length > 0 &&
                         <Icon iconName={open ? 'ChevronDown' : 'ChevronRight'} styles={{root:{margin:'0 5px', cursor: 'pointer', color:'#9e9e9e'}}}/>
-                    }
-                    {(isLeaf || !children.length) &&
+                        }
+                        {(isLeaf || !children.length) &&
                         <span style={{width: 25}}>&nbsp;</span>
-                    }
-                    <Icon iconName={icon} styles={{root:{margin:'0 5px'}}}/>
-                    {openLink && <Link styles={{root:{flex: 1}}} onClick={()=>{openPath(openLink)}}>{label}</Link>}
-                    {!openLink && <span style={{flex: 1}}>{label}</span>}
-                    <span style={{width: 130, marginRight: 8, fontSize: 12, textAlign:'center'}}>{action}</span>
-                </div>
+                        }
+                        <Icon iconName={icon} styles={{root:{margin:'0 5px'}}}/>
+                        {openLink && <Link styles={{root:{flex: 1}}} onClick={()=>{openPath(openLink)}}>{label}</Link>}
+                        {!openLink && <span style={{flex: 1}}>{label}</span>}
+                        {action && <span style={{width: 130, marginRight: 8, fontSize: 12, textAlign:'center'}}>{action}</span>}
+                    </div>
+                }
                 {open &&
                     <div>
                         {children.map((child) => {
-                            return <PatchNode key={child.Base} patch={child} level={level + 1} openPath={openPath} t={t}/>
+                            return <PatchNode key={child.Base} patch={child} level={newLevel} openPath={openPath} t={t} flatMode={flatMode}/>
                         })}
                         {hasMore > 0 && <div style={{padding: 5, paddingLeft: 50, fontStyle: 'italic', color: '#757575'}}>{t('patch.more.limit').replace('%s', hasMore)}.</div>}
                     </div>

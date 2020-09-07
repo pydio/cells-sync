@@ -26,6 +26,7 @@ export default class Socket {
         this.onTasks = onTasks;
         this.onUpdate = [];
         this.onAuthorities = [];
+        this.loadFirstState = true;
 
         this.state = {
             syncTasks: {},
@@ -35,6 +36,10 @@ export default class Socket {
         }
     }
 
+    firstLoad(){
+        return this.loadFirstState;
+    }
+    
     setState(data) {
         this.state = {...this.state, ...data};
         if(this.onStatus) {
@@ -126,6 +131,7 @@ export default class Socket {
         if (data.Type === 'PONG'){
             console.log('Correctly connected!', data)
         } else if(data.Type === 'STATE') {
+            this.loadFirstState = false;
             const {syncTasks} = this.state;
             const {UUID, Status} = data.Content;
             if (Status === 7 && syncTasks[UUID]) {

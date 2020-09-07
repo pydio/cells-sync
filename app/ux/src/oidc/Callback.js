@@ -61,9 +61,9 @@ class CallbackPage extends React.Component {
         Storage.getCurrentConfig();
         const editState = Storage.getLastEditState();
         if(editState && editState.create){
-            this.props.history.push('/create');
+            this.props.history.push('/tasks/create');
         } else if (editState && editState.edit) {
-            this.props.history.push('/edit/' + editState.edit);
+            this.props.history.push('/tasks/edit/' + editState.edit);
         } else {
             this.props.history.push('/servers');
         }
