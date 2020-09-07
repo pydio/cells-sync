@@ -217,7 +217,7 @@ func onReady() {
 				if firstRun {
 					disableFirstRun()
 					if len(tasks) == 0 {
-						go spawnWebView("/create")
+						go spawnWebView("/tasks/create")
 					}
 				}
 				var hasError bool
@@ -273,7 +273,7 @@ func onReady() {
 			case <-mOpen.ClickedCh:
 				go spawnWebView()
 			case <-mNewTasks.ClickedCh:
-				go spawnWebView("/create")
+				go spawnWebView("/tasks/create")
 			case <-mAbout.ClickedCh:
 				go spawnWebView("/about")
 			case <-stateSlots[0].ClickedCh:

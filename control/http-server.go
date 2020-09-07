@@ -136,8 +136,14 @@ func (h *HttpServer) InitHandlers() {
 
 			m := &common.Message{Type: "PONG", Content: "Hello new client!"}
 			session.Write(m.Bytes())
-			// Publish sync states
-			GetBus().Pub(MessagePublishState, TopicSyncAll)
+			// Publish state if there are tasks, or empty state
+			if len(config.Default().Tasks) == 0 {
+				emptyState := &common.Message{Type: "STATE", Content: nil}
+				session.Write(emptyState.Bytes())
+			} else {
+				// Publish sync states
+				GetBus().Pub(MessagePublishState, TopicSyncAll)
+			}
 			// Publish Authorities list
 			message := &common.Message{Type: "AUTHORITIES", Content: config.Default().PublicAuthorities()}
 			session.Write(message.Bytes())

@@ -143,8 +143,7 @@ func (c *Client) bindConn(conn *websocket.Conn) {
 				m := common.MessageFromData(message)
 				switch m.Type {
 				case "STATE":
-					content, ok := m.Content.(*common.ConcreteSyncState)
-					if ok {
+					if content, ok := m.Content.(*common.ConcreteSyncState); ok && content.UUID != "" {
 						log.Logger(trayCtx).Debug(fmt.Sprintf("Got state for sync %s - Status %d", content.Config.Label, content.Status))
 						c.Lock()
 						prev, hasPrev := c.tasks[content.Config.Uuid]
