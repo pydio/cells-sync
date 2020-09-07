@@ -22,6 +22,27 @@ import {Route} from 'react-router-dom'
 import {withTranslation} from "react-i18next";
 import SyncTask from "../task/SyncTask";
 import {Page} from "./Page";
+import Colors from "./Colors";
+
+export function makeCompound(t, history){
+    return (
+        <CompoundButton
+            iconProps={{iconName: 'Add'}}
+            secondaryText={t('main.create.legend')}
+            styles={{
+                root:{backgroundColor:Colors.cellsOrange, color:Colors.white},
+                rootPressed:{backgroundColor:Colors.cellsOrange, color:Colors.white},
+                rootHovered:{backgroundColor:Colors.cellsOrange, color:Colors.white},
+                description:{color:Colors.white},
+                descriptionHovered:{color:Colors.white},
+                descriptionPressed:{color:Colors.white},
+            }}
+            onClick={() => {
+                history.push('/tasks/create')
+            }}
+        >{t('main.create')}</CompoundButton>
+    )
+}
 
 class PageTasks extends Component {
 
@@ -72,9 +93,12 @@ class PageTasks extends Component {
 
         return (
             <Route render={({history}) => {
-                if (loading) {
-                    return (
-                        <div style={{height:'100%', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                let content;
+                let flex;
+                if(loading){
+                    flex = true;
+                    content = (
+                        <div style={styles.bigButtonContainer}>
                             <div style={{
                                 height:40, width:40,
                                 backgroundColor:'white',
@@ -84,8 +108,8 @@ class PageTasks extends Component {
                                 justifyContent:'center'
                             }}><Spinner size={SpinnerSize.large} /></div>
                         </div>
-                    )
-                } else if (tasksArray.length){
+                    );
+                } else if(tasksArray.length){
                     cmdBarItems.push({
                         key:'create',
                         text:t('main.create'),
@@ -94,8 +118,8 @@ class PageTasks extends Component {
                         iconProps:{iconName:'Add'},
                         onClick:()=>history.push('/tasks/create'),
                     });
-                    return (
-                        <Page title={t("nav.tasks")} barItems={cmdBarItems}>
+                    content = (
+                        <React.Fragment>
                             {tasksArray.map(task =>
                                 <SyncTask
                                     key={task.Config.Uuid}
@@ -106,22 +130,17 @@ class PageTasks extends Component {
                                     }}
                                 />
                             )}
-                        </Page>
+                        </React.Fragment>
                     );
                 } else {
-                    return (
-                        <div style={styles.bigButtonContainer}>
-                            <CompoundButton
-                                primary={true}
-                                iconProps={{iconName: 'Add'}}
-                                secondaryText={t('main.create.legend')}
-                                onClick={() => {
-                                    history.push('/tasks/create')
-                                }}
-                            >{t('main.create')}</CompoundButton>
-                        </div>
+                    flex = true;
+                    content = (
+                        <div style={styles.bigButtonContainer}>{makeCompound(t, history)}</div>
                     );
                 }
+                return (
+                    <Page flex={flex} noShadow={flex} title={t("nav.tasks")} barItems={cmdBarItems}>{content}</Page>
+                );
             }}/>
         );
     }

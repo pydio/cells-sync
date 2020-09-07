@@ -33,6 +33,7 @@ import {
 import moment from 'moment'
 import parse from "url-parse";
 import {withRouter} from 'react-router-dom'
+import Colors from "./Colors";
 
 /*
 const sampleServer = {
@@ -48,32 +49,41 @@ const emptyDate = '0001-01-01T00:00:00Z';
 */
 
 const styles = {
-    serverCont: {display:'flex', flexWrap:'wrap', padding: 5},
+    serverCont: {
+        display:'flex',
+        flexWrap:'wrap',
+        padding: 8,
+    },
     server: {
         textAlign: 'center',
-        margin:5,
+        margin:8,
         boxShadow: Depths.depth4,
-        backgroundColor:'white',
-        padding: '10px 20px',
+        borderRadius: 3,
+        backgroundColor:Colors.white,
+        padding: 0,
         minWidth: 200,
         flex: 1,
         display:'flex',
         flexDirection:'column'
     },
     serverLabel: {
-        color:'#607D8B',
+        backgroundColor: Colors.tint90,
+        color:Colors.tint30,
+        padding: 10,
+        marginTop: 0,
+        borderRadius: '3px 3px 0 0',
         display:'flex',
         alignItems: 'center',
         justifyContent: 'center'
     },
     errorIcon: {
-        color: '#d32f2f',
+        color: Colors.error,
         padding: '0 10px',
         cursor: 'pointer'
     },
     serverActions:{
         marginTop: 40,
-        marginBottom: 10,
+        marginBottom: 20,
     },
     buttons: {
         root:{borderRadius: '50%', width: 48, height: 48, backgroundColor: '#F5F5F5', padding: '0 8px;', margin: '0 5px'},
@@ -130,7 +140,7 @@ class AccountsList extends Component{
 
     createSyncTask(id){
         const {history} = this.props;
-        history.push('/create?id=' + id);
+        history.push('/tasks/create?id=' + id);
     }
 
     refreshLogin(serverUrl){
@@ -167,9 +177,16 @@ class AccountsList extends Component{
             content = (
                 <div style={styles.bigButtonContainer}>
                     <CompoundButton
-                        primary={true}
                         iconProps={{iconName: 'AddFriend'}}
                         secondaryText={t('server.create.legend')}
+                        styles={{
+                            root:{backgroundColor:Colors.cellsOrange, color:Colors.white},
+                            rootPressed:{backgroundColor:Colors.cellsOrange, color:Colors.white},
+                            rootHovered:{backgroundColor:Colors.cellsOrange, color:Colors.white},
+                            description:{color:Colors.white},
+                            descriptionHovered:{color:Colors.white},
+                            descriptionPressed:{color:Colors.white},
+                        }}
                         onClick={() => {this.setState({addMode: true})}}
                     >{t('server.create')}</CompoundButton>
                 </div>
@@ -192,7 +209,7 @@ class AccountsList extends Component{
                                 }
                                 {s.serverLabel}
                             </h2>
-                            <div style={{flex: '1 1 auto'}}>
+                            <div style={{flex: '1 1 auto', padding:'0 20px'}}>
                                 <h4 style={{margin:'10px 0'}}>{s.uri}</h4>
                                 <div style={{lineHeight:'1.5em'}}>
                                     {t('server.info.description').replace('%1', s.username).replace('%2', moment(new Date(s.loginDate)).fromNow())}.<br/>
@@ -219,7 +236,7 @@ class AccountsList extends Component{
         return (
             <Page title={t("nav.servers")} barItems={[action]}>
                 {addMode &&
-                    <Stack horizontal tokens={{childrenGap: 8}} style={{margin:10, padding: '0 10px', boxShadow: Depths.depth4, backgroundColor:'white', display:'flex', alignItems: 'center'}}>
+                    <Stack horizontal tokens={{childrenGap: 8}} style={{margin:16, marginBottom:0, padding: '0 10px', boxShadow: Depths.depth4, borderRadius:3, backgroundColor:Colors.tint90, display:'flex', alignItems: 'center'}}>
                         <Stack.Item><h3>{t('server.create')}</h3></Stack.Item>
                         <Stack.Item grow><TextField autoFocus={true} styles={{root:{flex: 1}}} placeholder={t('server.url.placeholder')} type={"text"} value={newUrl} onChange={(e, v) => {this.setState({newUrl: v})}}/></Stack.Item>
                         <Stack.Item><PrimaryButton onClick={this.loginToNewServer.bind(this)} text={t('server.login.button')} disabled={loginButtonDisabled}/></Stack.Item>

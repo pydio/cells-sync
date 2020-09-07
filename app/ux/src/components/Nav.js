@@ -19,7 +19,15 @@
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
 import {FontSizes} from "@uifabric/fluent-theme";
-import {Nav as OfficeNav, IconButton, TooltipHost, TooltipDelay, ContextualMenu, DirectionalHint} from 'office-ui-fabric-react'
+import {
+    Nav as OfficeNav,
+    IconButton,
+    TooltipHost,
+    TooltipDelay,
+    ContextualMenu,
+    DirectionalHint,
+    Icon
+} from 'office-ui-fabric-react'
 import {Translation} from "react-i18next";
 import PageTasks from "./PageTasks";
 import PageSettings from "./PageSettings";
@@ -29,6 +37,41 @@ import PageAbout from "./PageAbout";
 import Settings from '../models/Settings'
 import moment from 'moment';
 import PageActivities from "./PageActivities";
+import Colors from "./Colors";
+
+const IconStyle = {
+    cursor:'pointer',
+    display:'flex',
+    alignItems:'center',
+    height: 40,
+    fontSize:'1.5em',
+    padding:'0 10px',
+    color:Colors.cellsOrange,
+}
+
+class NavIcon extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {hover: false}
+    }
+    render() {
+        const {icon, label, selected, onClick} = this.props;
+        const {hover} = this.state;
+        let style = {
+            ...IconStyle,
+            backgroundColor:selected?'rgba(255,255,255,.1)':'transparent',
+            borderLeft:selected?'2px solid ' + Colors.active:'2px solid transparent'
+        };
+        if(hover){
+            style = {...style, backgroundColor:'rgba(255,255,255,.15)'}
+        }
+        return (
+            <TooltipHost content={label} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
+                <Icon onClick={onClick} styles={{root: style}} iconName={icon} onMouseOver={()=>{this.setState({hover:true})}} onMouseOut={()=>{this.setState({hover:false})}}/>
+            </TooltipHost>
+        )
+    }
+}
 
 class NavMenu extends React.Component {
 
@@ -67,7 +110,7 @@ class NavMenu extends React.Component {
             '/': {label:'activities', icon:'Sort'},
             '/tasks': {label:'tasks', icon:'RecurringTask'},
             '/servers': {label:'servers', icon:'AccountBox'},
-            /*'/settings': {label:'settings', icon:'Settings'},*/
+            '/settings': {label:'settings', icon:'Settings'},
         };
         if(showDebug){
             links['/logs'] = {label:'logs', icon:'CustomList'};
@@ -75,9 +118,7 @@ class NavMenu extends React.Component {
         }
         links['/about'] = {label:'about', icon:'Info'};
 
-        const bottomLinks = {
-            '/settings': {label:'settings', icon:'Settings'}
-        };
+        const bottomLinks = {};
 
         const colors = {
             title: '#61869e',
@@ -86,7 +127,7 @@ class NavMenu extends React.Component {
 
         const tStyles = {
             root: {
-                width: 200,
+                width: 50,
                 height: '100%',
                 boxSizing: 'border-box',
                 overflowY: 'auto',
@@ -94,9 +135,9 @@ class NavMenu extends React.Component {
             compositeLink:{
                 backgroundColor:'transparent',
                 selectors:{
-                    "& .ms-Button":{height: 40},
-                    "&.is-selected .ms-Button":{backgroundColor:'white', fontFamily:'Roboto Medium'},
-                    "& .ms-Button-icon":{color: colors.icon},
+                    "& .ms-Button":{height: 40, border: 0},
+                    "&.is-selected .ms-Button":{backgroundColor:'rgba(255,255,255,.1)'},
+                    "& .ms-Button-icon":{color: colors.icon, fontSize:'1.5em', marginTop:-4, marginLeft: 11, marginRight: 10},
                 }
             },
             link:{
@@ -122,49 +163,35 @@ class NavMenu extends React.Component {
             <Translation>{(t, {i18n}) =>
                 <Route render={({history, location}) =>
                     <React.Fragment>
-                        <div style={{display:'flex', alignItems:'center'}}>
-                            <span className={"cells-logo"} style={{width: 24, height: 24, marginLeft: 6, display:'block'}}/>
-                            <span style={{flex: 1, fontSize: FontSizes.size20, fontFamily: 'Roboto Medium', padding: 8, paddingLeft: 4, color:colors.title}}>{t('application.title')}</span>
-                            <TooltipHost content={t("language.switch")} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
-                                <IconButton
-                                    iconProps={{iconName:'Flag'}}
-                                    styles={{
-                                        root:{marginRight: 4},
-                                        menuIcon:{display:'none'},
-                                        icon:{opacity:0.4, transition:'opacity 200ms'},
-                                        iconHovered:{opacity:1},
-                                        iconExpanded:{opacity: 1}
-                                    }}
-                                    menuAs={NavMenu.menuAs}
-                                    menuProps={{items:menuItems(i18n)}}
-                                />
-                            </TooltipHost>
+                        <div style={{height:56}}>
+                            <span title={t('application.title')} className={"cells-logo"} style={{width: 26, height: 26, marginTop: 14, display: 'block', marginLeft: 11}}/>
                         </div>
-                        <OfficeNav
-                            onLinkClick={(e, item)=>{history.push(item.key)}}
-                            selectedKey={location.pathname}
-                            styles={tStyles}
-                            groups={[
-                                {
-                                    links: Object.keys(links).map((k) => {
-                                        return {name:t('nav.' + links[k].label), key:k, icon: links[k].icon}
-                                    })
-                                }
-                            ]}
-                        />
+                        {Object.keys(links).map(k => {
+                            const l = links[k];
+                            return (
+                                <NavIcon
+                                    key={k}
+                                    icon={l.icon}
+                                    label={t('nav.' + l.label)}
+                                    selected={k === location.pathname}
+                                    onClick={()=>{history.push(k)}}
+                                />
+                            );
+                        })}
                         <div style={{flex: 1}}></div>
-                        <OfficeNav
-                            onLinkClick={(e, item)=>{history.push(item.key)}}
-                            selectedKey={location.pathname}
-                            styles={{...tStyles, groupContent:{marginBottom: 0}, navItems:{marginBottom: 0}}}
-                            groups={[
-                                {
-                                    links: Object.keys(bottomLinks).map((k) => {
-                                        return {name:t('nav.' + bottomLinks[k].label), key:k, icon: bottomLinks[k].icon}
-                                    })
-                                }
-                            ]}
-                        />
+                        <TooltipHost content={t("language.switch")} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
+                            <IconButton
+                                iconProps={{iconName:'Flag'}}
+                                styles={{
+                                    root:{margin: 0, padding:'6px 7px 6px 6px', height:40, width: 'auto', backgroundColor: 'transparent'},
+                                    rootHovered:{backgroundColor: 'rgba(255,255,255,.15)'},
+                                    menuIcon:{display:'none'},
+                                    icon:{...IconStyle, padding:4, transition:'opacity 200ms'},
+                                }}
+                                menuAs={NavMenu.menuAs}
+                                menuProps={{items:menuItems(i18n)}}
+                            />
+                        </TooltipHost>
                     </React.Fragment>
                 }/>
             }</Translation>

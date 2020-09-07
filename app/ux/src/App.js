@@ -35,6 +35,7 @@ import {AccountCircleOutlined, Sync, Description, Code, InfoOutlined, SettingsOu
     FolderOpen, FolderOpenOutlined, CreateNewFolder, ArrowForward, Check,
     DnsOutlined, DataUsageOutlined, WifiTetheringOutlined, CloudDownload,
     CheckBoxOutlineBlankOutlined, CheckBoxOutlined, SignalCellularConnectedNoInternet1Bar} from '@material-ui/icons';
+import Colors from "./components/Colors";
 
 registerIcons({
     icons: {
@@ -151,10 +152,10 @@ class App extends React.Component{
                         />
                         <div style={{position:'absolute', top:0, left: 0, right:0, bottom: 0, overflow:'hidden', display:'flex', flexDirection:'column'}}>
                             <Stack horizontal styles={{root:{flex: 2}}}>
-                                <Stack.Item align={"stretch"} styles={{root:{boxShadow:Depths.depth4, zIndex: 2, backgroundColor:'rgba(236,239,241,0.6)', display:'flex', flexDirection:'column'}}}>
+                                <Stack.Item align={"stretch"} styles={{root:{boxShadow:Depths.depth4, zIndex: 2, backgroundColor:Colors.tint30, display:'flex', flexDirection:'column', width:50}}}>
                                     <NavMenu/>
                                 </Stack.Item>
-                                <Stack.Item grow={true} verticalFill styles={{root:{display:'flex', boxSizing:'border-box', backgroundColor: '#B0BEC5'}}}>
+                                <Stack.Item grow={true} verticalFill styles={{root:{display:'flex', boxSizing:'border-box', backgroundColor: Colors.tint50}}}>
                                     <NavRoutes syncTasks={syncTasks} socket={socket}/>
                                 </Stack.Item>
                             </Stack>

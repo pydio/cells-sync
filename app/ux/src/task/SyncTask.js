@@ -30,6 +30,7 @@ import moment from 'moment'
 import {withTranslation} from 'react-i18next'
 import PatchDialog from "./PatchDialog";
 import {openPath} from '../models/Open'
+import Colors from "../components/Colors";
 
 const emptyTime = "0001-01-01T00:00:00Z";
 
@@ -93,7 +94,7 @@ class SyncTask extends React.Component {
                 return (
                     <Fragment>
                         &nbsp;
-                        <Icon iconName={"Error"} styles={{root:{color:'#d32f2f', marginRight:5}}}/> {t('task.status.paused')}
+                        <Icon iconName={"Error"} styles={{root:{color:Colors.error, marginRight:5}}}/> {t('task.status.paused')}
                         {LastOpsTime && LastOpsTime !== emptyTime &&
                             <span>&nbsp;-&nbsp;<Link onClick={()=>{this.setState({lastPatch:true})}}>{"Display errors"}</Link></span>
                         }
@@ -174,14 +175,14 @@ class SyncTask extends React.Component {
             dirIcon:{
                 padding: 6,
                 fontSize: 24,
-                color: '#607D8B',
+                color: Colors.tint50,
                 transform: 'rotate(90deg)',
                 width: 36,
                 height: 36,
                 boxSizing: 'border-box',
             },
             label:{
-                color: '#455A64',
+                color: Colors.tint70,
                 marginTop: 10
             }
         };
@@ -190,9 +191,9 @@ class SyncTask extends React.Component {
         const directionStyle = {...styles.dirIcon}
         if(Config.Realtime && Status !== 1){
             if(!LeftInfo.Connected || !RightInfo.Connected){
-                directionStyle.color = '#d32f2f'
+                directionStyle.color = Colors.error
             } else {
-                directionStyle.color = '#4CAF50';
+                directionStyle.color = Colors.success;
             }
         }
 
@@ -204,7 +205,7 @@ class SyncTask extends React.Component {
                     onDismiss={()=>{this.setState({lastPatch: false})}}
                     openPath={(path)=>{this.openPath(path, false)}}
                 />
-                <Stack styles={{root:{margin:10, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
+                <Stack styles={{root:{margin:16, borderRadius:3, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
                     <div style={{padding: '0px 16px 10px'}}>
                         <h2 style={{display:'none', alignItems:'flex-end', fontWeight:400}}>{Config.Label}</h2>
                         <div style={{marginBottom: 10, marginTop:30}}>

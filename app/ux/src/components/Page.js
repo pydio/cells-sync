@@ -19,37 +19,46 @@
 import React from 'react'
 import {Depths} from "@uifabric/fluent-theme";
 import {CommandBar, ScrollablePane, Sticky, StickyPositionType} from "office-ui-fabric-react";
+import Colors from "./Colors";
 
 const styles={
     header:{
         zIndex: 10,
-        margin: '0 10px',
-        backgroundColor:'#ECEFF1',
-        padding:'3px 16px',
-        boxShadow:Depths.depth8,
+        margin: 0,
+        padding:'6px 6px 6px 20px',
         display:'flex',
         alignItems:'center',
         fontSize: 18,
-        color: '#607D8B',
+        /*fontFamily:'Roboto Medium',*/
+        backgroundColor:Colors.tint40,
+        color: Colors.white,
     },
     block:{
-        backgroundColor:'white',
+        backgroundColor:Colors.white,
         boxShadow:Depths.depth4,
-        margin: 10,
-        padding: 16
+        margin: 16,
+        padding: 16,
+        borderRadius: 3
     },
     cmdBarStyle:{
         root:{backgroundColor:'transparent'}
     },
     buttonStyle:{
         root:{
+            borderRadius: 3,
+            color:'white',
             backgroundColor:'transparent',
+            transition:'backgroundColor 0.5s ease',
             selectors:{
                 "&.is-disabled":{backgroundColor:'transparent'},
             }
         },
         rootHovered:{
-            backgroundColor:'rgba(255,255,255,0.5)',
+            color:'white',
+            backgroundColor:'rgba(255,255,255,0.15)',
+        },
+        icon:{
+            color:'white !important'
         }
     }
 };
@@ -77,7 +86,7 @@ class Page extends React.Component{
 
     render() {
 
-        const {children, title, flex, barItems} = this.props;
+        const {children, title, flex, noShadow, barItems} = this.props;
 
         if(flex) {
             return (
@@ -86,7 +95,7 @@ class Page extends React.Component{
                         <span>{title}</span>
                         {barItems && <span style={{flex:1}}><CmdBar items={barItems}/></span>}
                     </div>
-                    <div style={{boxShadow:Depths.depth4, overflow: 'hidden',position: 'absolute',left: 10, right: 10, top: 60, bottom: 10}}>
+                    <div style={{boxShadow:(noShadow?null:Depths.depth4), overflow: 'hidden',position: 'absolute',left: 16, right: 16, top: 72, bottom: 16, borderRadius:3}}>
                         {children}
                     </div>
                 </div>

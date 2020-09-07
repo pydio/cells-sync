@@ -21,6 +21,7 @@ import EndpointTypes from '../models/EndpointTypes'
 import parse from 'url-parse'
 import {Icon, TooltipHost, DirectionalHint, ProgressIndicator} from 'office-ui-fabric-react'
 import moment from 'moment'
+import Colors from "../components/Colors";
 const emptyTime = "0001-01-01T00:00:00Z";
 
 export default class EndpointLabel extends React.Component {
@@ -47,24 +48,20 @@ export default class EndpointLabel extends React.Component {
             );
         }
         const {Connected, LastConnection, WatcherActive} = info;
-        const baseBg = 'rgb(243, 245, 246)';
-        const activeColor = 'rgb(0, 120, 212)';
-        const errorColor = '#d32f2f';
+        const baseBg = Colors.tint90;// 'rgb(243, 245, 246)';
+        const activeColor = Colors.active;
+        const errorColor = Colors.error;
 
         let styles = {
             container: {
                 backgroundColor: baseBg,
-                /*
-                border: '1px solid #eceff1',
-                borderLeftWidth: 0,
-                */
                 borderRadius: 18,
                 display: 'flex',
                 overflow: 'hidden',
             },
             type: {
                 padding: '8px 10px 0px 8px',
-                backgroundColor: '#607D8B',
+                backgroundColor: Colors.tint50,
                 color: 'white',
                 fontSize: 20,
                 transition: 'all 350ms cubic-bezier(0.23, 1, 0.32, 1) 0ms',
@@ -86,9 +83,9 @@ export default class EndpointLabel extends React.Component {
             },
             labelInt: {
                 paddingLeft: 10,
-                fontSize: 16,
+                fontSize: 15,
                 fontFamily:'Roboto Medium',
-                color: '#607D8B',
+                color: Colors.tint40,
             },
             pg: {
                 position: 'absolute',
@@ -101,7 +98,7 @@ export default class EndpointLabel extends React.Component {
                 position: 'absolute',
                 height: 7,
                 width: 7,
-                backgroundColor: '#4CAF50',
+                backgroundColor: Colors.success,
                 borderRadius: '50%',
                 border: '2px solid ' + baseBg,
                 bottom: -1,
@@ -113,7 +110,7 @@ export default class EndpointLabel extends React.Component {
             },
             openIcon: {
                 display:'none',
-                color: '#60748B',
+                color: Colors.tint50,
                 padding: '11px 11px 6px',
                 cursor: 'pointer'
             },

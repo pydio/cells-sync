@@ -21,6 +21,7 @@ import {Icon, TooltipHost, Link} from 'office-ui-fabric-react'
 import moment from 'moment'
 import basename from 'basename'
 import {withTranslation} from 'react-i18next'
+import Colors from "../components/Colors";
 
 const ops = {
     0: 'transfer',
@@ -70,7 +71,7 @@ class PatchNode extends React.Component {
         } else if(patch.DataOperation) {
             action = t('patch.operation.' + ops[patch.DataOperation.OpType]);
             if (patch.DataOperation.ErrorString){
-                action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"} styles={{root:{color:'#d32f2f'}}}/> <span style={{color:'#d32f2f'}}>{action}</span></TooltipHost>
+                action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"} styles={{root:{color:Colors.error}}}/> <span style={{color:Colors.error}}>{action}</span></TooltipHost>
             }
         } else if(patch.Conflict) {
             action = t('patch.operation.' + ops[patch.Conflict.OpType]);
@@ -92,7 +93,7 @@ class PatchNode extends React.Component {
             }
         }
         if (patchError) {
-            label = <span>{label} : <span style={{color:'#d32f2f'}}>{patchError}</span></span>;
+            label = <span>{label} : <span style={{color:Colors.error}}>{patchError}</span></span>;
         }
         if (patch.MoveTargetPath){
             let target

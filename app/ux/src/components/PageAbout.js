@@ -21,6 +21,7 @@ import {Page, PageBlock} from "./Page";
 import Link from "./Link"
 import {Link as FabricLink, ProgressIndicator} from 'office-ui-fabric-react'
 import {withTranslation} from "react-i18next";
+import Colors from "./Colors";
 
 class PageAbout extends React.Component {
 
@@ -118,6 +119,23 @@ class PageAbout extends React.Component {
         ];
 
         const {t} = this.props;
+        const styles = {
+            block:{
+                padding:0,
+                paddingBottom: 10,
+                overflow:'hidden'
+            },
+            h3:{
+                color:Colors.tint40,
+                backgroundColor:Colors.tint90,
+                margin:0,
+                fontSize:15,
+                padding: 10
+            },
+            content:{
+                padding: '0 16px'
+            }
+        }
 
         return (
             <Page title={t('nav.about')} barItems={cmdBarItems}>
@@ -132,44 +150,45 @@ class PageAbout extends React.Component {
                         }
                     </PageBlock>
                 }
-                <PageBlock>
-                    <h3>Current version</h3>
-                    <p style={{lineHeight:'1.7em'}}>
-                        <span>
-                            {currentVersion.PackageName} - {currentVersion.Version} {(!updateStatus && currentVersion.Version) && <FabricLink onClick={() => {this.checkUpdates()}}>Check for updates now</FabricLink> }
-                        </span>
-                        {currentVersion.Revision &&
-                            <Fragment>
-                                <br/><span>Revision {currentVersion.Revision} ({currentVersion.BuildStamp})</span>
-                            </Fragment>
-                        }
-                    </p>
-
+                <PageBlock style={styles.block}>
+                    <h3 style={styles.h3}>Current version</h3>
+                    <div style={styles.content}>
+                        <p style={{lineHeight:'1.7em'}}>
+                            <span>
+                                {currentVersion.PackageName} - {currentVersion.Version} {(!updateStatus && currentVersion.Version) && <FabricLink onClick={() => {this.checkUpdates()}}>Check for updates now</FabricLink> }
+                            </span>
+                            {currentVersion.Revision &&
+                                <Fragment>
+                                    <br/><span>Revision {currentVersion.Revision} ({currentVersion.BuildStamp})</span>
+                                </Fragment>
+                            }
+                        </p>
+                    </div>
                 </PageBlock>
-                <PageBlock>
-                    <h3>Troubleshooting</h3>
+                <PageBlock style={styles.block}>
+                    <h3 style={styles.h3}>Troubleshooting</h3>
+                    <div style={styles.content}>
+                        <p  style={{lineHeight:'1.7em'}}>
+                            Use Cells Home or Cells Enterprise version 2.0 or higher!
+                        </p>
+                        <ul  style={{lineHeight:'1.7em'}}>
+                            <li>If you are using Cells 1.X, please upgrade the server (it is seamless).</li>
+                            <li>If you are a user of Pydio 8 (PHP version), please use PydioSync instead.</li>
+                        </ul>
+                        <p  style={{lineHeight:'1.7em'}}>
+                            If you cannot get this tool to work correctly, visit our forum <Link href={"https://forum.pydio.com"}/>. Please provide us the logs so we can help you!
+                        </p>
 
-                    <p  style={{lineHeight:'1.7em'}}>
-                        Use Cells Home or Cells Enterprise version 2.0 or higher!
-                    </p>
-                    <ul  style={{lineHeight:'1.7em'}}>
-                        <li>If you are using Cells 1.X, please upgrade the server (it is seamless).</li>
-                        <li>If you are a user of Pydio 8 (PHP version), please use PydioSync instead.</li>
-                    </ul>
-                    <p  style={{lineHeight:'1.7em'}}>
-                        If you cannot get this tool to work correctly, visit our forum <Link href={"https://forum.pydio.com"}/>. Please provide us the logs so we can help you!
-                    </p>
+                        <h3>Getting Enterprise support</h3>
 
-                    <h3>Getting Enterprise support</h3>
+                        <p style={{lineHeight:'1.7em'}}>Learn how to get Pydio enterprise support on <Link href={"https://pydio.com"}/>.</p>
 
-                    <p style={{lineHeight:'1.7em'}}>Learn how to get Pydio enterprise support on <Link href={"https://pydio.com"}/>.</p>
-
-                    <h3>Licensing</h3>
-                    <p style={{lineHeight:'1.7em'}}>
-                        Copyright © 2019 Abstrium SAS - Pydio is a trademark of Abstrium SAS <br/>
-                        CellsSync code is licensed under GPL v3. You can find the source code <Link href={"https://github.com/pydio/cells-sync"}/>.
-                    </p>
-
+                        <h3>Licensing</h3>
+                        <p style={{lineHeight:'1.7em'}}>
+                            Copyright © 2019 Abstrium SAS - Pydio is a trademark of Abstrium SAS <br/>
+                            CellsSync code is licensed under GPL v3. You can find the source code <Link href={"https://github.com/pydio/cells-sync"}/>.
+                        </p>
+                    </div>
                 </PageBlock>
             </Page>
         );

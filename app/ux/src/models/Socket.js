@@ -128,10 +128,15 @@ export default class Socket {
 
     onMessage(msg) {
         const data = this.read(msg);
+        console.log(data);
         if (data.Type === 'PONG'){
             console.log('Correctly connected!', data)
         } else if(data.Type === 'STATE') {
             this.loadFirstState = false;
+            if (!data.Content){
+                this.setState({syncTasks:{}})
+                return;
+            }
             const {syncTasks} = this.state;
             const {UUID, Status} = data.Content;
             if (Status === 7 && syncTasks[UUID]) {

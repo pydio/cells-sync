@@ -17,7 +17,15 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import React, {Component} from 'react'
-import {Icon, ScrollablePane, Spinner, SpinnerSize, Sticky, StickyPositionType} from "office-ui-fabric-react";
+import {
+    CompoundButton,
+    Icon,
+    ScrollablePane,
+    Spinner,
+    SpinnerSize,
+    Sticky,
+    StickyPositionType
+} from "office-ui-fabric-react";
 import {Route} from 'react-router-dom'
 import {withTranslation} from "react-i18next";
 import {load} from '../models/Patch'
@@ -25,6 +33,8 @@ import {Page} from "./Page";
 import PatchNode from "../task/PatchNode";
 import {openPath} from "../models/Open";
 import {debounce} from 'lodash'
+import Colors from "./Colors";
+import {makeCompound} from "./PageTasks";
 
 class PageActivities extends Component {
 
@@ -65,17 +75,38 @@ class PageActivities extends Component {
             <Route render={({history}) => {
                 if (loading) {
                     return (
-                        <div style={{height:'100%', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                        <Page title={t("activities.title")} barItems={[]} flex={true} noShadow={true}>
                             <div style={{
-                                height:40, width:40,
-                                backgroundColor:'white',
-                                borderRadius:'50%',
-                                display:'flex',
-                                alignItems:'center',
-                                justifyContent:'center'
-                            }}><Spinner size={SpinnerSize.large} /></div>
-                        </div>
+                                height: '100%',
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <div style={{
+                                    height: 40, width: 40,
+                                    backgroundColor: 'white',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}><Spinner size={SpinnerSize.large}/></div>
+                            </div>
+                        </Page>
                     )
+                } else if(!Object.keys(syncTasks).length) {
+                    return (
+                        <Page title={t("activities.title")} barItems={[]} flex={true} noShadow={true}>
+                            <div style={{
+                                height: '100%',
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>{makeCompound(t, history)}</div>
+                        </Page>
+                    )
+
                 } else {
                     return (
                         <Page title={t("activities.title")} barItems={[]} flex={true}>
@@ -83,12 +114,15 @@ class PageActivities extends Component {
                                 <ScrollablePane styles={{contentContainer:{height:'100%', backgroundColor:'#fafafa'}}}>
                                     {data && Object.keys(data).map(key => {
                                         const patches = data[key];
+                                        if(!patches.length){
+                                            return null;
+                                        }
                                         const task = syncTasks[key];
                                         patches.reverse();
                                         return (
                                             <React.Fragment key={key}>
                                                 <Sticky stickyPosition={StickyPositionType.Header} key={key + "-title"}>
-                                                    <div style={{borderBottom: '1px solid #EEEEEE', backgroundColor: '#F5F5F5', fontFamily: 'Roboto Medium', display:'flex', alignItems:'center', padding:'12px 0'}}>
+                                                    <div style={{backgroundColor: Colors.tint90, color:Colors.tint30, fontFamily: 'Roboto Medium', display:'flex', alignItems:'center', padding:'12px 0'}}>
                                                         <span style={{flex: 1, paddingLeft: 8}}><Icon iconName={"RecurringTask"}/> {task.Config.Label}</span>
                                                         <span style={{width: 130, marginRight: 8, textAlign:'center'}}>{t('patch.header.operations')}</span>
                                                     </div>
@@ -113,11 +147,7 @@ class PageActivities extends Component {
                                         );
                                     })}
                                 </ScrollablePane>
-
                             </div>
-
-
-
                         </Page>
                     );
                 }
