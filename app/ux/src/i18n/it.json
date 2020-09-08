@@ -225,7 +225,7 @@
   "about.upgrade.status.up-to-date": "Package is up-to-date",
   "about.upgrade.status.checking": "Checking for available updates",
   "about.upgrade.status.available": "Packages are available for update:",
-  "about.upgrade.status.error": "Something when wrong during update checks:",
+  "about.upgrade.status.error": "Something went wrong during update checks:",
   "about.upgrade.apply.error": "Cannot apply update:",
   "about.upgrade.apply.downloading": "Downloading %s...",
   "about.upgrade.apply.transferring": "Transferring %s %d%",
