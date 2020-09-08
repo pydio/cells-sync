@@ -43,10 +43,10 @@ class PatchDialog extends React.Component {
     }
 
     componentWillReceiveProps(nextProps){
-        const {syncUUID} = nextProps;
-        if (syncUUID && syncUUID !== this.props.syncUUID) {
+        const {syncConfig} = nextProps;
+        if (syncConfig && (!this.props.syncConfig || syncConfig.Uuid !== this.props.syncConfig.Uuid)) {
             this.setState({loading:true, first: true, offset: 0});
-            load(syncUUID, 0, listSize).then(patches => {
+            load(syncConfig, 0, listSize).then(patches => {
                 if(patches){
                     patches.reverse();
                 }
@@ -59,9 +59,9 @@ class PatchDialog extends React.Component {
 
     loadMore(){
         let {offset} = this.state;
-        const {syncUUID} = this.props;
+        const {syncConfig} = this.props;
         this.setState({loading:true});
-        load(syncUUID, offset + listSize, listSize).then(patches => {
+        load(syncConfig, offset + listSize, listSize).then(patches => {
             this.setState({offset: offset + listSize, loading: false});
             if(!patches || patches.length < listSize){
                 this.setState({hasMore: false});

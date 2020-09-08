@@ -200,7 +200,7 @@ class SyncTask extends React.Component {
         return (
             <React.Fragment>
                 <PatchDialog
-                    syncUUID={lastPatch ? Config.Uuid : ''}
+                    syncConfig={lastPatch ? Config : null}
                     hidden={!lastPatch}
                     onDismiss={()=>{this.setState({lastPatch: false})}}
                     openPath={(path)=>{this.openPath(path, false)}}

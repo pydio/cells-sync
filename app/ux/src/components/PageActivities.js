@@ -18,7 +18,6 @@
  */
 import React, {Component} from 'react'
 import {
-    CompoundButton,
     Icon,
     ScrollablePane,
     Spinner,
@@ -35,6 +34,9 @@ import {openPath} from "../models/Open";
 import {debounce} from 'lodash'
 import Colors from "./Colors";
 import {makeCompound} from "./PageTasks";
+import moment from "moment";
+import parse from "url-parse";
+import basename from "basename";
 
 class PageActivities extends Component {
 
@@ -51,19 +53,53 @@ class PageActivities extends Component {
 
     load(){
         const {syncTasks} = this.state;
-        console.log("LOAD?", syncTasks);
         if(!syncTasks) {
             return
         }
         const keys = Object.keys(syncTasks);
         const proms = keys.map(uuid => {
-            return load(uuid, 0, 1);
+            return load(syncTasks[uuid].Config, 0, 1);
         })
         Promise.all(proms).then((results) => {
             const data = {};
-            results.forEach((r,i) => {data[keys[i]] = r})
+            //results.forEach((r,i) => {data[keys[i]] = r})
+            const sorting = [];
+            results.forEach((r,i) => {
+                if(r.length && r[0].Root){
+                    sorting.push({key:keys[i], patch:r[0]})
+                }
+            })
+            console.log(sorting);
+            sorting.sort((a,b)=>{
+                const stampA = a.patch.Root.Stamp;
+                const stampB = b.patch.Root.Stamp;
+                return (stampA === stampB?0:(stampA>stampB?-1:1))
+            })
+            console.log(sorting);
+            sorting.forEach((s) => {data[s.key] = s.patch});
             this.setState({data})
         })
+    }
+
+    syncLabel(task){
+        const label = (uri) => {
+            const parsed = parse(uri, {}, true);
+            if(parsed.protocol.indexOf('http') === 0) {
+                return parsed.host;
+            } else {
+                return basename(parsed.pathname);
+            }
+        }
+        return (
+            <React.Fragment>
+                {label(task.Config.LeftURI)}
+                <Icon
+                    iconName={"Sort" + (task.Config.Direction === 'Bi' ? '' : (task.Config.Direction === 'Right' ? 'Down' : 'Up'))}
+                    styles={{root:{height:15, margin:'0 5px', transform: 'rotate(-90deg)', width: 16}}}
+                />
+                {label(task.Config.RightURI)}
+            </React.Fragment>
+        );
     }
 
     render() {
@@ -113,36 +149,33 @@ class PageActivities extends Component {
                             <div style={{position:'relative', height:'100%', backgroundColor:'white'}}>
                                 <ScrollablePane styles={{contentContainer:{height:'100%', backgroundColor:'#fafafa'}}}>
                                     {data && Object.keys(data).map(key => {
-                                        const patches = data[key];
-                                        if(!patches.length){
-                                            return null;
-                                        }
+                                        const patch = data[key];
                                         const task = syncTasks[key];
-                                        patches.reverse();
                                         return (
                                             <React.Fragment key={key}>
                                                 <Sticky stickyPosition={StickyPositionType.Header} key={key + "-title"}>
                                                     <div style={{backgroundColor: Colors.tint90, color:Colors.tint30, fontFamily: 'Roboto Medium', display:'flex', alignItems:'center', padding:'12px 0'}}>
-                                                        <span style={{flex: 1, paddingLeft: 8}}><Icon iconName={"RecurringTask"}/> {task.Config.Label}</span>
+                                                        <span style={{flex: 1, paddingLeft: 8, display:'flex', alignItems:'center'}}>
+                                                            <Icon iconName={"Activities"} styles={{root:{fontSize:'1.3em', height:18, marginRight: 5}}}/>
+                                                            {this.syncLabel(task)}&nbsp;
+                                                            <span style={{opacity:.5}}>{moment(patch.Root.Stamp).fromNow()}</span>
+                                                        </span>
                                                         <span style={{width: 130, marginRight: 8, textAlign:'center'}}>{t('patch.header.operations')}</span>
                                                     </div>
                                                 </Sticky>
-                                                {patches.map((patch, k) => {
-                                                    return (
-                                                        <div key={key + k} style={{paddingBottom: 2, borderTop: k > 0 ? '1px solid #e0e0e0' : null}}>
-                                                            <PatchNode
-                                                                patch={patch.Root}
-                                                                stats={patch.Stats}
-                                                                level={0}
-                                                                open={true}
-                                                                flatMode={true}
-                                                                openPath={(path, isURI) => {openPath(path, task, isURI)}}
-                                                                patchError={patch.Error}
-                                                            />
-                                                        </div>
-                                                    );
-                                                })
-                                                }
+                                                <div style={{paddingBottom: 6, paddingTop: 6}}>
+                                                    {patch.Error && <div>{patch.Error}</div>}
+                                                    {patch.Root.Children.map((c,i) =>
+                                                        <PatchNode
+                                                            key={key+ "-" + i}
+                                                            patch={c}
+                                                            level={0}
+                                                            open={true}
+                                                            flatMode={true}
+                                                            openPath={(path, isURI) => {openPath(path, task, isURI)}}
+                                                        />
+                                                    )}
+                                                </div>
                                             </React.Fragment>
                                         );
                                     })}

@@ -18,9 +18,7 @@
  */
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
-import {FontSizes} from "@uifabric/fluent-theme";
 import {
-    Nav as OfficeNav,
     IconButton,
     TooltipHost,
     TooltipDelay,
@@ -44,8 +42,8 @@ const IconStyle = {
     display:'flex',
     alignItems:'center',
     height: 40,
-    fontSize:'1.5em',
-    padding:'0 10px',
+    fontSize:'1.6em',
+    padding:'0 9px 0 11px',
     color:Colors.cellsOrange,
 }
 
@@ -66,7 +64,14 @@ class NavIcon extends React.Component {
             style = {...style, backgroundColor:'rgba(255,255,255,.15)'}
         }
         return (
-            <TooltipHost content={label} delay={TooltipDelay.zero} directionalHint={DirectionalHint.rightCenter}>
+            <TooltipHost
+                content={<span style={{display:'block',backgroundColor:Colors.tint30, color:Colors.cellsOrange, padding:'0 6px', fontSize:15, fontFamily:'Roboto Medium'}}>{label}</span>}
+                delay={TooltipDelay.zero}
+                directionalHint={DirectionalHint.rightCenter}
+                calloutProps={{styles:{
+                    beakCurtain:{backgroundColor:Colors.tint30},beak:{backgroundColor:Colors.tint30}
+                }}}
+            >
                 <Icon onClick={onClick} styles={{root: style}} iconName={icon} onMouseOver={()=>{this.setState({hover:true})}} onMouseOut={()=>{this.setState({hover:false})}}/>
             </TooltipHost>
         )
@@ -107,45 +112,16 @@ class NavMenu extends React.Component {
         const {showDebug} = this.state;
 
         const links = {
-            '/': {label:'activities', icon:'Sort'},
-            '/tasks': {label:'tasks', icon:'RecurringTask'},
+            '/': {label:'activities', icon:'Activities'},
+            '/tasks': {label:'tasks', icon:'CloudCircle'},
             '/servers': {label:'servers', icon:'AccountBox'},
-            '/settings': {label:'settings', icon:'Settings'},
+            '/settings': {label:'settings', icon:'TuneRounded'},
         };
         if(showDebug){
             links['/logs'] = {label:'logs', icon:'CustomList'};
             links['/debugger'] = {label:'debugger', icon:'Code'};
         }
         links['/about'] = {label:'about', icon:'Info'};
-
-        const bottomLinks = {};
-
-        const colors = {
-            title: '#61869e',
-            icon: 'rgb(238, 121, 110)'
-        };
-
-        const tStyles = {
-            root: {
-                width: 50,
-                height: '100%',
-                boxSizing: 'border-box',
-                overflowY: 'auto',
-            },
-            compositeLink:{
-                backgroundColor:'transparent',
-                selectors:{
-                    "& .ms-Button":{height: 40, border: 0},
-                    "&.is-selected .ms-Button":{backgroundColor:'rgba(255,255,255,.1)'},
-                    "& .ms-Button-icon":{color: colors.icon, fontSize:'1.5em', marginTop:-4, marginLeft: 11, marginRight: 10},
-                }
-            },
-            link:{
-                backgroundColor:'transparent',
-                color: colors.title,
-                fontFamily: 'Roboto Medium',
-            }
-        };
 
         const languages = {'en':'English','fr':'Français', 'de':'Deutsch', 'it':'Italiano', 'es-es':'Español'};
         const menuItems = (i18n) => {
@@ -164,7 +140,7 @@ class NavMenu extends React.Component {
                 <Route render={({history, location}) =>
                     <React.Fragment>
                         <div style={{height:56}}>
-                            <span title={t('application.title')} className={"cells-logo"} style={{width: 26, height: 26, marginTop: 14, display: 'block', marginLeft: 11}}/>
+                            <span title={t('application.title')} className={"cells-logo"} style={{width: 26, height: 26, marginTop: 14, display: 'block', marginLeft: 12}}/>
                         </div>
                         {Object.keys(links).map(k => {
                             const l = links[k];
@@ -183,10 +159,10 @@ class NavMenu extends React.Component {
                             <IconButton
                                 iconProps={{iconName:'Flag'}}
                                 styles={{
-                                    root:{margin: 0, padding:'6px 7px 6px 6px', height:40, width: 'auto', backgroundColor: 'transparent'},
+                                    root:{margin: 0, padding:'6px 5px 6px 7px', height:40, width: 'auto', backgroundColor: 'transparent'},
                                     rootHovered:{backgroundColor: 'rgba(255,255,255,.15)'},
                                     menuIcon:{display:'none'},
-                                    icon:{...IconStyle, padding:4, transition:'opacity 200ms'},
+                                    icon:{...IconStyle, padding:4, color:'rgba(255,255,255,.73)'},
                                 }}
                                 menuAs={NavMenu.menuAs}
                                 menuProps={{items:menuItems(i18n)}}

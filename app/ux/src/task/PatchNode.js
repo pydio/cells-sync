@@ -56,7 +56,9 @@ class PatchNode extends React.Component {
             icon = 'FolderOpen'
         }
         let action;
+        let direction;
         if (patch.PathOperation){
+            direction = patch.PathOperation.Dir;
             action = t('patch.operation.' + ops[patch.PathOperation.OpType]);
             if (patch.PathOperation.OpType === 5) {
                 icon = 'Delete';
@@ -69,6 +71,7 @@ class PatchNode extends React.Component {
                 action = <TooltipHost content={patch.PathOperation.ErrorString}><Icon iconName={"Warning"}/> {action}</TooltipHost>
             }
         } else if(patch.DataOperation) {
+            direction = patch.DataOperation.Dir;
             action = t('patch.operation.' + ops[patch.DataOperation.OpType]);
             if (patch.DataOperation.ErrorString){
                 action = <TooltipHost content={patch.DataOperation.ErrorString}><Icon iconName={"Warning"} styles={{root:{color:Colors.error}}}/> <span style={{color:Colors.error}}>{action}</span></TooltipHost>
@@ -130,15 +133,23 @@ class PatchNode extends React.Component {
                 {!hideMain &&
                     <div onClick={()=>{this.setState({open:!open})}} style={{display:'flex', alignItems:'center', fontSize:15, paddingTop: 8, paddingBottom: 8}}>
                         {!isLeaf && children.length > 0 &&
-                        <Icon iconName={open ? 'ChevronDown' : 'ChevronRight'} styles={{root:{margin:'0 5px', cursor: 'pointer', color:'#9e9e9e'}}}/>
+                        <Icon iconName={open ? 'ChevronDown' : 'ChevronRight'} styles={{root:{margin:'0 5px', cursor: 'pointer', color:'#9e9e9e', fontSize:'1.2em', height:19}}}/>
                         }
-                        {(isLeaf || !children.length) &&
+                        {level === 0 && !children.length &&
+                        <Icon iconName={'ChevronRight'} styles={{root:{margin:'0 5px', color:'#9e9e9e', fontSize:'1.2em', height:19}}}/>
+                        }
+                        {(isLeaf || !children.length) && level > 0 &&
                         <span style={{width: 25}}>&nbsp;</span>
                         }
-                        <Icon iconName={icon} styles={{root:{margin:'0 5px'}}}/>
+                        <Icon iconName={icon} styles={{root:{margin:'0 5px', fontSize:'1.2em', height:19}}}/>
                         {openLink && <Link styles={{root:{flex: 1}}} onClick={()=>{openPath(openLink)}}>{label}</Link>}
                         {!openLink && <span style={{flex: 1}}>{label}</span>}
-                        {action && <span style={{width: 130, marginRight: 8, fontSize: 12, textAlign:'center'}}>{action}</span>}
+                        {action &&
+                        <span style={{width: 130, marginRight: 8, fontSize: 12, textAlign:'center'}}>
+                            {direction !== undefined && <Icon iconName={direction === 0?'ArrowDown':'ArrowUp'} styles={{root:{height: 11,overflow: 'hidden', marginRight: 2}}}/>}
+                            {action}
+                        </span>
+                        }
                     </div>
                 }
                 {open &&

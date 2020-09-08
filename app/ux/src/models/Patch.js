@@ -97,26 +97,41 @@ class PatchTreeNode {
         return false
     }
 
+    reverseOperations(){
+        if(this.DataOperation){
+            this.DataOperation.Dir =  this.DataOperation.Dir === 0 ? 1 : 0;
+        } else if(this.PathOperation){
+            this.PathOperation.Dir =  this.PathOperation.Dir === 0 ? 1 : 0;
+        }
+        this.Children.forEach(c =>  c.reverseOperations())
+    }
+
 }
 
 class Patch {
-    constructor(data, timeStamp = undefined) {
+    constructor(syncConfig, data, timeStamp = undefined) {
         this.Root = new PatchTreeNode(data.Root, timeStamp);
         this.Stats = data.Stats;
         if(data.Error){
             this.Error = data.Error;
+        }
+        // Fix direction value
+        console.log("NEW PATCH", this, syncConfig);
+        if(this.Stats && this.Stats.Source === syncConfig.RightURI){
+            this.Root.reverseOperations();
         }
     }
 }
 
 /**
  *
- * @param syncUuid
+ * @param syncConfig
  * @param offset
  * @param limit
  * @return Promise
  */
-function load(syncUuid, offset = 0, limit = 10) {
+function load(syncConfig, offset = 0, limit = 10) {
+    const syncUuid = syncConfig.Uuid;
     const url = buildUrl('/patches/' + syncUuid + '/' + offset + '/' + limit);
     return window.fetch(url, {
         method: 'GET',
@@ -127,8 +142,8 @@ function load(syncUuid, offset = 0, limit = 10) {
     }).then(response => {
         return response.json();
     }).then(data => {
-        const patches = Object.keys(data).map(k => {
-            return new Patch(data[k], k);
+        const patches = Object.keys(data).filter(k => !!data[k].Root).map(k => {
+            return new Patch(syncConfig, data[k], k);
         });
         return patches || [];
     }).catch(reason => {
