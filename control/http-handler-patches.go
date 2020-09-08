@@ -76,7 +76,7 @@ func (h *HttpServer) reqRespStore(syncUUID string) *endpoint.PatchStore {
 			case s := <-ch:
 				store = s.(*endpoint.PatchStore)
 				return
-			case <-time.After(100 * time.Millisecond):
+			case <-time.After(250 * time.Millisecond):
 				return
 			}
 		}

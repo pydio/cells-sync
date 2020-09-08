@@ -37,10 +37,11 @@ import (
 )
 
 var (
-	patchBucket = []byte("patches")
-	timeKey     = []byte("stamp")
-	opsKey      = []byte("operations")
-	patchErrKey = []byte("patchError")
+	patchBucket    = []byte("patches")
+	timeKey        = []byte("stamp")
+	opsKey         = []byte("operations")
+	patchErrKey    = []byte("patchError")
+	patchSourceKey = []byte("source")
 )
 
 type patchSorter []merger.Patch
@@ -159,6 +160,11 @@ func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 				// Do this before unmarshalling tStamp otherwise it overwrites internal mtime
 				patch.SetPatchError(fmt.Errorf(string(errValue)))
 			}
+			if src := patchBucket.Get(patchSourceKey); src != nil && string(src) != p.source.GetEndpointInfo().URI {
+				// Invert target and source
+				patch.Source(p.target.(model.PathSyncSource))
+				patch.Target(p.source.(model.PathSyncTarget))
+			}
 			stamp := patchBucket.Get(timeKey)
 			t := time.Now()
 			if err := t.UnmarshalJSON(stamp); err == nil {
@@ -261,6 +267,7 @@ func (p PatchStore) persist(patch merger.Patch) {
 		if errs, ok := patch.HasErrors(); ok && len(errs) > 0 {
 			patchBucket.Put(patchErrKey, []byte(errs[0].Error()))
 		}
+		patchBucket.Put(patchSourceKey, []byte(patch.Source().GetEndpointInfo().URI))
 		opsBucket, _ := patchBucket.CreateBucket(opsKey)
 		patch.WalkOperations([]merger.OperationType{}, func(operation merger.Operation) {
 			if data, err := json.Marshal(operation); err == nil {
