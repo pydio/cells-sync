@@ -133,7 +133,7 @@ class Patch {
 function load(syncConfig, offset = 0, limit = 10) {
     const syncUuid = syncConfig.Uuid;
     const url = buildUrl('/patches/' + syncUuid + '/' + offset + '/' + limit);
-    return window.fetch(url, {
+    return window.fetch(url + '?r=' + Math.random(), {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'

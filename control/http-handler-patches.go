@@ -109,6 +109,7 @@ func (h *HttpServer) listPatches(c *gin.Context) {
 	for _, p := range patches {
 		data[fmt.Sprintf("%d", p.GetStamp().Unix())] = p
 	}
+	c.Header("Cache-Control", "no-cache, no-store")
 	c.Header("Pragma", "no-cache")
 	c.JSON(http.StatusOK, data)
 
