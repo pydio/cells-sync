@@ -63,6 +63,7 @@ class PageAbout extends React.Component {
 
     render() {
         const {checkStatus, applyStatus, currentVersion} = this.state;
+        const {t} = this.props;
         let updateStatus, updateProgress;
         let checkDisabled = false;
         let availableBinaries;
@@ -70,18 +71,18 @@ class PageAbout extends React.Component {
             const {CheckStatus, Binaries, Error} = checkStatus;
             switch (CheckStatus) {
                 case "up-to-date":
-                    updateStatus = "Package is up-to-date.";
+                    updateStatus = t("about.upgrade.status.up-to-date");
                     break;
                 case "checking":
-                    updateStatus = "Checking for available updates.";
+                    updateStatus = t("about.upgrade.status.checking");
                     checkDisabled = true;
                     break;
                 case "available":
-                    updateStatus = "Some packages are available for update:";
+                    updateStatus = t("about.upgrade.status.available");
                     availableBinaries = Binaries;
                     break;
                 case "error":
-                    updateStatus = "Something went wrong during update checks: " + Error;
+                    updateStatus = t("about.upgrade.status.error") + Error;
                     break;
                 default:
                     break;
@@ -91,16 +92,16 @@ class PageAbout extends React.Component {
             const {ApplyStatus, Package, Progress, Error} = applyStatus;
             switch (ApplyStatus) {
                 case "error":
-                    updateStatus = "Cannot apply update : " + Error;
+                    updateStatus = t('about.upgrade.apply.error') + Error;
                     break;
                 case "downloading":
-                    updateStatus = "Downloading " + Package.PackageName + " " + Package.Version + "...";
-                    updateProgress = <ProgressIndicator percentComplete={Progress} description={"Transferring " + Package.BinaryURL + " (" + Math.round(Progress * 100) + "%)"}/>;
+                    updateStatus = t('about.upgrade.apply.downloading').replace("%s", Package.PackageName + " " + Package.Version);
+                    updateProgress = <ProgressIndicator percentComplete={Progress} description={t('about.upgrade.apply.transferring').replace("%s", Package.BinaryURL).replace("%d", Math.round(Progress * 100))}/>;
                     availableBinaries = null;
                     checkDisabled = true;
                     break;
                 case "done":
-                    updateStatus = Package.PackageName + " " + Package.Version + " was downloaded and replaced, please restart the application to finish update";
+                    updateStatus = t('about.upgrade.apply.done').replace("%s", Package.PackageName + " " + Package.Version);
                     availableBinaries = null;
                     break;
                 default:
@@ -111,14 +112,13 @@ class PageAbout extends React.Component {
         const cmdBarItems = [
             {
                 key:'update',
-                text:'Check for updates',
+                text:t('about.current.check'),
                 disabled:checkDisabled,
                 iconProps:{iconName:'CloudDownload'},
                 onClick:()=> this.checkUpdates()
             }
         ];
 
-        const {t} = this.props;
         const styles = {
             block:{
                 padding:0,
@@ -145,47 +145,47 @@ class PageAbout extends React.Component {
                         {updateProgress}
                         {availableBinaries &&
                         <ul>{availableBinaries.map(b =>
-                            <li key={b.Version}>{b.PackageName} {b.Version} <FabricLink onClick={() =>{this.applyUpdate(b)}}>Download and install</FabricLink></li>
+                            <li key={b.Version}>{b.PackageName} {b.Version} <FabricLink onClick={() =>{this.applyUpdate(b)}}>{t('about.upgrade.install')}</FabricLink></li>
                         )}</ul>
                         }
                     </PageBlock>
                 }
                 <PageBlock style={styles.block}>
-                    <h3 style={styles.h3}>Current version</h3>
+                    <h3 style={styles.h3}>{t('about.current.version')}</h3>
                     <div style={styles.content}>
                         <p style={{lineHeight:'1.7em'}}>
                             <span>
-                                {currentVersion.PackageName} - {currentVersion.Version} {(!updateStatus && currentVersion.Version) && <FabricLink onClick={() => {this.checkUpdates()}}>Check for updates now</FabricLink> }
+                                {currentVersion.PackageName} - {currentVersion.Version} {(!updateStatus && currentVersion.Version) && <FabricLink onClick={() => {this.checkUpdates()}}>{t('about.current.check')}</FabricLink> }
                             </span>
                             {currentVersion.Revision &&
                                 <Fragment>
-                                    <br/><span>Revision {currentVersion.Revision} ({currentVersion.BuildStamp})</span>
+                                    <br/><span>{t('about.current.revision')} {currentVersion.Revision} ({currentVersion.BuildStamp})</span>
                                 </Fragment>
                             }
                         </p>
                     </div>
                 </PageBlock>
                 <PageBlock style={styles.block}>
-                    <h3 style={styles.h3}>Troubleshooting</h3>
+                    <h3 style={styles.h3}>{t('about.troubleshoot')}</h3>
                     <div style={styles.content}>
                         <p  style={{lineHeight:'1.7em'}}>
-                            Use Cells Home or Cells Enterprise version 2.0 or higher!
+                            {t('about.troubleshoot.cells')}
                         </p>
                         <ul  style={{lineHeight:'1.7em'}}>
-                            <li>If you are using Cells 1.X, please upgrade the server (it is seamless).</li>
-                            <li>If you are a user of Pydio 8 (PHP version), please use PydioSync instead.</li>
+                            <li>{t('about.troubleshoot.cells1')}</li>
+                            <li>{t('about.troubleshoot.pydio8')}</li>
                         </ul>
                         <p  style={{lineHeight:'1.7em'}}>
-                            If you cannot get this tool to work correctly, visit our forum <Link href={"https://forum.pydio.com"}/>. Please provide us the logs so we can help you!
+                            {t('about.troubleshoot.forum')} : <Link href={"https://forum.pydio.com"}/>. {t('about.troubleshoot.logs')}
                         </p>
 
-                        <h3>Getting Enterprise support</h3>
+                        <h3>{t('about.troubleshoot.enterprise')}</h3>
 
-                        <p style={{lineHeight:'1.7em'}}>Learn how to get Pydio enterprise support on <Link href={"https://pydio.com"}/>.</p>
+                        <p style={{lineHeight:'1.7em'}}>{t('about.troubleshoot.website')}: <Link href={"https://pydio.com"}/>.</p>
 
                         <h3>Licensing</h3>
                         <p style={{lineHeight:'1.7em'}}>
-                            Copyright © 2019 Abstrium SAS - Pydio is a trademark of Abstrium SAS <br/>
+                            Copyright © 2019-2020 Abstrium SAS - Pydio is a trademark of Abstrium SAS <br/>
                             CellsSync code is licensed under GPL v3. You can find the source code <Link href={"https://github.com/pydio/cells-sync"}/>.
                         </p>
                     </div>
