@@ -116,7 +116,6 @@ class Patch {
             this.Error = data.Error;
         }
         // Fix direction value
-        console.log("NEW PATCH", this, syncConfig);
         if(this.Stats && this.Stats.Source === syncConfig.RightURI){
             this.Root.reverseOperations();
         }

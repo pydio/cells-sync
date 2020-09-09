@@ -43,7 +43,7 @@ class PatchNode extends React.Component {
     render(){
         const {patch, patchError, level, stats, openPath, t, flatMode} = this.props;
         const {open} = this.state;
-        if(!patch.hasOperations()){
+        if(!patch.hasOperations() && !patchError){
             return null;
         }
         const isLeaf = patch.Node.Type === 1;
@@ -127,7 +127,7 @@ class PatchNode extends React.Component {
                 newLevel = level > 0 ? level -1  : level;
             }
         }
-        //console.log(hideMain, patch, level, newLevel);
+        console.log(hideMain, patchError, level, newLevel);
         return (
             <div style={{paddingLeft}}>
                 {!hideMain &&

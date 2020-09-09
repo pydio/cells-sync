@@ -164,7 +164,7 @@ class PageActivities extends Component {
                                                     </div>
                                                 </Sticky>
                                                 <div style={{paddingBottom: 6, paddingTop: 6}}>
-                                                    {patch.Error && <div>{patch.Error}</div>}
+                                                    {patch.Error && <div style={{color:Colors.error, padding: 10}}><Icon iconName={"Warning"}/> {patch.Error}</div>}
                                                     {patch.Root.Children.map((c,i) =>
                                                         <PatchNode
                                                             key={key+ "-" + i}
