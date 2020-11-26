@@ -65,8 +65,9 @@ type PatchStore struct {
 	source model.Endpoint
 	target model.Endpoint
 
-	db         *bbolt.DB
-	folderPath string
+	db            *bbolt.DB
+	folderPath    string
+	lastHasErrors bool
 }
 
 // NewPatchStore opens a new PatchStore
@@ -87,6 +88,11 @@ func NewPatchStore(folderPath string, source model.Endpoint, target model.Endpoi
 		return nil, err
 	}
 	p.db = db
+
+	// Load last known patch status (error or not)
+	if last, e := p.Load(0, 1); e == nil && len(last) > 0 {
+		_, p.lastHasErrors = last[0].HasErrors()
+	}
 
 	go func() {
 		for patch := range p.patches {
@@ -243,11 +249,13 @@ func (p *PatchStore) PublishPatch(patch merger.Patch) {
 	p.patches <- patch
 }
 
-func (p PatchStore) persist(patch merger.Patch) {
+func (p *PatchStore) persist(patch merger.Patch) {
 	_, has := patch.HasErrors()
-	if patch.Size() == 0 && !has {
-		return // Do not store empty patch!
+	// Do not store empty/no-error patch, except if previous had error
+	if patch.Size() == 0 && !has && !p.lastHasErrors {
+		return
 	}
+	p.lastHasErrors = has
 	p.db.Update(func(tx *bbolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(patchBucket)
 		if err != nil {
