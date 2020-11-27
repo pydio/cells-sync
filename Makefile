@@ -3,6 +3,7 @@ TODAY:=$(shell date -u +%Y-%m-%dT%H:%M:%S)
 GITREV:=$(shell git rev-parse HEAD)
 CELLS_VERSION?=0.2.0
 XGO_IMAGE?=pydio/xgo:latest
+XGO_14_IMG?=techknowlogick/xgo:go-1.14.x
 
 all: clean pack cli
 
@@ -44,9 +45,9 @@ xgo:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
-	${GOPATH}/bin/xgo -go 1.15 \
+	${GOPATH}/bin/xgo -go 1.14 \
 	-out "cells-sync" \
-	--image ${XGO_IMAGE} \
+	--image ${XGO_14_IMG} \
 	--targets windows/amd64 \
 	-ldflags "-H=windowsgui \
 	-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
@@ -54,9 +55,9 @@ xgo:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
-	${GOPATH}/bin/xgo -go 1.15 \
+	${GOPATH}/bin/xgo -go 1.14 \
 	-out "cells-sync-noui" \
-	--image ${XGO_IMAGE} \
+	--image ${XGO_14_IMG} \
 	--targets windows/amd64 \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
