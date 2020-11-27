@@ -35,7 +35,7 @@ rsrc:
 # --targets darwin-10.11/amd64 \
 
 xgo:
-	${GOPATH}/bin/xgo -go 1.12 \
+	${GOPATH}/bin/xgo -go 1.15 \
 	-out "cells-sync" \
 	--image ${XGO_IMAGE} \
 	--targets darwin/amd64 \
@@ -44,7 +44,7 @@ xgo:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
-	${GOPATH}/bin/xgo -go 1.12 \
+	${GOPATH}/bin/xgo -go 1.15 \
 	-out "cells-sync" \
 	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
@@ -54,7 +54,7 @@ xgo:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
-	${GOPATH}/bin/xgo -go 1.12 \
+	${GOPATH}/bin/xgo -go 1.15 \
 	-out "cells-sync-noui" \
 	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
