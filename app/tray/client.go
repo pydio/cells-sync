@@ -1,6 +1,7 @@
 package tray
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"sort"
@@ -78,7 +79,7 @@ func (c *Client) Connect() error {
 		parsed.Scheme = "ws"
 	}
 	parsed.Path = "/status"
-	return service.Retry(func() error {
+	return service.Retry(context.Background(), func() error {
 		conn, _, err := websocket.DefaultDialer.Dial(parsed.String(), nil)
 		if err == nil {
 			go c.bindConn(conn)
