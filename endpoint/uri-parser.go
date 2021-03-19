@@ -29,15 +29,14 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/pydio/cells-sync/common"
-
-	"github.com/pydio/cells-sync/config"
-
 	"github.com/pydio/cells/common/sync/endpoints/cells"
 	"github.com/pydio/cells/common/sync/endpoints/filesystem"
 	"github.com/pydio/cells/common/sync/endpoints/memory"
 	"github.com/pydio/cells/common/sync/endpoints/s3"
 	"github.com/pydio/cells/common/sync/model"
+
+	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/config"
 )
 
 // EndpointFromURI parse an URI string to instantiate a proper Endpoint
@@ -100,7 +99,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 			RefreshToken:  auth.RefreshToken,
 			ExpiresAt:     auth.ExpiresAt,
 			SkipVerify:    auth.InsecureSkipVerify,
-			CustomHeaders: map[string]string{"User-Agent": "cells-sync/" + common.Version},
+			CustomHeaders: map[string]string{"User-Agent": "cells-sync/" + common.Version().String()},
 		}
 		options := cells.Options{
 			EndpointOptions: opts,

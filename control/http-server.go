@@ -206,7 +206,7 @@ func (h *HttpServer) InitHandlers() {
 					// Just publish version back to client
 					message := &common.Message{Type: "UPDATE", Content: &common.UpdateVersion{
 						PackageName: common.PackageType,
-						Version:     common.Version,
+						Version:     common.Version().String(),
 						Revision:    common.BuildRevision,
 						BuildStamp:  common.BuildStamp,
 					}}

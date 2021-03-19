@@ -20,10 +20,11 @@
 package cmd
 
 import (
-	"github.com/pydio/cells-sync/i18n"
 	"github.com/pydio/webview"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
+
+	"github.com/pydio/cells-sync/i18n"
 )
 
 var url string

@@ -38,7 +38,6 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-	"github.com/hashicorp/go-version"
 	update2 "github.com/inconshreveable/go-update"
 
 	"github.com/pydio/cells-sync/common"
@@ -113,16 +112,16 @@ func (u *Updater) LoadUpdates(ctx context.Context, busTopic string) (packages []
 		channel = "stable"
 	}
 
-	// Make sure Version is valid
-	_, outErr = version.NewVersion(common.Version)
-	if outErr != nil {
-		return
-	}
+	// // Make sure Version is valid
+	// _, outErr = version.NewVersion(common.Version().String())
+	// if outErr != nil {
+	// 	return
+	// }
 
 	request := &update.UpdateRequest{
 		PackageName:    common.PackageType,
 		Channel:        channel,
-		CurrentVersion: common.Version,
+		CurrentVersion: common.Version().String(),
 		GOOS:           runtime.GOOS,
 		GOARCH:         runtime.GOARCH,
 	}

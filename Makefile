@@ -16,21 +16,21 @@ dep:
 
 dev:
 	go build \
-	-ldflags "-X github.com/pydio/cells-sync/common.Version=${DEV_VERSION} \
+	-ldflags "-X github.com/pydio/cells-sync/common.version=${DEV_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=2021-01-01T00:00:00 \
 	-X github.com/pydio/cells-sync/common.BuildRevision=dev" \
 	-o cells-sync main.go
 
 cli:
 	go build \
-	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-ldflags "-X github.com/pydio/cells-sync/common.version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	-o cells-sync main.go
 
 win:
 	go build \
-	-ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	-o cells-sync.exe
@@ -50,7 +50,7 @@ xgo:
 	-out "cells-sync" \
 	--image ${XGO_IMAGE} \
 	--targets darwin/amd64 \
-	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-ldflags "-X github.com/pydio/cells-sync/common.version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
@@ -60,7 +60,7 @@ xgo:
 	--image ${XGO_14_IMG} \
 	--targets windows/amd64 \
 	-ldflags "-H=windowsgui \
-	-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-X github.com/pydio/cells-sync/common.version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
@@ -69,7 +69,7 @@ xgo:
 	-out "cells-sync-noui" \
 	--image ${XGO_14_IMG} \
 	--targets windows/amd64 \
-	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-ldflags "-X github.com/pydio/cells-sync/common.version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync

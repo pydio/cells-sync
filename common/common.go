@@ -23,8 +23,9 @@ package common
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
+
+	hashiversion "github.com/hashicorp/go-version"
 
 	"github.com/pydio/cells/common/log"
 	"github.com/pydio/cells/common/proto/update"
@@ -34,7 +35,7 @@ import (
 )
 
 var (
-	Version       = "0.1.0"
+	version       = "0.1.0"
 	BuildStamp    = ""
 	BuildRevision = ""
 	PackageType   = "CellsSync"
@@ -216,20 +217,26 @@ func MessageFromData(d []byte) *Message {
 
 }
 
-// PrintVersion prints information about the current build
-func PrintVersion() {
+//// PrintVersion prints information about the current build
+//func PrintVersion() {
+//
+//	var t time.Time
+//	if BuildStamp != "" {
+//		t, _ = time.Parse("2006-01-02T15:04:05", BuildStamp)
+//	} else {
+//		t = time.Now()
+//	}
+//
+//	fmt.Println("")
+//	fmt.Println("    " + fmt.Sprintf("%s (%s)", PackageLabel, Version))
+//	fmt.Println("    " + fmt.Sprintf("Published on %s", t.Format(time.RFC822Z)))
+//	fmt.Println("    " + fmt.Sprintf("Revision number %s", BuildRevision))
+//	fmt.Println("")
+//
+//}
 
-	var t time.Time
-	if BuildStamp != "" {
-		t, _ = time.Parse("2006-01-02T15:04:05", BuildStamp)
-	} else {
-		t = time.Now()
-	}
-
-	fmt.Println("")
-	fmt.Println("    " + fmt.Sprintf("%s (%s)", PackageLabel, Version))
-	fmt.Println("    " + fmt.Sprintf("Published on %s", t.Format(time.RFC822Z)))
-	fmt.Println("    " + fmt.Sprintf("Revision number %s", BuildRevision))
-	fmt.Println("")
-
+// Version returns the current code version as an object.
+func Version() *hashiversion.Version {
+	v, _ := hashiversion.NewVersion(version)
+	return v
 }
