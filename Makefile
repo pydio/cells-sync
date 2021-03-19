@@ -1,7 +1,10 @@
 ENV=env
+DEV_VERSION=0.9.3-dev
 TODAY:=$(shell date -u +%Y-%m-%dT%H:%M:%S)
+TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
 GITREV:=$(shell git rev-parse HEAD)
-CELLS_VERSION?=0.2.0
+CELLS_VERSION?="${DEV_VERSION}.${TIMESTAMP}"
+
 XGO_IMAGE?=pydio/xgo:latest
 XGO_14_IMG?=techknowlogick/xgo:go-1.14.x
 
@@ -10,6 +13,13 @@ all: clean pack cli
 dep:
 	go get github.com/akavel/rsrc
 	go get github.com/gobuffalo/packr/packr
+
+dev:
+	go build \
+	-ldflags "-X github.com/pydio/cells-sync/common.Version=${DEV_VERSION} \
+	-X github.com/pydio/cells-sync/common.BuildStamp=2021-01-01T00:00:00 \
+	-X github.com/pydio/cells-sync/common.BuildRevision=dev" \
+	-o cells-sync main.go
 
 cli:
 	go build \

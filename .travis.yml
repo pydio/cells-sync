@@ -6,7 +6,10 @@ os:
   - "osx"
 
 go:
-  - "1.12"
+  - "1.13"
+  - "1.14"
+  - "1.15"
+
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update ; fi

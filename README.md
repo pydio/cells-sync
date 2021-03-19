@@ -52,7 +52,7 @@ In order to compile and run the Cells-Sync client, you must fulfill the followin
 - To pack the frontend inside the binary (not mandatory if you are running on the same machine where $GOPATH is available), install github.com/gobuffalo/packr/packr tool and run `make clean pack` at the root of the repository.
 
 [ Update 04/16/2020 ]  
-Due to a dependency issue, until we switch to modules or until this dependency master is stable again, you have to apply the following before calling the make command: 
+Due to a dependency issue, until we switch to modules or until this dependency master is stable again, you have to apply the following before calling the make command:
 
 ```sh
 cd github.com/zserge/webview
