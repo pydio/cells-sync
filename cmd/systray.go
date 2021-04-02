@@ -20,8 +20,9 @@
 package cmd
 
 import (
-	"github.com/pydio/cells-sync/app/tray"
 	"github.com/spf13/cobra"
+
+	"github.com/pydio/cells-sync/app/tray"
 )
 
 // SystrayCmd starts the System Tray

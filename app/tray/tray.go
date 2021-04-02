@@ -33,14 +33,15 @@ import (
 
 	"github.com/skratchdot/open-golang/open"
 
-	"github.com/pydio/cells-sync/common"
-	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells-sync/control"
-	"github.com/pydio/cells-sync/i18n"
 	"github.com/pydio/cells/common/log"
 	servicecontext "github.com/pydio/cells/common/service/context"
 	"github.com/pydio/cells/common/sync/model"
 	"github.com/pydio/systray"
+
+	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells-sync/control"
+	"github.com/pydio/cells-sync/i18n"
 )
 
 var (

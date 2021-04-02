@@ -17,10 +17,14 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import i18n from "i18next";
-import en from "./i18n/en"
-import fr from "./i18n/fr"
 import de from "./i18n/de"
+import en from "./i18n/en"
+import es from "./i18n/es-es"
+import fr from "./i18n/fr"
 import it from "./i18n/it"
+import lv from "./i18n/lv"
+import pt from "./i18n/pt-br"
+
 import { initReactI18next } from "react-i18next";
 import moment from 'moment';
 import 'moment/locale/de';
@@ -31,28 +35,37 @@ import parse from 'url-parse'
 // the translations
 // (tip move them in a JSON file and import them)
 const resources = {
+    de: {
+        translation: de
+    },
     en: {
         translation: en
+    },
+    es: {
+        translation: es
     },
     fr: {
         translation: fr
     },
-    de: {
-        translation: de
-    },
     it: {
         translation: it
+    },
+    lv: {
+        translation: lv
+    },
+    pt: {
+        translation: pt
     }
 };
 let local = 'en';
 // Load from query parameters e.g ?lang=fr
 const parsed = parse(window.location, {}, true);
-if(parsed.query && parsed.query["lang"] && resources[parsed.query.lang]) {
+if (parsed.query && parsed.query["lang"] && resources[parsed.query.lang]) {
     local = parsed.query.lang;
 }
 // Load from local storage
 const stored = localStorage.getItem('language');
-if(stored && resources[stored]){
+if (stored && resources[stored]) {
     local = stored
 }
 i18n
@@ -69,5 +82,8 @@ i18n
     });
 
 moment.locale(local);
+
+// FIXME: does not work
+//console.log('Here', local)
 
 export default i18n;

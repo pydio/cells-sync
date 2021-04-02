@@ -185,7 +185,7 @@ class PageAbout extends React.Component {
 
                         <h3>Licensing</h3>
                         <p style={{lineHeight:'1.7em'}}>
-                            Copyright © 2019-2020 Abstrium SAS - Pydio is a trademark of Abstrium SAS <br/>
+                            Copyright © 2019-2021 Abstrium SAS - Pydio is a trademark of Abstrium SAS <br/>
                             CellsSync code is licensed under GPL v3. You can find the source code <Link href={"https://github.com/pydio/cells-sync"}/>.
                         </p>
                     </div>

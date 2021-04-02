@@ -16,9 +16,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
-export default [
+const endpointTypes = [
     { key: 'http', icon: 'Server'},
     { key: 'fs', icon : 'SyncFolder'},
     { key: 's3', icon: 'SplitObject'},
     { key: 'router', icon: 'ServerEnviroment'}
 ];
+
+export default endpointTypes;

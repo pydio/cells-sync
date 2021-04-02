@@ -17,13 +17,15 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import React from 'react'
-import {Link} from 'office-ui-fabric-react'
+import { Link } from 'office-ui-fabric-react'
 
-export default function ({href, label}) {
+const generateLink = function ({ href, label }) {
     const lab = label || href;
-    if (window.linkOpener){
-        return(<Link href={href} onClick={()=>{window.linkOpener.open(href)}} target={"_blank"}>{lab}</Link>);
-    } else{
-        return(<Link href={href} target={"_blank"}>{lab}</Link>);
+    if (window.linkOpener) {
+        return (<Link href={href} onClick={() => { window.linkOpener.open(href) }} target={"_blank"}>{lab}</Link>);
+    } else {
+        return (<Link href={href} target={"_blank"}>{lab}</Link>);
     }
 }
+
+export default generateLink;
