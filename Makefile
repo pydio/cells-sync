@@ -5,7 +5,7 @@ TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
 GITREV:=$(shell git rev-parse HEAD)
 CELLS_VERSION?="${DEV_VERSION}.${TIMESTAMP}"
 
-XGO_IMAGE?=pydio/xgo:latest
+XGO_IMAGE?=pydio/xgo:1.15.5
 XGO_14_IMG?=techknowlogick/xgo:go-1.14.x
 
 all: clean pack cli
