@@ -68,7 +68,6 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 	var startError error
 
 	ctx := servicecontext.WithServiceName(context.Background(), "sync-task")
-	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorGrpc)
 	configPath := filepath.Join(config.SyncClientDataDir(), conf.Uuid)
 	stateStore := NewFileStateStore(conf, configPath)
 	if stateStore.FileError != nil {

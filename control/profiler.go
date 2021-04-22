@@ -38,7 +38,6 @@ type Profiler struct {
 // Serve implements supervisor service interface.
 func (p *Profiler) Serve() {
 	p.ctx = servicecontext.WithServiceName(context.Background(), "profiler")
-	p.ctx = servicecontext.WithServiceColor(p.ctx, servicecontext.ServiceColorOther)
 
 	log.Logger(p.ctx).Info(fmt.Sprintf("Exposing debug profiles for process %d on port %d\n", os.Getpid(), 6060))
 	http.Handle("/debug", pprof.Handler("debug"))

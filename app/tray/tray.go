@@ -52,7 +52,7 @@ var (
 
 	firstRun    bool
 	pauseToggle bool
-	trayCtx     = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "systray"), servicecontext.ServiceColorOther)
+	trayCtx     = servicecontext.WithServiceName(context.Background(), "systray")
 
 	ErrNotSupported = fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
 )

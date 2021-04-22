@@ -43,7 +43,7 @@ func init() {
 }
 
 var (
-	oidcContext = servicecontext.WithServiceColor(servicecontext.WithServiceName(context.Background(), "oidc"), servicecontext.ServiceColorRest)
+	oidcContext = servicecontext.WithServiceName(context.Background(), "oidc")
 )
 
 // Authority represent an active account where user has logged in using the OpenID Connect workflow.

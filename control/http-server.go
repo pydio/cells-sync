@@ -60,7 +60,6 @@ type HttpServer struct {
 // NewHttpServer creates a supervisor service for spinning the http server.
 func NewHttpServer() *HttpServer {
 	httpServerCtx := servicecontext.WithServiceName(context.Background(), "http-server")
-	httpServerCtx = servicecontext.WithServiceColor(httpServerCtx, servicecontext.ServiceColorRest)
 	r, w := io.Pipe()
 	h := &HttpServer{
 		ctx:       httpServerCtx,

@@ -37,7 +37,6 @@ type StdInner struct {
 func (s *StdInner) Serve() {
 
 	s.ctx = servicecontext.WithServiceName(context.Background(), "scanner")
-	s.ctx = servicecontext.WithServiceColor(s.ctx, servicecontext.ServiceColorOther)
 
 	log.Logger(s.ctx).Info("Use 'quit' or Ctrl+C to exit, type 'resync', 'dry', 'loop' to control syncs, 'pause' or 'resume'")
 	bus := GetBus()

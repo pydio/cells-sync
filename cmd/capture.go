@@ -49,7 +49,6 @@ var CaptureCmd = &cobra.Command{
 		}
 
 		ctx := servicecontext.WithServiceName(context.Background(), "supervisor")
-		ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
 
 		conf := config.Default()
 		if len(conf.Tasks) > 0 {

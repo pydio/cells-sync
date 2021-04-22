@@ -59,7 +59,6 @@ type Updater struct {
 // NewUpdater creates a new Updater service
 func NewUpdater() *Updater {
 	ctx := servicecontext.WithServiceName(context.Background(), "update.service")
-	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
 	return &Updater{
 		debug: false,
 		ctx:   ctx,

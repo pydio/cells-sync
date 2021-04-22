@@ -27,7 +27,6 @@ func NewSpawnedService(name string, args []string) *SpawnedService {
 		args: args,
 	}
 	ctx := servicecontext.WithServiceName(context.Background(), name)
-	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorOther)
 	s.logCtx = ctx
 	return s
 }

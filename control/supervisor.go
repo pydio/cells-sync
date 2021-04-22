@@ -52,7 +52,6 @@ type Supervisor struct {
 // NewSupervisor creates a new Supervisor
 func NewSupervisor(noUi bool) *Supervisor {
 	ctx := servicecontext.WithServiceName(context.Background(), "supervisor")
-	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
 	s := &Supervisor{
 		ctx:         ctx,
 		noUi:        noUi,

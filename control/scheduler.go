@@ -40,7 +40,6 @@ type Scheduler struct {
 func NewScheduler(tasks []*config.Task) *Scheduler {
 	ctx := context.Background()
 	ctx = servicecontext.WithServiceName(ctx, "scheduler")
-	ctx = servicecontext.WithServiceColor(ctx, servicecontext.ServiceColorRest)
 	return &Scheduler{
 		tasks:  tasks,
 		logCtx: ctx,
