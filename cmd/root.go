@@ -22,19 +22,12 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"runtime"
-	"strings"
-
-	"github.com/pydio/cells/common"
-	servicecontext "github.com/pydio/cells/common/service/context"
-	"go.uber.org/zap/buffer"
-	"go.uber.org/zap/zapcore"
-
-	"github.com/pydio/cells/common/log"
 
 	"github.com/spf13/cobra"
+
+	"github.com/pydio/cells/common/log"
 )
 
 // RootCmd is the Cobra root command
@@ -48,12 +41,12 @@ Launching without command is the same as './cells-sync start' on Mac and Windows
 `,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// Init logger
-		log.RegisterConsoleNamedColor("supervisor", servicecontext.ServiceColorRest)
-		log.RegisterConsoleNamedColor("oidc", servicecontext.ServiceColorRest)
-		log.RegisterConsoleNamedColor("http-server", servicecontext.ServiceColorRest)
-		log.RegisterConsoleNamedColor("scheduler", servicecontext.ServiceColorRest)
-		log.RegisterConsoleNamedColor("update.service", servicecontext.ServiceColorRest)
-		log.RegisterConsoleNamedColor("sync-task", servicecontext.ServiceColorGrpc)
+		log.RegisterConsoleNamedColor("supervisor", log.ConsoleColorRest)
+		log.RegisterConsoleNamedColor("oidc", log.ConsoleColorRest)
+		log.RegisterConsoleNamedColor("http-server", log.ConsoleColorRest)
+		log.RegisterConsoleNamedColor("scheduler", log.ConsoleColorRest)
+		log.RegisterConsoleNamedColor("update.service", log.ConsoleColorRest)
+		log.RegisterConsoleNamedColor("sync-task", log.ConsoleColorGrpc)
 		log.SetSkipServerSync()
 		log.Init()
 
@@ -67,28 +60,4 @@ Launching without command is the same as './cells-sync start' on Mac and Windows
 			cmd.Usage()
 		}
 	},
-}
-
-func newColorConsoleEncoder(config zapcore.EncoderConfig) zapcore.Encoder {
-	return &colorConsoleEncoder{Encoder: zapcore.NewConsoleEncoder(config)}
-}
-
-// Custom Encoder to skip some specific fields and colorize logger name
-type colorConsoleEncoder struct {
-	zapcore.Encoder
-}
-
-func (c *colorConsoleEncoder) Clone() zapcore.Encoder {
-	return &colorConsoleEncoder{Encoder: c.Encoder.Clone()}
-}
-
-func (c *colorConsoleEncoder) EncodeEntry(e zapcore.Entry, ff []zapcore.Field) (*buffer.Buffer, error) {
-	color := servicecontext.ServiceColorOther
-	if strings.HasPrefix(e.LoggerName, common.ServiceGrpcNamespace_) {
-		color = servicecontext.ServiceColorGrpc
-	} else if strings.HasPrefix(e.LoggerName, common.ServiceRestNamespace_) {
-		color = servicecontext.ServiceColorRest
-	}
-	e.LoggerName = fmt.Sprintf("\x1b[%dm%s\x1b[0m", color, e.LoggerName)
-	return c.Encoder.EncodeEntry(e, ff)
 }
