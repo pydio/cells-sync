@@ -148,8 +148,8 @@ class PageActivities extends Component {
                         <Page title={t("activities.title")} barItems={[]} flex={true}>
                             <div style={{position:'relative', height:'100%', backgroundColor:'white'}}>
                                 <ScrollablePane styles={{contentContainer:{height:'100%', backgroundColor:'#fafafa'}}}>
-                                    {data && Object.keys(data).map(key => {
-                                        const patch = data[key];
+                                    {Object.keys(syncTasks).map(key => {
+                                        const patch = data && data[key];
                                         const task = syncTasks[key];
                                         return (
                                             <React.Fragment key={key}>
@@ -158,11 +158,13 @@ class PageActivities extends Component {
                                                         <span style={{flex: 1, paddingLeft: 8, display:'flex', alignItems:'center'}}>
                                                             <Icon iconName={"Activities"} styles={{root:{fontSize:'1.3em', height:18, marginRight: 5}}}/>
                                                             {this.syncLabel(task)}&nbsp;
-                                                            <span style={{opacity:.5}}>{moment(patch.Root.Stamp).fromNow()}</span>
+                                                            {patch && <span style={{opacity:.5}}>{moment(patch.Root.Stamp).fromNow()}</span>}
+                                                            {!patch && <span style={{marginLeft: 10}}><Spinner size={SpinnerSize.small} /></span>}
                                                         </span>
                                                         <span style={{width: 130, marginRight: 8, textAlign:'center'}}>{t('patch.header.operations')}</span>
                                                     </div>
                                                 </Sticky>
+                                                {patch &&
                                                 <div style={{paddingBottom: 6, paddingTop: 6}}>
                                                     {patch.Error && <div style={{color:Colors.error, padding: 10}}><Icon iconName={"Warning"}/> {patch.Error}</div>}
                                                     {patch.Root.Children.map((c,i) =>
@@ -176,6 +178,7 @@ class PageActivities extends Component {
                                                         />
                                                     )}
                                                 </div>
+                                                }
                                             </React.Fragment>
                                         );
                                     })}
