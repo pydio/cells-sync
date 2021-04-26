@@ -26,6 +26,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pydio/cells-sync/config"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/pydio/cells-sync/endpoint"
@@ -50,6 +52,18 @@ func (h *HttpServer) parsePatchRequest(c *gin.Context) (*PatchesRequest, error) 
 	if pR.SyncUUID == "" {
 		return nil, fmt.Errorf("please provide a sync UUID")
 	}
+	// Check that SyncUUID does exist
+	conf := config.Default()
+	var found bool
+	for _, t := range conf.Tasks {
+		if t.Uuid == pR.SyncUUID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return nil, fmt.Errorf("cannot find corresponding sync - maybe it was deleted")
+	}
 	if o, e := strconv.ParseInt(c.Param("offset"), 10, 64); e == nil {
 		pR.Offset = int(o)
 	}
@@ -60,9 +74,8 @@ func (h *HttpServer) parsePatchRequest(c *gin.Context) (*PatchesRequest, error) 
 }
 
 // reqRespStore uses a Pub/Sub model to synchronously retrieve a pointer to the PatchStore of a sync.
-func (h *HttpServer) reqRespStore(syncUUID string) *endpoint.PatchStore {
+func (h *HttpServer) reqRespStore(syncUUID string) (store *endpoint.PatchStore, err error) {
 
-	var store *endpoint.PatchStore
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	ch := GetBus().Sub(TopicStore_ + syncUUID)
@@ -74,9 +87,16 @@ func (h *HttpServer) reqRespStore(syncUUID string) *endpoint.PatchStore {
 		for {
 			select {
 			case s := <-ch:
-				store = s.(*endpoint.PatchStore)
+				if data, ok := s.(*endpoint.PatchStore); ok {
+					store = data
+				} else if er, ok := s.(error); ok {
+					err = er
+				} else {
+					err = fmt.Errorf("unknown format received")
+				}
 				return
 			case <-time.After(250 * time.Millisecond):
+				err = fmt.Errorf("could not load store")
 				return
 			}
 		}
@@ -84,7 +104,7 @@ func (h *HttpServer) reqRespStore(syncUUID string) *endpoint.PatchStore {
 	GetBus().Pub(MessagePublishStore, TopicSync_+syncUUID)
 	wg.Wait()
 
-	return store
+	return
 }
 
 // listPatches loads patches from store
@@ -94,9 +114,9 @@ func (h *HttpServer) listPatches(c *gin.Context) {
 		h.writeError(c, e)
 		return
 	}
-	store := h.reqRespStore(request.SyncUUID)
-	if store == nil {
-		h.writeError(c, fmt.Errorf("cannot load store"))
+	store, e := h.reqRespStore(request.SyncUUID)
+	if e != nil {
+		h.writeError(c, e)
 		return
 	}
 	patches, err := store.Load(request.Offset, request.Limit)

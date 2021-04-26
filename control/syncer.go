@@ -242,6 +242,28 @@ func (s *Syncer) dispatchStatus(ctx context.Context) {
 
 }
 
+func (s *Syncer) dispatchPublishBus(ctx context.Context, done chan bool) {
+	bus := GetBus()
+	topic := bus.Sub(TopicSync_ + s.uuid)
+	for {
+		select {
+		case <-done:
+			bus.Unsub(topic)
+			return
+		case message := <-topic:
+			switch message {
+			case MessagePublishStore:
+				if s.patchStore != nil {
+					bus.Pub(s.patchStore, TopicStore_+s.uuid)
+				} else {
+					bus.Pub(fmt.Errorf("patch store not ready"), TopicStore_+s.uuid)
+				}
+			}
+		}
+	}
+
+}
+
 func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 
 	bus := GetBus()
@@ -336,10 +358,12 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 			case MessagePublishState:
 				// Broadcast current state
 				bus.Pub(s.stateStore.LastState(), TopicState)
-			case MessagePublishStore:
-				if s.patchStore != nil {
-					bus.Pub(s.patchStore, TopicStore_+s.uuid)
-				}
+				/*
+					case MessagePublishStore:
+						if s.patchStore != nil {
+							bus.Pub(s.patchStore, TopicStore_+s.uuid)
+						}
+				*/
 			case MessageInterrupt:
 				s.cmd.Publish(model.Interrupt)
 			case MessagePause:
@@ -423,6 +447,7 @@ func (s *Syncer) Serve() {
 
 	ctx := s.serviceCtx
 	done := make(chan bool, 1)
+	done2 := make(chan bool, 1)
 
 	if s.task != nil {
 
@@ -430,6 +455,7 @@ func (s *Syncer) Serve() {
 
 		go s.dispatchStatus(ctx)
 		go s.dispatchBus(ctx, done)
+		go s.dispatchPublishBus(ctx, done2)
 
 		s.task.SetupCmd(s.cmd)
 		s.task.SetupEventsChan(s.patchStatus, s.patchDone, s.eventsChan)
@@ -457,12 +483,14 @@ func (s *Syncer) Serve() {
 		log.Logger(ctx).Info("Syncer did not setup Task properly, do nothing")
 
 		go s.dispatchBus(ctx, done)
+		go s.dispatchPublishBus(ctx, done)
 
 	}
 
 	for {
 		select {
 		case <-s.stop:
+			done2 <- true
 			done <- true
 			return
 		}
