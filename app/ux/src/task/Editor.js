@@ -167,8 +167,8 @@ class Editor extends React.Component {
                     <Stack.Item styles={sectionStyles}>
                         {this.labelForPicker("left", leftType, editLeftType, "editLeftType")}
                         <EndpointPicker
-                            value={task.Config.LeftURI}
-                            onChange={(e, v) => this.onChangeURI('LeftURI', v)}
+                            value={task.Config.LeftURI.replace(':///', '://local/')}
+                            onChange={(e, v) => this.onChangeURI('LeftURI', v.replace('://local/', ':///'))}
                             editType={editLeftType}
                             socket={socket}
                             onCreateServer={(url) => this.onCreateServer(url, "left")}
@@ -213,8 +213,8 @@ class Editor extends React.Component {
                     <Stack.Item styles={sectionStyles}>
                         {this.labelForPicker("right", rightType, editRightType, "editRightType")}
                         <EndpointPicker
-                            value={task.Config.RightURI}
-                            onChange={(e, v) => this.onChangeURI('RightURI', v)}
+                            value={task.Config.RightURI.replace(':///', '://local/')}
+                            onChange={(e, v) => this.onChangeURI('RightURI', v.replace('://local/', ':///'))}
                             editType={editRightType}
                             socket={socket}
                             onCreateServer={(url) => this.onCreateServer(url, "right")}

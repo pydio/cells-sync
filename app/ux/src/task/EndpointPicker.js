@@ -152,6 +152,8 @@ class EndpointPicker extends React.Component {
                                 url.set('pathname', '');
                                 if(item.key === 's3:'){
                                     url.set('host', 's3.amazonaws.com')
+                                } else if(item.key === 'router:'){
+                                    url.set('host', '');
                                 }
                                 this.updateUrl(url);
                             }}

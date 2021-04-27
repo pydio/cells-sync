@@ -78,7 +78,6 @@ class SyncTask extends React.Component {
 
     computeStatus() {
         const {state, t} = this.props;
-        console.log(state);
         const {LastProcessStatus, LeftInfo, RightInfo, Status, LastSyncTime, LastOpsTime} = state;
 
         switch (Status) {
@@ -152,7 +151,7 @@ class SyncTask extends React.Component {
             folders = LeftInfo.Stats.Folders;
             files = LeftInfo.Stats.Files;
         }
-        if(RightInfo.Stats && RightInfo.Stats.HasSizeInfo){
+        if(RightInfo.Stats && RightInfo.Stats.HasChildrenInfo){
             folders = RightInfo.Stats.Folders;
             files = RightInfo.Stats.Files;
         }
