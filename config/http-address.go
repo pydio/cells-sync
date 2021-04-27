@@ -21,8 +21,9 @@ package config
 
 import (
 	"fmt"
-	"net"
 	"sync"
+
+	"github.com/pydio/cells/common/utils/net"
 )
 
 var (
@@ -45,9 +46,7 @@ func GetHttpAddress() (string, error) {
 		hostname := "localhost"
 		port := 3636
 		for ; port <= 3666; port++ {
-			l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", hostname, port))
-			if err == nil {
-				l.Close()
+			if err := net.CheckPortAvailability(fmt.Sprintf("%d", port)); err == nil {
 				break
 			}
 		}
