@@ -78,7 +78,8 @@ class SyncTask extends React.Component {
 
     computeStatus() {
         const {state, t} = this.props;
-        const {LastProcessStatus, Status, LastSyncTime, LastOpsTime} = state;
+        console.log(state);
+        const {LastProcessStatus, LeftInfo, RightInfo, Status, LastSyncTime, LastOpsTime} = state;
 
         switch (Status) {
             case StatusPaused:
@@ -118,6 +119,12 @@ class SyncTask extends React.Component {
                     <Fragment>
                         {LastProcessStatus && LastProcessStatus.StatusString !== "Idle" &&
                             <span>{LastProcessStatus.StatusString}</span>
+                        }
+                        {!LastProcessStatus && (!LeftInfo.Connected || !RightInfo.Connected) &&
+                        <Fragment>
+                            &nbsp;
+                            <Icon iconName={"Error"} styles={{root:{color:Colors.error, marginRight:5}}}/> {t('task.status.disconnected.'+(LeftInfo.Connected ? 'right' : 'left'))}
+                        </Fragment>
                         }
                         {LastSyncTime && LastSyncTime !== emptyTime &&
                             <span>{t('task.last-sync')} : {moment(LastSyncTime).fromNow()}</span>

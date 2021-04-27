@@ -36,6 +36,8 @@
   "task.status.error":"Errors detected",
   "task.status.restarting":"Restarting...",
   "task.status.stopping":"Stopping...",
+  "task.status.disconnected.left":"Cannot connect to server!",
+  "task.status.disconnected.right":"Cannot find local folder!",
   "task.stats":"Synchronized data",
   "task.stats.size":"Total Size",
   "task.stats.folders":"Folders",
