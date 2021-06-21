@@ -48,7 +48,9 @@ In order to compile and run the Cells-Sync client, you must fulfill the followin
 ### Compilation instructions
 
 - Get the code: `go get github.com/pydio/cells-sync/...`
-- To compile the frontend, enter the `app/ux/` folder and run `npm run build`
+- Change directory to `app/ux/`
+- To load frontend dependencies run `npm install`
+- To compile the frontend, run `npm run build`
 - To pack the frontend inside the binary (not mandatory if you are running on the same machine where $GOPATH is available), install github.com/gobuffalo/packr/packr tool and run `make clean pack` at the root of the repository.
 
 [ Update 04/16/2020 ]  
