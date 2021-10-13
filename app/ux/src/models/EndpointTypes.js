@@ -19,6 +19,7 @@
 export default [
     { key: 'http', icon: 'Server'},
     { key: 'fs', icon : 'SyncFolder'},
-    { key: 's3', icon: 'SplitObject'},
-    { key: 'router', icon: 'ServerEnviroment'}
+    { key: 's3', icon: 'SplitObject'}/*,
+    /* Disabled as we removed the dependency to router in the service
+    { key: 'router', icon: 'ServerEnviroment'}*/
 ];

@@ -22,6 +22,7 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/shibukawa/configdir"
@@ -41,9 +42,15 @@ func SyncClientDataDir() string {
 		folders = configDirs.QueryFolders(configdir.Local)
 	}
 	f := folders[0].Path
-	if err := os.MkdirAll(f, 0777); err != nil {
+	if err := os.MkdirAll(f, 0755); err != nil {
 		log.Fatal("Could not create local data dir - please check that you have the correct permissions for the folder -", f)
 	}
 
 	return f
+}
+
+func GetLogsDir() (string, error) {
+	ld := filepath.Join(SyncClientDataDir(), "logs")
+	e := os.MkdirAll(ld, 0755)
+	return ld, e
 }

@@ -30,7 +30,6 @@ import (
 	"strings"
 
 	"github.com/pydio/cells-sync/common"
-
 	"github.com/pydio/cells-sync/config"
 
 	"github.com/pydio/cells/common/sync/endpoints/cells"
@@ -47,7 +46,6 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 	if e != nil {
 		return nil, e
 	}
-	otherU, _ := url.Parse(otherUri)
 	opts := model.EndpointOptions{}
 	if len(browseOnly) > 0 && browseOnly[0] {
 		opts.BrowseOnly = true
@@ -69,15 +67,18 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 	case "db":
 		return memory.NewMemDB(), nil
 
-	case "router":
-		options := cells.Options{
-			EndpointOptions:   opts,
-			LocalInitRegistry: true,
-		}
-		if otherU != nil && otherU.Scheme == "router" {
-			options.RenewFolderUuids = true
-		}
-		return cells.NewLocal(strings.TrimLeft(u.Path, "/"), options), nil
+		/*
+			case "router":
+				otherU, _ := url.Parse(otherUri)
+				options := cells.Options{
+					EndpointOptions:   opts,
+					LocalInitRegistry: true,
+				}
+				if otherU != nil && otherU.Scheme == "router" {
+					options.RenewFolderUuids = true
+				}
+				return local.NewLocal(strings.TrimLeft(u.Path, "/"), options), nil
+		*/
 
 	case "http", "https":
 

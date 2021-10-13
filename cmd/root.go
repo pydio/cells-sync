@@ -22,11 +22,13 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 
 	"github.com/spf13/cobra"
 
+	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells/common/log"
 )
 
@@ -48,7 +50,12 @@ Launching without command is the same as './cells-sync start' on Mac and Windows
 		log.RegisterConsoleNamedColor("update.service", log.ConsoleColorRest)
 		log.RegisterConsoleNamedColor("sync-task", log.ConsoleColorGrpc)
 		log.SetSkipServerSync()
-		log.Init()
+		logDir, e := config.GetLogsDir()
+		if e != nil {
+			fmt.Println("Cannot create log dir, sending logs to current folder")
+			logDir = "./"
+		}
+		log.Init(logDir)
 
 		handleSignals()
 	},
