@@ -244,7 +244,7 @@ func (s *Syncer) dispatchStatus(ctx context.Context) {
 
 func (s *Syncer) dispatchPublishBus(ctx context.Context, done chan bool) {
 	bus := GetBus()
-	topic := bus.Sub(TopicSync_ + s.uuid)
+	topic := bus.Sub(TopicSyncAll, TopicSync_+s.uuid)
 	for {
 		select {
 		case <-done:
@@ -258,6 +258,9 @@ func (s *Syncer) dispatchPublishBus(ctx context.Context, done chan bool) {
 				} else {
 					bus.Pub(fmt.Errorf("patch store not ready"), TopicStore_+s.uuid)
 				}
+			case MessagePublishState:
+				// Broadcast current state
+				bus.Pub(s.stateStore.LastState(), TopicState)
 			}
 		}
 	}
@@ -355,14 +358,11 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 				}
 				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Starting sync loop"), model.TaskStatusProcessing)
 				s.task.Run(ctx, false, false)
-			case MessagePublishState:
-				// Broadcast current state
-				bus.Pub(s.stateStore.LastState(), TopicState)
 				/*
-					case MessagePublishStore:
-						if s.patchStore != nil {
-							bus.Pub(s.patchStore, TopicStore_+s.uuid)
-						}
+					case MessagePublishState:
+						// Broadcast current state
+						bus.Pub(s.stateStore.LastState(), TopicState)
+
 				*/
 			case MessageInterrupt:
 				s.cmd.Publish(model.Interrupt)
