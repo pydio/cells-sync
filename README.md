@@ -107,6 +107,11 @@ Flags:
 Use "./cells-sync [command] --help" for more information about a command.
 ```
 
+
+## Troubleshooting
+
+If you are running Cells Sync in a docker container make sure to also use the interactive shell flag `-i` with the run command [see docker documentation](https://docs.docker.com/engine/reference/commandline/run/#assign-name-and-allocate-pseudo-tty---name--it).
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](https://github.com/pydio/cells/blob/master/CONTRIBUTING.md) in the Pydio Cells project for details on our code of conduct, and the process for submitting pull requests to us. You can find a comprehensive [Developer Guide](https://pydio.com/en/docs/developer-guide) on our web site. Our online docs are open source as well, feel free to improve them by contributing!
