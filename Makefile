@@ -8,11 +8,10 @@ CELLS_VERSION?="${DEV_VERSION}.${TIMESTAMP}"
 XGO_IMAGE?=pydio/xgo:latest
 XGO_14_IMG?=techknowlogick/xgo:go-1.14.x
 
-all: clean pack cli
+all: clean cli
 
 dep:
 	go get github.com/akavel/rsrc
-	go get github.com/gobuffalo/packr/packr
 
 dev:
 	go build \
@@ -35,9 +34,6 @@ win:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	-o cells-sync.exe
 
-pack:
-	${GOPATH}/bin/packr
-
 rsrc:
 	${GOPATH}/bin/rsrc -arch amd64 -ico app/resources/icon.ico
 
@@ -46,18 +42,19 @@ rsrc:
 # --targets darwin-10.11/amd64 \
 
 xgo:
-	${GOPATH}/bin/xgo -go 1.15 \
+	${GOPATH}/bin/xgo -go 1.17 \
 	-out "cells-sync" \
 	--image ${XGO_IMAGE} \
-	--targets darwin/amd64 \
+	--targets darwin-11.1/amd64 \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
-	${GOPATH}/bin/xgo -go 1.14 \
+xgowin:
+	${GOPATH}/bin/xgo -go 1.17 \
 	-out "cells-sync" \
-	--image ${XGO_14_IMG} \
+	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
 	-ldflags "-H=windowsgui \
 	-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
@@ -65,6 +62,7 @@ xgo:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	${GOPATH}/src/github.com/pydio/cells-sync
 
+xgowinnoui:
 	${GOPATH}/bin/xgo -go 1.14 \
 	-out "cells-sync-noui" \
 	--image ${XGO_14_IMG} \
@@ -77,5 +75,3 @@ xgo:
 clean:
 	rm -f cells-sync*
 	rm -f rsrc.syso
-	${GOPATH}/bin/packr clean
-	

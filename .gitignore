@@ -6,6 +6,5 @@ sync.exe*
 .pydio
 debug
 package-lock.json
-*-packr.go
 /.idea/
 *.syso

@@ -32,11 +32,11 @@ import (
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
 
-	"github.com/pydio/cells/common/sync/endpoints/cells"
-	"github.com/pydio/cells/common/sync/endpoints/filesystem"
-	"github.com/pydio/cells/common/sync/endpoints/memory"
-	"github.com/pydio/cells/common/sync/endpoints/s3"
-	"github.com/pydio/cells/common/sync/model"
+	"github.com/pydio/cells/v4/common/sync/endpoints/cells"
+	"github.com/pydio/cells/v4/common/sync/endpoints/filesystem"
+	"github.com/pydio/cells/v4/common/sync/endpoints/memory"
+	"github.com/pydio/cells/v4/common/sync/endpoints/s3"
+	"github.com/pydio/cells/v4/common/sync/model"
 )
 
 // EndpointFromURI parse an URI string to instantiate a proper Endpoint

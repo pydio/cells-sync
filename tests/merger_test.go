@@ -31,12 +31,12 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/pydio/cells-sync/endpoint"
-	"github.com/pydio/cells/common/proto/tree"
-	"github.com/pydio/cells/common/sync/endpoints/filesystem"
-	"github.com/pydio/cells/common/sync/endpoints/index"
-	"github.com/pydio/cells/common/sync/merger"
-	"github.com/pydio/cells/common/sync/model"
-	"github.com/pydio/cells/common/sync/task"
+	"github.com/pydio/cells/v4/common/proto/tree"
+	"github.com/pydio/cells/v4/common/sync/endpoints/filesystem"
+	"github.com/pydio/cells/v4/common/sync/endpoints/index"
+	"github.com/pydio/cells/v4/common/sync/merger"
+	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v4/common/sync/task"
 )
 
 func TestMergeWithBigDataStructure(t *testing.T) {

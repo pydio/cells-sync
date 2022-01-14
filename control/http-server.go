@@ -26,14 +26,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/contrib/secure"
-
-	"github.com/pydio/cells/common/sync/model"
-
-	servicecontext "github.com/pydio/cells/common/service/context"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/contrib/secure"
 	"github.com/gin-gonic/gin"
 	"github.com/pborman/uuid"
 	"gopkg.in/olahol/melody.v1"
@@ -41,7 +36,9 @@ import (
 	"github.com/pydio/cells-sync/app/ux"
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/common/log"
+	"github.com/pydio/cells/v4/common/log"
+	servicecontext "github.com/pydio/cells/v4/common/service/context"
+	"github.com/pydio/cells/v4/common/sync/model"
 )
 
 type HttpServer struct {
@@ -299,8 +296,8 @@ func (h *HttpServer) Serve() {
 	gin.DisableConsoleColor()
 	Server := gin.New()
 	Server.NoRoute(func(i *gin.Context) {
-		ux.Box.Bytes("index.html")
-		i.Data(http.StatusOK, "text/html; charset=utf-8", ux.Box.Bytes("index.html"))
+		bb, _ := ux.BuildFS.ReadFile("build/index.html")
+		i.Data(http.StatusOK, "text/html; charset=utf-8", bb)
 	})
 	Server.Use(gin.Recovery())
 	Server.Use(static.Serve("/", ux.Box))

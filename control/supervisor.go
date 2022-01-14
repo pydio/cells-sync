@@ -34,8 +34,8 @@ import (
 	"github.com/thejerf/suture"
 
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/common/log"
-	servicecontext "github.com/pydio/cells/common/service/context"
+	"github.com/pydio/cells/v4/common/log"
+	servicecontext "github.com/pydio/cells/v4/common/service/context"
 )
 
 // Supervisor is a service manager for starting syncs and other services and restarting them if necessary

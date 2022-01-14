@@ -26,9 +26,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/cells/common/proto/update"
-	"github.com/pydio/cells/common/sync/model"
+	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v4/common/proto/update"
+	"github.com/pydio/cells/v4/common/sync/model"
 
 	"github.com/pydio/cells-sync/config"
 )

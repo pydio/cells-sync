@@ -43,10 +43,10 @@ import (
 
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/cells/common/proto/update"
-	servicecontext "github.com/pydio/cells/common/service/context"
-	"github.com/pydio/cells/common/utils/net"
+	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v4/common/proto/update"
+	servicecontext "github.com/pydio/cells/v4/common/service/context"
+	"github.com/pydio/cells/v4/common/utils/net"
 )
 
 // Updater is a supervisor service for checking for available updates

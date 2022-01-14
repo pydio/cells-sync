@@ -29,7 +29,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/common/log"
+	"github.com/pydio/cells/v4/common/log"
 )
 
 // RootCmd is the Cobra root command

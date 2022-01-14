@@ -24,8 +24,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/pydio/cells/common/log"
-	servicecontext "github.com/pydio/cells/common/service/context"
+	"github.com/pydio/cells/v4/common/log"
+	servicecontext "github.com/pydio/cells/v4/common/service/context"
 )
 
 // StdInner is a supervisor service for scanning StdIn

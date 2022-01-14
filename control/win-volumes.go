@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 /*
@@ -30,8 +31,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/cells/common/proto/tree"
+	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v4/common/proto/tree"
 )
 
 func browseWinVolumes(ctx context.Context) (children []*tree.Node) {

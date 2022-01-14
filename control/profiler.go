@@ -26,8 +26,8 @@ import (
 	"net/http/pprof"
 	"os"
 
-	"github.com/pydio/cells/common/log"
-	servicecontext "github.com/pydio/cells/common/service/context"
+	"github.com/pydio/cells/v4/common/log"
+	servicecontext "github.com/pydio/cells/v4/common/service/context"
 )
 
 // Profiler is a supervisor service for serving internal golang pprof debugs on 6060

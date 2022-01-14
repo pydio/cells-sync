@@ -2,10 +2,11 @@ package i18n
 
 import (
 	"encoding/json"
+	"io"
 	"strings"
 
 	"github.com/cloudfoundry/jibber_jabber"
-	"github.com/gobuffalo/packr"
+	"github.com/pydio/cells-sync/app"
 )
 
 var (
@@ -15,7 +16,7 @@ var (
 
 func init() {
 	ss = make(map[string]string)
-	box := packr.NewBox("../app/ux/src/i18n")
+	box := app.I18nFS
 	var e error
 	var lang string
 	ietf, e := jibber_jabber.DetectIETF()
@@ -30,10 +31,12 @@ func init() {
 	ietf = strings.ToLower(ietf)
 	lang = strings.ToLower(lang)
 	var bb []byte
-	if box.Has(ietf + ".json") {
-		bb = box.Bytes(ietf + ".json")
-	} else if box.Has(lang + ".json") {
-		bb = box.Bytes(lang + ".json")
+	if f0, e := box.Open(ietf + ".json"); e == nil {
+		bb, _ = io.ReadAll(f0)
+		_ = f0.Close()
+	} else if f1, e1 := box.Open(lang + ".json"); e1 == nil {
+		bb, _ = io.ReadAll(f1)
+		_ = f1.Close()
 	}
 	if bb != nil {
 		var data map[string]string

@@ -28,7 +28,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/common/log"
+	"github.com/pydio/cells/v4/common/log"
 )
 
 // StartCmd starts the client.

@@ -33,8 +33,8 @@ import (
 
 	"gopkg.in/square/go-jose.v2/jwt"
 
-	"github.com/pydio/cells/common/log"
-	servicecontext "github.com/pydio/cells/common/service/context"
+	"github.com/pydio/cells/v4/common/log"
+	servicecontext "github.com/pydio/cells/v4/common/service/context"
 )
 
 func init() {

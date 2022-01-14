@@ -1,27 +1,35 @@
 package ux
 
 import (
+	"embed"
+	"io/fs"
+	"net/http"
 	"path/filepath"
-
-	"github.com/gobuffalo/packr"
 )
 
 var (
 	Box *GinBox
+	//go:embed build
+	BuildFS embed.FS
 )
 
 // Small wrapper to adapt packr.Box
 type GinBox struct {
-	packr.Box
+	http.FileSystem
 }
 
+// Exists checks if a file exist inside embedded box
 func (g *GinBox) Exists(prefix string, path string) bool {
-	return g.Box.Has(filepath.Join(prefix, path))
+	if f, e := g.Open(filepath.Join(prefix, path)); e == nil {
+		_ = f.Close()
+		return true
+	}
+	return false
 }
 
 func init() {
-	pBox := packr.NewBox("./build")
+	sub, _ := fs.Sub(BuildFS, "build")
 	Box = &GinBox{
-		Box: pBox,
+		FileSystem: http.FS(sub),
 	}
 }

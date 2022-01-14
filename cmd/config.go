@@ -27,7 +27,7 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/spf13/cobra"
 
-	"github.com/pydio/cells/common/log"
+	"github.com/pydio/cells/v4/common/log"
 
 	"github.com/pydio/cells-sync/config"
 )

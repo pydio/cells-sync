@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 /*
@@ -24,7 +25,7 @@ package control
 import (
 	"context"
 
-	"github.com/pydio/cells/common/proto/tree"
+	"github.com/pydio/cells/v4/common/proto/tree"
 )
 
 func browseWinVolumes(ctx context.Context) (children []*tree.Node) {

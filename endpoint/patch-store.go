@@ -29,11 +29,11 @@ import (
 	"sort"
 	"time"
 
-	"github.com/etcd-io/bbolt"
+	"go.etcd.io/bbolt"
 
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/cells/common/sync/merger"
-	"github.com/pydio/cells/common/sync/model"
+	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v4/common/sync/merger"
+	"github.com/pydio/cells/v4/common/sync/model"
 )
 
 var (

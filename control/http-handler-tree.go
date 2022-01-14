@@ -34,10 +34,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/pydio/cells-sync/endpoint"
-	"github.com/pydio/cells/common"
-	"github.com/pydio/cells/common/log"
-	"github.com/pydio/cells/common/proto/tree"
-	"github.com/pydio/cells/common/sync/model"
+	"github.com/pydio/cells/v4/common"
+	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v4/common/proto/tree"
+	"github.com/pydio/cells/v4/common/sync/model"
 )
 
 type TreeRequest struct {

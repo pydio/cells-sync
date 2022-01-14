@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/pydio/cells/common/log"
+	"github.com/pydio/cells/v4/common/log"
 )
 
 const (

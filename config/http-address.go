@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/pydio/cells/common/utils/net"
+	"github.com/pydio/cells/v4/common/utils/net"
 )
 
 var (
