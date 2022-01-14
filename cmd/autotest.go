@@ -23,11 +23,11 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/micro/go-log"
 	"github.com/pborman/uuid"
 	"github.com/spf13/cobra"
 

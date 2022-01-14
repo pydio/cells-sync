@@ -2,7 +2,7 @@ module github.com/pydio/cells-sync
 
 go 1.16
 
-// replace github.com/pydio/cells/v4 => github.com/pydio/cells/v4 future
+replace github.com/pydio/cells/v4 => /Users/charles/Sources/go/src/github.com/pydio/cells/v4
 
 require (
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
@@ -20,7 +20,6 @@ require (
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/kardianos/service v1.2.1
 	github.com/manifoldco/promptui v0.9.0
-	github.com/micro/go-log v0.1.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
 	github.com/pydio/cells/v4 v4.0.0-20220113151244-0c1959e72b7c
