@@ -2,9 +2,8 @@ module github.com/pydio/cells-sync
 
 go 1.16
 
-replace github.com/pydio/cells/v4 => /Users/charles/Sources/go/src/github.com/pydio/cells/v4
-
 require (
+	cloud.google.com/go/pubsub v1.16.0 // indirect
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
 	github.com/cskr/pubsub v1.0.2
 	github.com/getlantern/golog v0.0.0-20211223150227-d4d95a44d873 // indirect
@@ -22,7 +21,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
-	github.com/pydio/cells/v4 v4.0.0-20220113151244-0c1959e72b7c
+	github.com/pydio/cells/v4 v4.0.0-20220221115444-2ad67b209ee1
 	github.com/pydio/go v0.0.0-20191211170306-d00ac19450ef
 	github.com/pydio/webview v0.0.0-20200121135717-9c1b0a888aa4
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
