@@ -38,6 +38,18 @@ rsrc:
 	${GOPATH}/bin/rsrc -arch amd64 -ico app/resources/icon.ico
 
 
+libayatana:
+	rm -f cells-sync*
+	rm -f rsrc.syso
+	go mod edit -replace github.com/getlantern/systray=github.com/nekr0z/systray@v1.1.1-0.20210610115307-891b38719d73
+	go mod download github.com/getlantern/systray
+	go build \
+	 -ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	 -X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
+	 -X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
+	 -o cells-sync main.go
+	go mod edit -dropreplace github.com/getlantern/systray
+
 # To limit build to a given minimal version of MacOS, rather use:
 # --targets darwin-10.11/amd64 \
 
