@@ -29,6 +29,7 @@ import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownR
 import {withTranslation} from 'react-i18next'
 import Schedule from './Schedule'
 import Storage from "../oidc/Storage";
+import {parseUri} from "../models/EndpointTypes";
 
 class Editor extends React.Component {
 
@@ -67,7 +68,7 @@ class Editor extends React.Component {
             this.state.RightURIInvalid = true;
             DefaultDirLoader.getInstance().onDefaultDir().then(defaultPath => {
                 if(defaultPath){
-                    const p = parse(proxy.Config.RightURI, {}, true);
+                    const p = parseUri(proxy.Config.RightURI, {}, true);
                     p.set('pathname', defaultPath);
                     proxy.Config.RightURI = p.toString();
                     this.setState({RightURIInvalid: false});
@@ -131,7 +132,7 @@ class Editor extends React.Component {
         task.Config[field] = value;
         const s = {};
         // Check validity
-        const parsed = parse(value, {}, true);
+        const parsed = parseUri(value, {}, true);
         if(parsed.pathname === '') {
             s[field + 'Invalid'] = true;
             s[field + 'InvalidMsg'] = t('editor.path.invalid.empty');
@@ -146,7 +147,7 @@ class Editor extends React.Component {
     }
 
     recomputeLabel(uri){
-        const parsed = parse(uri, {}, true);
+        const parsed = parseUri(uri, {}, true);
         if(parsed.protocol.indexOf('http') === 0) {
             return parsed.host;
         } else {
@@ -158,8 +159,8 @@ class Editor extends React.Component {
         const {task, isNew, editRightType, editLeftType, editDir, showAdvanced, LeftURIInvalid, RightURIInvalid,
             LeftURIInvalidMsg, RightURIInvalidMsg, leftServerError, rightServerError} = this.state;
         const {onDismiss, t, socket} = this.props;
-        const leftType = parse(task.Config.LeftURI, {}, true)['protocol'].replace(":", "");
-        const rightType = parse(task.Config.RightURI, {}, true)['protocol'].replace(":", "");
+        const leftType = parseUri(task.Config.LeftURI, {}, true)['protocol'].replace(":", "");
+        const rightType = parseUri(task.Config.RightURI, {}, true)['protocol'].replace(":", "");
         const sectionStyles = {root:{backgroundColor:'rgb(243, 245, 246)', borderRadius: 8, padding: 16, paddingTop: 8}};
         return (
             <div>
@@ -167,8 +168,8 @@ class Editor extends React.Component {
                     <Stack.Item styles={sectionStyles}>
                         {this.labelForPicker("left", leftType, editLeftType, "editLeftType")}
                         <EndpointPicker
-                            value={task.Config.LeftURI.replace(':///', '://local/')}
-                            onChange={(e, v) => this.onChangeURI('LeftURI', v.replace('://local/', ':///'))}
+                            value={task.Config.LeftURI}
+                            onChange={(e, v) => this.onChangeURI('LeftURI', v)}
                             editType={editLeftType}
                             socket={socket}
                             onCreateServer={(url) => this.onCreateServer(url, "left")}
@@ -213,8 +214,8 @@ class Editor extends React.Component {
                     <Stack.Item styles={sectionStyles}>
                         {this.labelForPicker("right", rightType, editRightType, "editRightType")}
                         <EndpointPicker
-                            value={task.Config.RightURI.replace(':///', '://local/')}
-                            onChange={(e, v) => this.onChangeURI('RightURI', v.replace('://local/', ':///'))}
+                            value={task.Config.RightURI}
+                            onChange={(e, v) => this.onChangeURI('RightURI', v)}
                             editType={editRightType}
                             socket={socket}
                             onCreateServer={(url) => this.onCreateServer(url, "right")}

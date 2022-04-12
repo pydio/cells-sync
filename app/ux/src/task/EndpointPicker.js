@@ -25,7 +25,7 @@ import {renderOptionWithIcon, renderTitleWithIcon} from "../components/DropdownR
 import parse from 'url-parse'
 import TreeDialog from './TreeDialog'
 import {withTranslation} from 'react-i18next'
-import EndpointTypes from '../models/EndpointTypes'
+import EndpointTypes, {parseUri} from '../models/EndpointTypes'
 import Storage from "../oidc/Storage";
 
 class EndpointPicker extends React.Component {
@@ -83,7 +83,7 @@ class EndpointPicker extends React.Component {
     onSelect(selection){
         if(selection && selection.length){
             const {value, onChange} = this.props;
-            const url = parse(value, {}, true);
+            const url = parseUri(value, {}, true);
             url.set('pathname', selection[0]);
             onChange(null, url.toString());
         }
@@ -93,7 +93,7 @@ class EndpointPicker extends React.Component {
         const {onCreateServer} = this.props;
         const {loginUrl} = this.state;
         // Remove pathname
-        const parsed = parse(loginUrl, {}, true);
+        const parsed = parseUri(loginUrl, {}, true);
         parsed.pathname = "";
         onCreateServer(parsed.toString());
     }
@@ -102,8 +102,8 @@ class EndpointPicker extends React.Component {
     render(){
         const {dialog, pathDisabled, auths, createServer, loginUrl} = this.state;
         const {editType, value, t, invalid, serverError} = this.props;
-        const url = parse(value, {}, true);
-        const rootUrl = parse(value, {}, true);
+        const url = parseUri(value, {}, true);
+        const rootUrl = parseUri(value, {}, true);
         let selectedPath = rootUrl.pathname;
         if(url.protocol === "s3:") {
             selectedPath = '';
@@ -113,7 +113,7 @@ class EndpointPicker extends React.Component {
         }
         let loginButtonDisabled = true;
         if(loginUrl) {
-            const ll = parse(loginUrl, {}, true);
+            const ll = parseUri(loginUrl, {}, true);
             if(ll.protocol.indexOf("http") === 0 && ll.host) {
                 loginButtonDisabled = false;
             }
@@ -136,7 +136,7 @@ class EndpointPicker extends React.Component {
         );
 
         const authValues = auths.map(({id, username}) => {
-            const parsed = parse(id, {}, true);
+            const parsed = parseUri(id, {}, true);
             return { key: id, text: `${parsed.host} (${username})`, data:parsed}
         });
         authValues.unshift({key:'__CREATE__', text:t('server.create.legend')});

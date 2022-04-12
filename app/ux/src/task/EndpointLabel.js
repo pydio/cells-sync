@@ -17,8 +17,7 @@
  *  along with Cells Sync.  If not, see <https://www.gnu.org/licenses/>.
  */
 import React from 'react'
-import EndpointTypes from '../models/EndpointTypes'
-import parse from 'url-parse'
+import EndpointTypes, {parseUri} from '../models/EndpointTypes'
 import {Icon, TooltipHost, DirectionalHint, ProgressIndicator} from 'office-ui-fabric-react'
 import moment from 'moment'
 import Colors from "../components/Colors";
@@ -35,7 +34,7 @@ export default class EndpointLabel extends React.Component {
 
         const {style, uri, info, status, t, openRoot} = this.props;
 
-        const data = parse(uri);
+        const data = parseUri(uri);
         let eType;
         EndpointTypes.forEach(val => {
             if (val.key + ':' === data.protocol || (val.key === 'http' && data.protocol === 'https:')) {
