@@ -23,7 +23,7 @@ import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { IconButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button'
 import TreeDialog from "./TreeDialog"
 import {withTranslation} from 'react-i18next'
-import parse from 'url-parse'
+import {parseUri} from "../models/EndpointTypes";
 
 class SelectiveFolders extends React.Component{
 
@@ -99,7 +99,7 @@ class SelectiveFolders extends React.Component{
     }
 
     validUri(uri){
-        const p = parse(uri, {}, true);
+        const p = parseUri(uri, {}, true);
         return !!p['pathname'];
     }
 

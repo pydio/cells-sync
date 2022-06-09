@@ -20,7 +20,7 @@ import * as React from 'react';
 import { GroupedList, GroupHeader, FocusZone, Selection, SelectionMode, SelectionZone, Icon, IconButton, TextField, Spinner, SpinnerSize } from 'office-ui-fabric-react';
 import {TreeNode, Loader} from "../models/TreeNode";
 import {withTranslation} from 'react-i18next'
-import parse from "url-parse";
+import {parseUri} from "../models/EndpointTypes";
 
 class TreeView extends React.Component {
 
@@ -125,9 +125,9 @@ class TreeView extends React.Component {
         const {uri, parallelUri, t} = this.props;
         let type;
         if(node.fromTree === 'left'){
-            type = parse(parallelUri, {}, true)['protocol'].replace(":", "")
+            type = parseUri(parallelUri, {}, true)['protocol'].replace(":", "")
         } else {
-            type = parse(uri, {}, true)['protocol'].replace(":", "")
+            type = parseUri(uri, {}, true)['protocol'].replace(":", "")
         }
         let tLabel = type;
         if(t('editor.picker.type.' + type)){
