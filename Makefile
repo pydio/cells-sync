@@ -5,13 +5,16 @@ TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
 GITREV:=$(shell git rev-parse HEAD)
 CELLS_VERSION?="${DEV_VERSION}.${TIMESTAMP}"
 
-XGO_IMAGE?=pydio/xgo:latest
+#XGO_IMAGE?=pydio/xgo:latest
+XGO_IMAGE?=techknowlogick/xgo:go-1.17.x
 XGO_14_IMG?=techknowlogick/xgo:go-1.14.x
 
 all: clean cli
 
 dep:
-	go get github.com/akavel/rsrc
+	go install github.com/akavel/rsrc@latest
+# Deprecated in go 17:
+#   go get github.com/akavel/rsrc
 
 dev:
 	go build \
