@@ -75,10 +75,9 @@ xgodarwin:
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	${GOPATH}/src/github.com/pydio/cells-sync
-
+	.
 xgowin:
-	${GOPATH}/bin/xgo -go 1.17 \
+	${XGO_BIN} -go 1.17 \
 	-out "cells-sync" \
 	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
@@ -86,17 +85,17 @@ xgowin:
 	-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	${GOPATH}/src/github.com/pydio/cells-sync
+	.
 
 xgowinnoui:
-	${GOPATH}/bin/xgo -go 1.14 \
+	${XGO_BIN} -go 1.17 \
 	-out "cells-sync-noui" \
-	--image ${XGO_14_IMG} \
+	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	${GOPATH}/src/github.com/pydio/cells-sync
+	.
 
 clean:
 	rm -f cells-sync*
