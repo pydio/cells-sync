@@ -1,13 +1,16 @@
-ENV=env
 DEV_VERSION=0.9.3-dev
+ENV=env
 TODAY:=$(shell date -u +%Y-%m-%dT%H:%M:%S)
 TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
 GITREV:=$(shell git rev-parse HEAD)
 CELLS_VERSION?="${DEV_VERSION}.${TIMESTAMP}"
 
-#XGO_IMAGE?=pydio/xgo:latest
+XGO_TARGETS?="linux/amd64,darwin/amd64,windows/amd64"
 XGO_IMAGE?=techknowlogick/xgo:go-1.17.x
 XGO_14_IMG?=techknowlogick/xgo:go-1.14.x
+XGO_BIN?=${GOPATH}/bin/xgo
+
+.PHONY: all dev win xgo
 
 all: clean cli
 
@@ -64,8 +67,8 @@ libayatana:
 # To limit build to a given minimal version of MacOS, rather use:
 # --targets darwin-10.11/amd64 \
 
-xgo:
-	${GOPATH}/bin/xgo -go 1.17 \
+xgodarwin:
+	${XGO_BIN} -go 1.17 \
 	-out "cells-sync" \
 	--image ${XGO_IMAGE} \
 	--targets darwin-11.1/amd64 \
