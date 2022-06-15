@@ -4,7 +4,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
-	"path/filepath"
+	"path"
 )
 
 var (
@@ -19,8 +19,8 @@ type GinBox struct {
 }
 
 // Exists checks if a file exist inside embedded box
-func (g *GinBox) Exists(prefix string, path string) bool {
-	if f, e := g.Open(filepath.Join(prefix, path)); e == nil {
+func (g *GinBox) Exists(prefix string, pa string) bool {
+	if f, e := g.Open(path.Join(prefix, pa)); e == nil {
 		_ = f.Close()
 		return true
 	}
