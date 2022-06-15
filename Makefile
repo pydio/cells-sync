@@ -27,7 +27,6 @@ dev:
 	-o cells-sync main.go
 
 dist:
-	rm -f cells-sync
 	go build -a -trimpath \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
