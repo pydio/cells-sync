@@ -19,7 +19,12 @@
 
 package main
 
-import "github.com/pydio/cells-sync/cmd"
+import (
+	"github.com/pydio/cells-sync/cmd"
+
+	_ "github.com/pydio/cells/v4/common/nodes/objects/mc"
+	_ "github.com/pydio/cells/v4/common/utils/cache/gocache"
+)
 
 func main() {
 	cmd.RootCmd.Execute()

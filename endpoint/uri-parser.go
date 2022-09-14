@@ -32,11 +32,13 @@ import (
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
 
+	"github.com/pydio/cells/v4/common/nodes"
 	"github.com/pydio/cells/v4/common/sync/endpoints/cells"
 	"github.com/pydio/cells/v4/common/sync/endpoints/filesystem"
 	"github.com/pydio/cells/v4/common/sync/endpoints/memory"
 	"github.com/pydio/cells/v4/common/sync/endpoints/s3"
 	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v4/common/utils/configx"
 )
 
 // EndpointFromURI parse an URI string to instantiate a proper Endpoint
@@ -142,10 +144,17 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		values := u.Query()
 		normalize := values.Get("normalize") == "true"
 		secure := strings.Contains(u.Hostname(), "amazonaws.com") || values.Get("secure") == "true"
-		client, e := s3.NewClient(context.Background(), u.Host, u.User.Username(), password, bucket, rootPath, secure, opts)
+		cfg := configx.New()
+		cfg.Val("type").Set("mc")
+		cfg.Val("endpoint").Set(u.Host)
+		cfg.Val("secure").Set(secure)
+		cfg.Val("key").Set(u.User.Username())
+		cfg.Val("secret").Set(password)
+		oc, e := nodes.NewStorageClient(cfg)
 		if e != nil {
 			return nil, e
 		}
+		client := s3.NewObjectClient(context.Background(), oc, u.Host, bucket, rootPath, opts)
 		if normalize {
 			client.ServerRequiresNormalization = true
 		}
