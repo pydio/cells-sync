@@ -6,8 +6,7 @@ GITREV:=$(shell git rev-parse HEAD)
 CELLS_VERSION?="${DEV_VERSION}.${TIMESTAMP}"
 
 XGO_TARGETS?="linux/amd64,darwin/amd64,windows/amd64"
-XGO_IMAGE?=techknowlogick/xgo:go-1.17.x
-XGO_14_IMG?=techknowlogick/xgo:go-1.14.x
+XGO_IMAGE?=techknowlogick/xgo:go-1.19.x
 XGO_BIN?=${GOPATH}/bin/xgo
 
 .PHONY: all dev win xgo
@@ -64,20 +63,8 @@ libayatana:
 	 -o cells-sync main.go
 	go mod edit -dropreplace github.com/getlantern/systray
 
-# To limit build to a given minimal version of MacOS, rather use:
-# --targets darwin-10.11/amd64 \
-
-xgodarwin:
-	${XGO_BIN} -go 1.17 \
-	-out "cells-sync" \
-	--image ${XGO_IMAGE} \
-	--targets darwin-11.1/amd64 \
-	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
-	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
-	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
-	.
 xgowin:
-	${XGO_BIN} -go 1.17 \
+	${XGO_BIN} -go 1.19 \
 	-out "cells-sync" \
 	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
@@ -88,10 +75,23 @@ xgowin:
 	.
 
 xgowinnoui:
-	${XGO_BIN} -go 1.17 \
+	${XGO_BIN} -go 1.19 \
 	-out "cells-sync-noui" \
 	--image ${XGO_IMAGE} \
 	--targets windows/amd64 \
+	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
+	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
+	.
+
+## Still broken
+# To limit build to a given minimal version of MacOS, rather use:
+# --targets darwin-10.11/amd64 \
+#xgodarwin:
+#	${XGO_BIN} -go 1.19 \
+	-out "cells-sync" \
+	--image ${XGO_IMAGE} \
+	--targets darwin-11.1/amd64 \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
 	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
