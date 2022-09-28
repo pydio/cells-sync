@@ -170,9 +170,10 @@ func (h *HttpServer) ls(c *gin.Context) {
 		response.Node = node.WithoutReservedMetas()
 		if !node.IsLeaf() {
 			if source, ok := model.AsPathSyncSource(request.endpoint); ok {
-				source.Walk(func(p string, node *tree.Node, err error) {
+				er := source.Walk(h.ctx, func(p string, node *tree.Node, err error) error {
 					if err != nil {
-						return
+						log.Logger(h.ctx).Warn("Ignoring error " + err.Error() + " on path " + p)
+						return nil
 					}
 					if request.windowsDrive != "" {
 						p = path.Join(request.windowsDrive, p)
@@ -185,7 +186,12 @@ func (h *HttpServer) ls(c *gin.Context) {
 					if path.Base(p) != common.PydioSyncHiddenFile && !strings.HasPrefix(path.Base(p), ".") {
 						response.Children = append(response.Children, node.WithoutReservedMetas())
 					}
+					return nil
 				}, request.Path, false)
+				if er != nil {
+					h.writeError(c, er)
+					return
+				}
 			}
 		}
 	} else {

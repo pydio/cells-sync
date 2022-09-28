@@ -20,6 +20,7 @@
 package control
 
 import (
+	"bytes"
 	"context"
 	"crypto"
 	"crypto/rsa"
@@ -27,6 +28,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -36,10 +38,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
 	"github.com/hashicorp/go-version"
 	update2 "github.com/inconshreveable/go-update"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
@@ -64,11 +65,6 @@ func NewUpdater() *Updater {
 		ctx:   ctx,
 		done:  make(chan bool, 1),
 	}
-}
-
-func init() {
-	// Strange thing here, this proto ENUM is not properly registered.
-	proto.RegisterEnum("update.Package_PackageStatus", update.Package_PackageStatus_name, update.Package_PackageStatus_value)
 }
 
 // LoadUpdates will post a Json query to the update server to detect if there are any
@@ -148,10 +144,8 @@ func (u *Updater) LoadUpdates(ctx context.Context, busTopic string) (packages []
 
 	log.Logger(ctx).Info("Posting Request for update")
 	var updateResponse update.UpdateResponse
-	marshaller := jsonpb.Marshaler{}
-	jsonReq, _ := marshaller.MarshalToString(request)
-	reader := strings.NewReader(jsonReq)
-	response, outErr := http.Post(strings.TrimRight(parsed.String(), "/")+"/", "application/json", reader)
+	jsonReq, _ := protojson.Marshal(request)
+	response, outErr := http.Post(strings.TrimRight(parsed.String(), "/")+"/", "application/json", bytes.NewBuffer(jsonReq))
 	if outErr != nil {
 		return
 	}
@@ -159,7 +153,8 @@ func (u *Updater) LoadUpdates(ctx context.Context, busTopic string) (packages []
 		outErr = fmt.Errorf("could not connect to the update server, error code was %d", response.StatusCode)
 		return
 	}
-	if outErr = jsonpb.Unmarshal(response.Body, &updateResponse); outErr != nil {
+	bb, _ := io.ReadAll(response.Body)
+	if outErr = protojson.Unmarshal(bb, &updateResponse); outErr != nil {
 		return
 	} else {
 		packages = updateResponse.AvailableBinaries

@@ -43,7 +43,7 @@ rsrc:
 	${GOPATH}/bin/rsrc -arch amd64 -ico app/resources/icon.ico
 
 mod-local:
-	go mod edit -replace github.com/pydio/cells/v4=/Users/charles/Sources/go/src/github.com/pydio/cells
+	go mod edit -replace github.com/pydio/cells/v4=${GOPATH}/src/github.com/pydio/cells
 
 mod-update:
 	go mod edit -dropreplace github.com/pydio/cells/v4
