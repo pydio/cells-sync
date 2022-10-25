@@ -20,9 +20,7 @@
 package tray
 
 import (
-	"os/exec"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -38,12 +36,6 @@ import (
 	darkactive2 "github.com/pydio/cells-sync/app/tray/dark/iconactive2"
 	darkerror "github.com/pydio/cells-sync/app/tray/dark/iconerror"
 	darkpause "github.com/pydio/cells-sync/app/tray/dark/iconpause"
-
-	lighticon "github.com/pydio/cells-sync/app/tray/light/icon"
-	lightactive "github.com/pydio/cells-sync/app/tray/light/iconactive"
-	lightactive2 "github.com/pydio/cells-sync/app/tray/light/iconactive2"
-	lighterror "github.com/pydio/cells-sync/app/tray/light/iconerror"
-	lightpause "github.com/pydio/cells-sync/app/tray/light/iconpause"
 )
 
 var (
@@ -59,26 +51,11 @@ var (
 
 func init() {
 	if runtime.GOOS == "darwin" {
-		useLightIcons := false
-		cmd := exec.Command("defaults", "read", "-g", "AppleInterfaceStyle")
-		if output, err := cmd.Output(); err == nil {
-			if strings.Contains(string(output), "Dark") {
-				useLightIcons = true
-			}
-		}
-		if useLightIcons {
-			iconData = lighticon.Data
-			iconActiveData = lightactive.Data
-			iconActive2Data = lightactive2.Data
-			iconErrorData = lighterror.Data
-			iconPauseData = lightpause.Data
-		} else {
-			iconData = darkicon.Data
-			iconActiveData = darkactive.Data
-			iconActive2Data = darkactive2.Data
-			iconErrorData = darkerror.Data
-			iconPauseData = darkpause.Data
-		}
+		iconData = darkicon.Data
+		iconActiveData = darkactive.Data
+		iconActive2Data = darkactive2.Data
+		iconErrorData = darkerror.Data
+		iconPauseData = darkpause.Data
 	}
 	status = make(chan string, 1)
 	go func() {
@@ -89,9 +66,9 @@ func init() {
 					break
 				}
 				if !activeToggler {
-					systray.SetIcon(iconActiveData)
+					systray.SetTemplateIcon(iconActiveData, iconActiveData)
 				} else {
-					systray.SetIcon(iconActive2Data)
+					systray.SetTemplateIcon(iconActive2Data, iconActive2Data)
 				}
 				activeToggler = !activeToggler
 
@@ -112,7 +89,7 @@ func init() {
 				case "pause":
 					data = iconPauseData
 				}
-				systray.SetIcon(data)
+				systray.SetTemplateIcon(data, data)
 			}
 		}
 	}()
