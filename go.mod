@@ -18,7 +18,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
-	github.com/pydio/cells/v4 v4.0.2-0.20221019142641-20940fd01ee0
+	github.com/pydio/cells/v4 v4.0.5-alpha2
 	github.com/pydio/go v0.0.0-20191211170306-d00ac19450ef
 	github.com/pydio/webview v0.0.0-20200121135717-9c1b0a888aa4
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
@@ -40,7 +40,6 @@ require (
 	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/ajvb/kala v0.8.4 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
-	github.com/allegro/bigcache/v3 v3.0.2 // indirect
 	github.com/avast/retry-go/v4 v4.1.0 // indirect
 	github.com/beevik/ntp v0.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -173,5 +172,3 @@ require (
 )
 
 replace github.com/minio/minio => github.com/pydio/minio v0.0.0-20220914144131-ae7548d242b4
-
-// replace github.com/pydio/cells/v4 => /Users/charles/Sources/go/src/github.com/pydio/cells

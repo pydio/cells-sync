@@ -21,7 +21,6 @@ package control
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -250,7 +249,7 @@ func (f *FileStateStore) Close() {
 }
 
 func (f *FileStateStore) readLastState() model.TaskStatus {
-	if bb, e := ioutil.ReadFile(f.filePath); e == nil {
+	if bb, e := os.ReadFile(f.filePath); e == nil {
 		s := strings.Trim(string(bb), "\n")
 		if i, er := strconv.Atoi(s); er == nil {
 			return model.TaskStatus(i)

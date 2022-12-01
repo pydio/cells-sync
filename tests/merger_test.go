@@ -23,7 +23,6 @@ package tests
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -62,7 +61,7 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 
 		Convey("Test creating snapshot", func() {
 			// Load a snapshot of the target for diffing later
-			tmp, _ := ioutil.TempDir("", "test-sync")
+			tmp, _ := os.MkdirTemp("", "test-sync")
 			defer os.RemoveAll(tmp)
 			snapshotFactory := endpoint.NewSnapshotFactory(tmp, source, target)
 
@@ -73,14 +72,14 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 			capture, ok := snap.(model.PathSyncSource)
 			So(ok, ShouldBeTrue)
 
-			diffNoErrors := merger.NewTreeDiff(context.Background(), target, capture)
+			diffNoErrors := merger.NewTreeDiff(target, capture)
 			Convey("Test computing diff with no errors and no changes", func() {
 				// Diffing between the target and its capture shouldn't give anything
-				e := diffNoErrors.Compute("/", nil, nil)
+				e := diffNoErrors.Compute(context.Background(), "/", nil, nil)
 				So(e, ShouldBeNil)
 			})
 
-			diffErrors := merger.NewTreeDiff(context.Background(), target, capture)
+			diffErrors := merger.NewTreeDiff(target, capture)
 			Convey("Test computing diff with no changes but errors", func() {
 				tree.PredefineError(func(objType, fnType string, params ...interface{}) error {
 					switch o := objType + "." + fnType; o {
@@ -93,7 +92,7 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 					return nil
 				})
 
-				e := diffErrors.Compute("/", nil, nil)
+				e := diffErrors.Compute(context.Background(), "/", nil, nil)
 				So(e, ShouldNotBeNil)
 			})
 
@@ -102,8 +101,8 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 			rightPatch := merger.NewPatch(target, capture.(model.PathSyncTarget), merger.PatchOptions{MoveDetection: true})
 
 			// Having error as basis
-			diffNoErrors.ToUnidirectionalPatch(model.DirectionRight, leftPatch)
-			diffErrors.ToUnidirectionalPatch(model.DirectionRight, rightPatch)
+			_ = diffNoErrors.ToUnidirectionalPatch(context.Background(), model.DirectionRight, leftPatch)
+			_ = diffErrors.ToUnidirectionalPatch(context.Background(), model.DirectionRight, rightPatch)
 
 			b, e := merger.ComputeBidirectionalPatch(context.Background(), leftPatch, rightPatch)
 			So(e, ShouldBeNil)

@@ -23,7 +23,6 @@ package tray
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -75,7 +74,7 @@ func checkFirstRun() {
 
 func disableFirstRun() {
 	firstRun = false
-	ioutil.WriteFile(filepath.Join(config.SyncClientDataDir(), "tray-first-run"), []byte("done"), 0755)
+	_ = os.WriteFile(filepath.Join(config.SyncClientDataDir(), "tray-first-run"), []byte("done"), 0755)
 }
 
 func spawnWebView(path ...string) {

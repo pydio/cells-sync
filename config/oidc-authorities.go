@@ -24,7 +24,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -116,7 +116,7 @@ func (a *Authority) Refresh() error {
 	if err != nil {
 		return err
 	} else if res.StatusCode != 200 {
-		bb, _ := ioutil.ReadAll(res.Body)
+		bb, _ := io.ReadAll(res.Body)
 		return fmt.Errorf("received status code %d - %s", res.StatusCode, string(bb))
 	}
 	defer res.Body.Close()
@@ -157,7 +157,7 @@ func (a *Authority) LoadInfo() {
 				PackageLabel string `json:"packageLabel"`
 			} `json:"backend"`
 		}
-		bb, _ := ioutil.ReadAll(r.Body)
+		bb, _ := io.ReadAll(r.Body)
 		if e := json.Unmarshal(bb, &confSample); e == nil {
 			if confSample.Wording.Title != "" {
 				a.ServerLabel = confSample.Wording.Title

@@ -29,7 +29,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -246,7 +245,7 @@ func (u *Updater) ApplyUpdate(ctx context.Context, p *update.Package, dryRun boo
 	} else {
 		defer resp.Body.Close()
 		if resp.StatusCode != 200 {
-			plain, _ := ioutil.ReadAll(resp.Body)
+			plain, _ := io.ReadAll(resp.Body)
 			publishError(fmt.Errorf("error while downloading binary: %s (status %d)", string(plain), resp.StatusCode))
 			return
 		}

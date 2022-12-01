@@ -21,7 +21,7 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -31,7 +31,7 @@ func getPath() string {
 
 // LoadFromFile loads a Global config from a JSON file.
 func LoadFromFile() (*Global, error) {
-	data, err := ioutil.ReadFile(getPath())
+	data, err := os.ReadFile(getPath())
 	if err != nil {
 		return nil, err
 	}
@@ -49,5 +49,5 @@ func WriteToFile(config *Global) error {
 	if e != nil {
 		return e
 	}
-	return ioutil.WriteFile(getPath(), data, 0755)
+	return os.WriteFile(getPath(), data, 0755)
 }

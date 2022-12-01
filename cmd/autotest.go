@@ -22,7 +22,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -65,7 +64,7 @@ var AutoTestCmd = &cobra.Command{
 		}
 
 		// Create files inside left
-		if e := ioutil.WriteFile(filepath.Join(leftDir, "basic-file.txt"), []byte("hello world"), 0755); e != nil {
+		if e := os.WriteFile(filepath.Join(leftDir, "basic-file.txt"), []byte("hello world"), 0755); e != nil {
 			log.Fatal("cannot write a file for testing on left " + leftDir)
 		}
 
@@ -101,7 +100,7 @@ var AutoTestCmd = &cobra.Command{
 							err = fmt.Errorf("processed patch has size 0, this is not normal")
 							return
 						}
-						if data, e := ioutil.ReadFile(filepath.Join(rightDir, "basic-file.txt")); e != nil {
+						if data, e := os.ReadFile(filepath.Join(rightDir, "basic-file.txt")); e != nil {
 							err = fmt.Errorf("cannot read right file %v", e)
 						} else if string(data) != "hello world" {
 							err = fmt.Errorf("right file does not have proper content: %v", string(data))
