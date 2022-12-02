@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -31,7 +32,8 @@ import (
 	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells-sync/endpoint"
 	"github.com/pydio/cells/v4/common/log"
-	"github.com/pydio/cells/v4/common/service/context"
+	servicecontext "github.com/pydio/cells/v4/common/service/context"
+	"github.com/pydio/cells/v4/common/sync/endpoints/filesystem"
 	"github.com/pydio/cells/v4/common/sync/merger"
 	"github.com/pydio/cells/v4/common/sync/model"
 	"github.com/pydio/cells/v4/common/sync/task"
@@ -121,7 +123,9 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 	}
 
 	syncTask := task.NewSync(leftEndpoint, rightEndpoint, direction)
-	syncTask.SetFilters(conf.SelectiveRoots, []string{"**/.git**", "**/.pydio"})
+	ignores := []string{"**/.git**", "**/.pydio"}
+	ignores = extendIgnores(ignores, leftEndpoint, rightEndpoint, ctx)
+	syncTask.SetFilters(conf.SelectiveRoots, ignores)
 
 	if _, er := os.Stat(configPath); er != nil && os.IsNotExist(er) {
 		if er := os.MkdirAll(configPath, 0755); er != nil {
@@ -150,6 +154,32 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 
 	return
 
+}
+
+func extendIgnores(ignores []string, leftEndpoint, rightEndpoint model.Endpoint, ctx context.Context) []string {
+	// look for .cellsignore files to extend ignores
+	for _, e := range []model.Endpoint{leftEndpoint, rightEndpoint} {
+		fs, ok := e.(*filesystem.FSClient)
+		if !ok {
+			continue
+		}
+		path := filepath.Join(fs.RootPath, ".cellsignore")
+		if _, err := os.Stat(path); err == nil {
+			// read file and append to ignores
+			data, err := os.ReadFile(path)
+			if err != nil {
+				log.Logger(ctx).Warn(fmt.Sprintf("Cannot read .cellsignore file at '%v': %v", path, err))
+				continue
+			}
+			lines := strings.Split(string(data), "\n")
+			for _, l := range lines {
+				if l = strings.TrimSpace(l); l != "" {
+					ignores = append(ignores, lines...)
+				}
+			}
+		}
+	}
+	return ignores
 }
 
 func (s *Syncer) dispatchStatus(ctx context.Context) {
