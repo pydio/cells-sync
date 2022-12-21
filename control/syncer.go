@@ -71,8 +71,12 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 
 	ctx := servicecontext.WithServiceName(context.Background(), "sync-task")
 	configPath := filepath.Join(config.SyncClientDataDir(), conf.Uuid)
+
+	_, e := os.Stat(configPath)
+	isNew := e != nil && os.IsNotExist(e)
+
 	stateStore := NewFileStateStore(conf, configPath)
-	if stateStore.FileError != nil {
+	if !isNew && stateStore.FileError != nil {
 		log.Logger(ctx).Warn("Cannot open file for monitoring state : " + stateStore.FileError.Error())
 	}
 
@@ -92,15 +96,21 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 	}
 
 	if knownVersion != common.Version {
-		log.Logger(ctx).Warn("App version has changed, clearing snapshots and launching a full resync")
-		if er := os.Remove(filepath.Join(configPath, "snapshot-left")); er == nil {
-			log.Logger(ctx).Warn(" - Cleared snapshot-left")
+		if !isNew {
+			log.Logger(ctx).Warn("App version has changed, clearing snapshots and launching a full resync")
+			if er := os.Remove(filepath.Join(configPath, "snapshot-left")); er == nil {
+				log.Logger(ctx).Warn(" - Cleared snapshot-left")
+			}
+			if er := os.Remove(filepath.Join(configPath, "snapshot-right")); er == nil {
+				log.Logger(ctx).Warn(" - Cleared snapshot-right")
+			}
+			syncer.dirtyStopped = true
+		} else {
+			if er := os.MkdirAll(configPath, 0755); er != nil {
+				log.Logger(ctx).Error(" - Cannot create config folder for task: " + er.Error())
+			}
 		}
-		if er := os.Remove(filepath.Join(configPath, "snapshot-right")); er == nil {
-			log.Logger(ctx).Warn(" - Cleared snapshot-right")
-		}
-		syncer.dirtyStopped = true
-		if er := os.WriteFile(versionFile, []byte(common.Version), 0755); er != nil {
+		if er := os.WriteFile(versionFile, []byte(common.Version), 0644); er != nil {
 			log.Logger(ctx).Error(" - Cannot write version file: " + er.Error())
 		}
 	}

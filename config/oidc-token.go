@@ -53,7 +53,7 @@ func getTokenMonitor(a *Authority, watchers []chan interface{}) *tokenMonitor {
 	} else {
 		monitor := &tokenMonitor{
 			a:       a,
-			trigger: make(chan struct{}, 1),
+			trigger: make(chan struct{}, 10),
 			done:    make(chan bool, 1),
 		}
 		monitors[a.key()] = monitor
