@@ -18,7 +18,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
-	github.com/pydio/cells/v4 v4.0.5-alpha2
+	github.com/pydio/cells/v4 v4.0.6-rc1.0.20221221111134-1c0540273fda
 	github.com/pydio/go v0.0.0-20191211170306-d00ac19450ef
 	github.com/pydio/webview v0.0.0-20200121135717-9c1b0a888aa4
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
@@ -92,7 +92,7 @@ require (
 	github.com/marten-seemann/qtls-go1-18 v0.1.2 // indirect
 	github.com/marten-seemann/qtls-go1-19 v0.1.0 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mholt/acmez v1.0.4 // indirect
 	github.com/miekg/dns v1.1.50 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect

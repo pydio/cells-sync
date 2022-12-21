@@ -51,7 +51,7 @@ type TaskChange struct {
 	Task *Task
 }
 
-// Tasks represents a sync task configuration.
+// Task represents a sync task configuration.
 type Task struct {
 	Uuid           string
 	Label          string

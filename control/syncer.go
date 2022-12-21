@@ -22,8 +22,10 @@ package control
 import (
 	"context"
 	"fmt"
+	"github.com/pydio/cells-sync/common"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -74,6 +76,13 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 		log.Logger(ctx).Warn("Cannot open file for monitoring state : " + stateStore.FileError.Error())
 	}
 
+	// Check if app version has changed
+	versionFile := filepath.Join(configPath, "version")
+	var knownVersion string
+	if vv, er := os.ReadFile(versionFile); er == nil {
+		knownVersion = strings.TrimSpace(string(vv))
+	}
+
 	syncer = &Syncer{
 		uuid:       conf.Uuid,
 		serviceCtx: ctx,
@@ -81,6 +90,21 @@ func NewSyncer(conf *config.Task) (syncer *Syncer) {
 		stateStore: stateStore,
 		configPath: configPath,
 	}
+
+	if knownVersion != common.Version {
+		log.Logger(ctx).Warn("App version has changed, clearing snapshots and launching a full resync")
+		if er := os.Remove(filepath.Join(configPath, "snapshot-left")); er == nil {
+			log.Logger(ctx).Warn(" - Cleared snapshot-left")
+		}
+		if er := os.Remove(filepath.Join(configPath, "snapshot-right")); er == nil {
+			log.Logger(ctx).Warn(" - Cleared snapshot-right")
+		}
+		syncer.dirtyStopped = true
+		if er := os.WriteFile(versionFile, []byte(common.Version), 0755); er != nil {
+			log.Logger(ctx).Error(" - Cannot write version file: " + er.Error())
+		}
+	}
+
 	if stateStore.PreviousState == model.TaskStatusProcessing {
 		log.Logger(ctx).Warn("Last Status on this task was 'processing', this is not normal, will relaunch a full resync")
 		syncer.dirtyStopped = true
