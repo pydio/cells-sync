@@ -18,7 +18,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
-	github.com/pydio/cells/v4 v4.0.6-rc1.0.20221221111134-1c0540273fda
+	github.com/pydio/cells/v4 v4.0.6-rc2.0.20230109093718-f55df780a015
 	github.com/pydio/go v0.0.0-20191211170306-d00ac19450ef
 	github.com/pydio/webview v0.0.0-20200121135717-9c1b0a888aa4
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0

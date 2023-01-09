@@ -901,10 +901,8 @@ github.com/prometheus/procfs v0.8.0/go.mod h1:z7EfXMXOkbkqb9IINtpCn86r/to3BnA0ua
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/pydio/caddyvault v1.0.2 h1:aPPlWUOxJUMtoNp89pT3QP8PBX90rI4eyUDIOIe4Qgo=
 github.com/pydio/caddyvault v1.0.2/go.mod h1:aS8RitGxU/qByaXcsK6Mg8tOdINiCNmmCNurGld29A0=
-github.com/pydio/cells/v4 v4.0.6-alpha1.0.20221216085558-02dcf24844ca h1:r45FTmUUKls7uMQXuBBlNs/HNPjS6w7NjtZj5Lp2FnY=
-github.com/pydio/cells/v4 v4.0.6-alpha1.0.20221216085558-02dcf24844ca/go.mod h1:YAkC27JYb8U6ZTsXpANTaxJgx5h63IZFKPFcw+M917g=
-github.com/pydio/cells/v4 v4.0.6-rc1.0.20221221111134-1c0540273fda h1:QTyHv4M91yGdGU4GZiLvYRDAiAxelck7gbqaAAoHxJM=
-github.com/pydio/cells/v4 v4.0.6-rc1.0.20221221111134-1c0540273fda/go.mod h1:f1lWJScVTbiWkTO40n8vBbfMbSbATTxRYb1FwVbx/bA=
+github.com/pydio/cells/v4 v4.0.6-rc2.0.20230109093718-f55df780a015 h1:hm5it/8liM5PE66v8bBwSOk39feYMMXX2pTa54twdwE=
+github.com/pydio/cells/v4 v4.0.6-rc2.0.20230109093718-f55df780a015/go.mod h1:UtJovdVBW8QvDR9f0RDxTzF0ZQhRW47Gn0pzIih0+Pc=
 github.com/pydio/go v0.0.0-20191211170306-d00ac19450ef h1:5FyN7pndX4GyCAb0gdZgN78qJ1IGL1/Mj19bTijXgfk=
 github.com/pydio/go v0.0.0-20191211170306-d00ac19450ef/go.mod h1:H+DrbjBEehySj5ykZVFHF12kpfWtmKpsoyDZ16kUyqk=
 github.com/pydio/webview v0.0.0-20200121135717-9c1b0a888aa4 h1:l9UL1s1rXKo0cyYGnzqkD7t8aZONA/LE4e3sIj18MrQ=
