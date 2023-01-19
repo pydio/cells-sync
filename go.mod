@@ -18,7 +18,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
-	github.com/pydio/cells/v4 v4.0.6-rc2.0.20230109093718-f55df780a015
+	github.com/pydio/cells/v4 v4.0.7-0.20230119162226-bfb171119c8e
 	github.com/pydio/go v0.0.0-20191211170306-d00ac19450ef
 	github.com/pydio/webview v0.0.0-20200121135717-9c1b0a888aa4
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
@@ -76,6 +76,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.5.1 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20220104163920-15ed2e8cf2bd // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
@@ -118,7 +119,7 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/pydio/caddyvault v1.0.2 // indirect
-	github.com/rjeczalik/notify v0.9.2 // indirect
+	github.com/rjeczalik/notify v0.9.3 // indirect
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/rubenv/sql-migrate v1.2.0 // indirect
