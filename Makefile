@@ -1,4 +1,4 @@
-DEV_VERSION=0.9.3-dev
+DEV_VERSION=0.9.4-dev
 ENV=env
 TODAY:=$(shell date -u +%Y-%m-%dT%H:%M:%S)
 TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
@@ -15,13 +15,11 @@ all: clean cli
 
 dep:
 	go install github.com/akavel/rsrc@latest
-# Deprecated in go 17:
-#   go get github.com/akavel/rsrc
 
 dev:
 	go build \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${DEV_VERSION} \
-	-X github.com/pydio/cells-sync/common.BuildStamp=2021-01-01T00:00:00 \
+	-X github.com/pydio/cells-sync/common.BuildStamp=2023-01-01T00:00:00 \
 	-X github.com/pydio/cells-sync/common.BuildRevision=dev" \
 	-o cells-sync main.go
 
