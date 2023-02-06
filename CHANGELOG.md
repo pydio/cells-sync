@@ -1,49 +1,7 @@
-# Changes between v0.9.2 and v0.9.3
+# Changes between v0.9.3 and v0.9.4
 
-[See Full Changelog](https://github.com/pydio/cells-sync/compare/v0.9.2...v0.9.3)
+[See Full Changelog](https://github.com/pydio/cells-sync/compare/v0.9.3...v0.9.4)
 
-- [#dcc9905](https://github.com/pydio/cells-sync/commit/dcc9905b378c2da555eb035d3e3364e09f6d6daa): Go mod update
-- [#4563f0e](https://github.com/pydio/cells-sync/commit/4563f0e5dc7bdf5c80210c8cad10408a0321baa8): Unlock token check - fix new version file creation when task is new.
-- [#518c8b9](https://github.com/pydio/cells-sync/commit/518c8b954488009cc864437b759058d75d94eac6): Use a version file to clear snapshots on version upgrade.
-- [#13ac5a9](https://github.com/pydio/cells-sync/commit/13ac5a91a649a68012bb10c412f4128fb7e6feb9): Replace calls to io/ioutil
-- [#948e307](https://github.com/pydio/cells-sync/commit/948e3073a807a779f9dc9f0d8f4015e537db1aeb): Use SetTemplateIcon for proper coloration on Mac
-- [#fe1fdd6](https://github.com/pydio/cells-sync/commit/fe1fdd61e5d1856a0a2e781ff1bc295bcd501822): Update dep
-- [#6d00379](https://github.com/pydio/cells-sync/commit/6d003795ca43f057f425a151e041579d9d171c2f): update go mod
-- [#a94add2](https://github.com/pydio/cells-sync/commit/a94add2e2b52a00d13bdaae8b325821ac60fdfa5): update go mod
-- [#08fed71](https://github.com/pydio/cells-sync/commit/08fed71103b9601b5870025f528623f802b08902): Update go-mod
-- [#9b4332e](https://github.com/pydio/cells-sync/commit/9b4332eeaec936609dd1a246289ca86c87c76fb5): Re-adapt gomod
-- [#159b53e](https://github.com/pydio/cells-sync/commit/159b53e4e86aa4fb78a1f2fb7ccb0a30ca96956d): Make git revision settable from outside the make script
-- [#deccb16](https://github.com/pydio/cells-sync/commit/deccb1617dca467a084b9509c8f8e4dd6aad46e5): Adapt XGo Windows builds to go 19
-- [#81f7ed4](https://github.com/pydio/cells-sync/commit/81f7ed4917f83370e29cee6a6cb2ee0e24626d06): Bump to go18
-- [#09fc7ac](https://github.com/pydio/cells-sync/commit/09fc7ace45c2c16a9c27317c5416c8a806f223a8): Re-adapt code to latest
-- [#deec1a5](https://github.com/pydio/cells-sync/commit/deec1a5ca53105a969e81b62adf2ab6ac458e7d5): Update gomod
-- [#826d8fc](https://github.com/pydio/cells-sync/commit/826d8fcff584a6e169c56de448818ae056f62f0d): Make dist target (2)
-- [#b86c252](https://github.com/pydio/cells-sync/commit/b86c25226af0cd1e9378623a0a1690ab5d9424e4): Make dist target
-- [#b9b1e3e](https://github.com/pydio/cells-sync/commit/b9b1e3e5bcfaaff2ebfaba54200030be695de600): Fix windows build
-- [#e2d1a01](https://github.com/pydio/cells-sync/commit/e2d1a0121751e778a71c57d43878fe0affacab67): Clean directives to build for windows
-- [#2ab62cc](https://github.com/pydio/cells-sync/commit/2ab62cc40be6be6d723988e5363942e6b98b1ab7): Work on xgo builds
-- [#ac751a5](https://github.com/pydio/cells-sync/commit/ac751a505f830a8e7d468687cd837e9be78da0c7): Update gomod
-- [#927a306](https://github.com/pydio/cells-sync/commit/927a306fae6acb10cc4907d30e66bff93095310e): Test XGo builds with Go 17
-- [#43b6592](https://github.com/pydio/cells-sync/commit/43b6592ea2b33ce52b0859c72dfdbc645efb3d2e): Fix URI parsing issues with fs:///
-- [#ec1088d](https://github.com/pydio/cells-sync/commit/ec1088d62534a932cac1a9fc047865db1f2f530e): Create a specific target for building linux + libayatana support for appindicator
-- [#d1f69ee](https://github.com/pydio/cells-sync/commit/d1f69ee0a9262e4b8d6f07c6696b15ae0c866516): New main branch
-- [#4efc016](https://github.com/pydio/cells-sync/commit/4efc016bef7374a7060728e43b898059206ee0ba): Tidy mod
-- [#d87088d](https://github.com/pydio/cells-sync/commit/d87088dc145407227d921214f9d9f54bed7358ff): First pass on go.mod
-- [#ebf3947](https://github.com/pydio/cells-sync/commit/ebf39478f758daad333b4d0d00ecfdbbc26188f4): Move MessagePublishState listener in alternative loop
-- [#a55fa60](https://github.com/pydio/cells-sync/commit/a55fa60c57dba243157e453c5853229252765338): Remove local endpoint type. Never used and pulling tons of dependencies.
-- [#46bed58](https://github.com/pydio/cells-sync/commit/46bed5814a407444e524d1df383036faddd0b6e1): Remove dep to cells/common/service
-- [#48f37dc](https://github.com/pydio/cells-sync/commit/48f37dc9e034cf3c3060be80d20c4c359839776f): Updated npm instructions
-- [#872cc9a](https://github.com/pydio/cells-sync/commit/872cc9a938afd33a3257772e8a3e99f228ce7338): Fix display issues
-- [#07e911f](https://github.com/pydio/cells-sync/commit/07e911ff96f05ad05c5832d8e73161f20c8c1d8c): Status message when endpoint is disconnected
-- [#87edc29](https://github.com/pydio/cells-sync/commit/87edc2995b372333dd8dbb666cd606dac2bef31d): Fix http busy port detection
-- [#f26b195](https://github.com/pydio/cells-sync/commit/f26b19544692b0c951c8198ca243facdff618708): Fix PageActivities
-- [#12ab634](https://github.com/pydio/cells-sync/commit/12ab6344ba1110cdd975e1c7b84e8f34ec07c61c): Decouple pub/sub for publishing patch store to avoid ux hanging
-- [#28a8791](https://github.com/pydio/cells-sync/commit/28a879137bab96b32ba8dd6273d5106a8cb70d16): Use ConsoleColorX constants
-- [#d958f04](https://github.com/pydio/cells-sync/commit/d958f04032b2208b88b06ba4a4fc28fd245cc612): Re-adapt colors for services in logs
-- [#9e08483](https://github.com/pydio/cells-sync/commit/9e084837560a212427d050c14191cb76132ed236): House cleaning before next development cycle
-- [#14af28e](https://github.com/pydio/cells-sync/commit/14af28e9a22e52a36cae6747ec5fcc48f2b2e933): Fix Retry function signature
-- [#5f99d66](https://github.com/pydio/cells-sync/commit/5f99d662641832ccc79bb5ea7031f8ed73691bf7): Try build with go 14 for Windows
-- [#9a24a13](https://github.com/pydio/cells-sync/commit/9a24a13a44b28d7b8def0e326f7b6c2d2a0d6261): Build for go 1.15
-- [#f658aaf](https://github.com/pydio/cells-sync/commit/f658aaf8ba6d1e576a0271217e1d393310e0ebcf): Fix cells constants - Clear last errored patch on success run
-- [#e3571f8](https://github.com/pydio/cells-sync/commit/e3571f813bcc4f23f698df1d7824517027b534c6): Refix react-i18next version
-- [#7e3a3d9](https://github.com/pydio/cells-sync/commit/7e3a3d9c663fe8fbfcd3c671071b48c8c6800577): fix react-i18next version
+- [#c84681d](https://github.com/pydio/cells-sync/commit/c84681d9c73d77c5b946795fae664e8df79fe55b): Mod update
+- [#20a1948](https://github.com/pydio/cells-sync/commit/20a19486020c94bb28bf12858b5e7c8cc4384a2e): Mod-update
+- [#8cf34cb](https://github.com/pydio/cells-sync/commit/8cf34cbff2220a265b82cd15bf389c061799b7c7): Next development cycle
