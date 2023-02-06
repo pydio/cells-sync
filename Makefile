@@ -1,4 +1,4 @@
-DEV_VERSION=0.9.4-dev
+DEV_VERSION=0.9.5-dev
 ENV=env
 TODAY:=$(shell date -u +%Y-%m-%dT%H:%M:%S)
 TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
