@@ -165,15 +165,17 @@ func (a *Authority) LoadInfo() {
 		}
 	}
 	// decode JWT token without verifying the signature
-	token, _ := jwt.ParseSigned(a.IdToken)
-	var claims map[string]interface{} // generic map to store parsed token
-	_ = token.UnsafeClaimsWithoutVerification(&claims)
-	if name, ok := claims["name"]; ok {
-		a.Username = name.(string)
+	if a.IdToken != "" {
+		token, _ := jwt.ParseSigned(a.IdToken)
+		var claims map[string]interface{} // generic map to store parsed token
+		_ = token.UnsafeClaimsWithoutVerification(&claims)
+		if name, ok := claims["name"]; ok {
+			a.Username = name.(string)
+		}
+		parsed, _ := url.Parse(a.URI)
+		parsed.User = url.User(a.Username)
+		a.Id = parsed.String()
 	}
-	parsed, _ := url.Parse(a.URI)
-	parsed.User = url.User(a.Username)
-	a.Id = parsed.String()
 }
 
 func (a *Authority) key() string {

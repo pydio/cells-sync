@@ -21,15 +21,18 @@ package cmd
 
 import (
 	"context"
+	nurl "net/url"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/pborman/uuid"
 	"github.com/spf13/cobra"
 
-	"github.com/pydio/cells/v4/common/log"
-
 	"github.com/pydio/cells-sync/config"
+	"github.com/pydio/cells/v4/common/log"
 )
 
 func exit(err error) {
@@ -38,6 +41,14 @@ func exit(err error) {
 		os.Exit(1)
 	}
 	os.Exit(0)
+}
+
+var CfgCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Manage configurations manually",
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
 }
 
 // AddCmd adds a task to the config via the command line
@@ -153,6 +164,79 @@ var DeleteCmd = &cobra.Command{
 	},
 }
 
+var AccountCmd = &cobra.Command{
+	Use:   "account",
+	Short: "Manage Accounts",
+	Long: `
+Create or edit an existing account by manually setting a user token instead of going through OAuth Flow.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		aa := config.Default().Authorities
+		var auth *config.Authority
+		if len(aa) > 0 {
+			var items []string
+			for _, a := range aa {
+				items = append(items, a.URI)
+			}
+			items = append(items, "Create a new one")
+			tS := promptui.Select{Label: "Select an account to edit or create a new one", Items: items}
+			i, _, e := tS.Run()
+			if e != nil {
+				log.Fatal(e.Error())
+			}
+			if i <= len(aa)-1 {
+				auth = aa[i]
+			} else {
+				auth = &config.Authority{}
+			}
+		}
+		if auth.Id == "" {
+			// Prompt for account data
+			if ur, e := (&promptui.Prompt{Label: "Server URL (including https://)", Validate: func(s string) error {
+				if s == "" {
+					return nil
+				}
+				_, er := nurl.Parse(s)
+				return er
+			}}).Run(); e == nil {
+				auth.URI = ur
+				if strings.HasPrefix(ur, "https") {
+					if i, _, _ := (&promptui.Select{Label: "Skip SSL certificate verification (not recommended)?", Items: []string{"No", "Yes"}}).Run(); i == 1 {
+						auth.InsecureSkipVerify = true
+					}
+				}
+			} else {
+				log.Fatal(e.Error())
+			}
+			if uname, e := (&promptui.Prompt{Label: "Username"}).Run(); e == nil {
+				auth.Username = uname
+			} else {
+				log.Fatal(e.Error())
+			}
+			nu, _ := nurl.Parse(auth.URI)
+			nu.User = nurl.User(auth.Username)
+			auth.Id = nu.String()
+		}
+		if token, e := (&promptui.Prompt{Label: "Personal Access Token"}).Run(); e == nil {
+			auth.AccessToken = token
+			auth.RefreshToken = token
+			if exp, er := (&promptui.Prompt{Label: "Token expires in... (number of days)"}).Run(); er == nil {
+				d, _ := strconv.Atoi(exp)
+				auth.ExpiresAt = int(time.Now().Add(time.Hour * 24 * time.Duration(d)).Unix())
+			} else {
+				log.Fatal(er.Error())
+			}
+		} else {
+			log.Fatal(e.Error())
+		}
+		if er := config.Default().CreateAuthority(auth); er != nil {
+			log.Fatal(er.Error())
+		}
+
+	},
+}
+
 func init() {
-	RootCmd.AddCommand(AddCmd, EditCmd, DeleteCmd)
+	RootCmd.AddCommand(CfgCmd)
+	CfgCmd.AddCommand(AccountCmd, AddCmd, EditCmd, DeleteCmd)
 }

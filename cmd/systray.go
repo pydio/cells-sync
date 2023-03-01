@@ -1,3 +1,5 @@
+//go:build !pure
+
 /*
  * Copyright 2019 Abstrium SAS
  *

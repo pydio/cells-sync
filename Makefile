@@ -30,6 +30,13 @@ dist:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	-o cells-sync main.go
 
+pure:
+	go build -a -trimpath --tags pure \
+	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
+	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
+	-o cells-sync-noui main.go
+
 win:
 	go build \
 	-ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \

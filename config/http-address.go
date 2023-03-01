@@ -21,6 +21,8 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"sync"
 
 	"github.com/pydio/cells/v4/common/utils/net"
@@ -42,9 +44,16 @@ func GetHttpProtocol() string {
 // automatically registered inside the server.
 func GetHttpAddress() (string, error) {
 	httpOnce.Do(func() {
-		// Todo : allowing outbound connection could be set up in configs - leave host empty in that case
 		hostname := "localhost"
+		if ho := os.Getenv("CELLS_SYNC_HTTP_HOST"); ho != "" {
+			hostname = ho
+		}
 		port := 3636
+		if po := os.Getenv("CELLS_SYNC_HTTP_PORT"); po != "" {
+			if p, e := strconv.Atoi(po); e == nil {
+				port = p
+			}
+		}
 		for ; port <= 3666; port++ {
 			if err := net.CheckPortAvailability(fmt.Sprintf("%d", port)); err == nil {
 				break

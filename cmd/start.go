@@ -35,7 +35,10 @@ import (
 	"github.com/pydio/cells/v4/common/log"
 )
 
-var startNoUi bool
+var (
+	startNoUi        bool
+	defaultStartNoUi bool
+)
 
 func runner() {
 	s := control.NewSupervisor(startNoUi)
@@ -63,6 +66,6 @@ var StartCmd = &cobra.Command{
 }
 
 func init() {
-	StartCmd.Flags().BoolVar(&startNoUi, "headless", false, "Start sync tasks without UI components")
+	StartCmd.Flags().BoolVar(&startNoUi, "headless", defaultStartNoUi, "Start sync tasks without UI components")
 	RootCmd.AddCommand(StartCmd)
 }
