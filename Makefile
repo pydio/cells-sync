@@ -30,6 +30,13 @@ dist:
 	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
 	-o cells-sync main.go
 
+silicon:
+	GOOS=darwin GOARCH=arm64 CGO_ENABLED=1 go build -a -trimpath \
+	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
+	-X github.com/pydio/cells-sync/common.BuildStamp=${TODAY} \
+	-X github.com/pydio/cells-sync/common.BuildRevision=${GITREV}" \
+	-o cells-sync-m1 main.go
+
 pure:
 	go build -a -trimpath --tags pure \
 	-ldflags "-X github.com/pydio/cells-sync/common.Version=${CELLS_VERSION} \
