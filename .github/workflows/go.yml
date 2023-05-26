@@ -23,13 +23,13 @@ jobs:
       with:
         go-version: 1.19
         
-    - name: Setup Node
-      uses: actions/setup-node@v2.5.2
-      with:
-        node-version: v16
+#    - name: Setup Node
+#      uses: actions/setup-node@v2.5.2
+#      with:
+#        node-version: v16
 
-    - name: Build UX
-      run: cd app/ux; npm install; npm run build; cd -
+    - name: Fake Build UX (just create build folder)
+      run: mkdir -p app/ux/build
       
     - name: Build
       run: go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
