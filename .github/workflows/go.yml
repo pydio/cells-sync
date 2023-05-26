@@ -29,7 +29,7 @@ jobs:
 #        node-version: v16
 
     - name: Fake Build UX (just create build folder)
-      run: mkdir -p app/ux/build
+      run: mkdir -p app/ux/build; touch app/ux/build/index.html
       
     - name: Build
       run: go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
