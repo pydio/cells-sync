@@ -29,7 +29,7 @@ jobs:
         node-version: v16
 
     - name: Build UX
-      run: cd app/ux; npm run build; cd -
+      run: cd app/ux; npm install; npm run build; cd -
       
     - name: Build
       run: go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
