@@ -32,6 +32,6 @@ jobs:
       run: mkdir -p app/ux/build; touch app/ux/build/index.html
       
     - name: Build
-      run: 
-        CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\builds\native\include"
+      run: |
+        set CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\builds\native\include"
         go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
