@@ -222,7 +222,7 @@ class PageSettings extends React.Component {
                                 settings.Debugging.ShowPanels= !settings.Debugging.ShowPanels;
                             }}
                         />
-                        {settings.Debugging.ShowPanels && <div>JS LinkOpener bound : {window.linkOpener? "Yes" : "No"}</div>}
+                        {settings.Debugging.ShowPanels && <div>JS LinkOpen bound : {window.linkOpen? "Yes" : "No"}</div>}
                     </div>
                 </PageBlock>
             </Page>

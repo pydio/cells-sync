@@ -134,7 +134,7 @@ export default class EndpointLabel extends React.Component {
         data.username = '';
         data.password = '';
         data.hash = '';
-        if ( data.protocol === 'fs:' && window.linkOpener ){
+        if ( data.protocol === 'fs:' && window.linkOpen ){
             OpenLink = data.toString();
             OpenLink = OpenLink.replace('fs://', '');
         } else if (data.protocol.indexOf('http') === 0){

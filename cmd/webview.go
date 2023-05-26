@@ -50,7 +50,9 @@ var WebviewCmd = &cobra.Command{
 		w := webview.New(true)
 		w.SetTitle(i18n.T("application.title"))
 		w.SetSize(900, 600, webview.HintNone)
-		_ = w.Bind("linkOpener", &LinkOpener{})
+		_ = w.Bind("linkOpen", func(url string) {
+			_ = open.Run(url)
+		})
 		w.Navigate(url)
 		/*
 			webview.Settings{

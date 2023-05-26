@@ -34,8 +34,8 @@ export function openPath(path, task, isURI = false){
         }
         lnk = root + '/' + path;
     }
-    if (window.linkOpener) {
-        window.linkOpener.open(lnk);
+    if (window.linkOpen) {
+        window.linkOpen(lnk);
     } else {
         window.open(lnk);
     }
