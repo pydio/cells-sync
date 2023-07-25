@@ -34,6 +34,7 @@ import moment from 'moment'
 import parse from "url-parse";
 import {withRouter} from 'react-router-dom'
 import Colors from "./Colors";
+import ConfirmDialog from "../task/ConfirmDialog";
 
 /*
 const sampleServer = {
@@ -128,14 +129,21 @@ class AccountsList extends Component{
     }
 
     deleteServer(s){
-        const {t} = this.props;
         if (s.tasksCount > 0) {
-            window.alert(t('server.delete.action.cannot'));
+            this.setState({alertTasksNotEmpty: s.id})
             return
         }
-        if(window.confirm(t('server.delete.action.confirm'))){
-            Storage.getInstance(this.props.socket).deleteServer(s.id);
-        }
+        this.setState({confirmDelete: s.id})
+    }
+
+    deletionConfirmed() {
+        const {confirmDelete} = this.state;
+        Storage.getInstance(this.props.socket).deleteServer(confirmDelete);
+        this.dismissAlertOrConfirm()
+    }
+
+    dismissAlertOrConfirm() {
+        this.setState({alertTasksNotEmpty: false, confirmDelete: false})
     }
 
     createSyncTask(id){
@@ -156,7 +164,7 @@ class AccountsList extends Component{
     }
 
     render() {
-        const {servers, newUrl, addMode} = this.state;
+        const {servers, newUrl, addMode, confirmDelete, alertTasksNotEmpty} = this.state;
         const {t} = this.props;
         let loginButtonDisabled = true;
         const ll = parse(newUrl, {}, true);
@@ -243,6 +251,17 @@ class AccountsList extends Component{
                         <Stack.Item><DefaultButton onClick={()=>{this.setState({addMode: false})}} text={t('button.cancel')}/></Stack.Item>
                     </Stack>
                 }
+                <ConfirmDialog
+                    open={confirmDelete || alertTasksNotEmpty}
+                    title={alertTasksNotEmpty ? t('server.delete.impossible') : t('server.delete.button')}
+                    sentence={alertTasksNotEmpty ? t('server.delete.action.cannot') : t('server.delete.action.confirm')}
+                    destructive={confirmDelete}
+                    alertOnly={alertTasksNotEmpty}
+                    confirmLabel={t('task.action.delete')}
+                    onDismiss={() => this.dismissAlertOrConfirm()}
+                    onConfirm={() => {this.deletionConfirmed()}}
+
+                />
                 {content}
             </Page>
 

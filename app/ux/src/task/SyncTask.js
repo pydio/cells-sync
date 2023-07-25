@@ -31,6 +31,7 @@ import {withTranslation} from 'react-i18next'
 import PatchDialog from "./PatchDialog";
 import {openPath} from '../models/Open'
 import Colors from "../components/Colors";
+import ConfirmDialog from "./ConfirmDialog";
 
 const emptyTime = "0001-01-01T00:00:00Z";
 
@@ -51,12 +52,14 @@ class SyncTask extends React.Component {
 
 
     triggerAction(key) {
-        const {state, socket, openEditor, t} = this.props;
+        const {state, socket, openEditor} = this.props;
         switch (key) {
             case "delete":
-                if (window.confirm(t('task.action.delete.confirm'))){
-                    socket.deleteTask(state.Config);
-                }
+                this.setState({confirmDelete: true})
+                break;
+            case "deleteApply":
+                this.setState({confirmDelete: false})
+                socket.deleteTask(state.Config);
                 break;
             case "edit":
                 openEditor();
@@ -175,7 +178,7 @@ class SyncTask extends React.Component {
 
         const {state, t} = this.props;
         const {LeftProcessStatus, RightProcessStatus, Status, LeftInfo, RightInfo, Config} = state;
-        const {lastPatch} = this.state;
+        const {lastPatch, confirmDelete} = this.state;
 
         const styles =  {
             dirIcon:{
@@ -210,6 +213,15 @@ class SyncTask extends React.Component {
                     hidden={!lastPatch}
                     onDismiss={()=>{this.setState({lastPatch: false})}}
                     openPath={(path)=>{this.openPath(path, false)}}
+                />
+                <ConfirmDialog
+                    open={confirmDelete}
+                    title={t('task.action.delete.title')}
+                    sentence={t('task.action.delete.confirm')}
+                    destructive={true}
+                    confirmLabel={t('task.action.delete')}
+                    onDismiss={() => {this.setState({confirmDelete: false})}}
+                    onConfirm={() => {this.triggerAction('deleteApply')}}
                 />
                 <Stack styles={{root:{margin:16, borderRadius:3, boxShadow: Depths.depth4, backgroundColor:'white'}}} vertical>
                     <div style={{padding: '0px 16px 10px'}}>

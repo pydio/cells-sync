@@ -127,7 +127,7 @@ class PatchNode extends React.Component {
                 newLevel = level > 0 ? level -1  : level;
             }
         }
-        console.log(hideMain, patchError, level, newLevel);
+        //console.log(hideMain, patchError, level, newLevel);
         return (
             <div style={{paddingLeft}}>
                 {!hideMain &&

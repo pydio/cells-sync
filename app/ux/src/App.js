@@ -26,6 +26,7 @@ import AgentModal from './components/AgentModal'
 import {NavMenu, NavRoutes} from './components/Nav'
 import EditorPanel from "./components/EditorPanel";
 import Socket from "./models/Socket"
+import {debounce} from 'lodash'
 import { registerIcons } from '@uifabric/styling';
 import {
     AccountCircleOutlined,
@@ -145,13 +146,14 @@ class App extends React.Component{
             maxAttemptsReached: false,
             syncTasks: {},
         };
-        const onStatus = (status) => {
+        const onStatus = debounce((status) => {
             const other = {}
             if(status && status.connected){
                 other.firstAttempt = false;
             }
             this.setState({...status, ...other});
-        };
+        }, 450);
+
         const onTasks = (tasks) => this.setState({syncTasks: tasks});
         this.state.socket = new Socket(onStatus, onTasks);
         this.state.socket.start();
