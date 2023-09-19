@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: webview-relaunch
 
@@ -22,21 +22,25 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: 1.21
-        
-    - name: Setup Node
-      uses: actions/setup-node@v2.5.2
-      with:
-        node-version: v16
 
-    - name: Npm Install
-      run: npm install
-      working-directory: app/ux
+    - name: Fake Build UX (just create build folder)
+      run: mkdir -p app/ux/build; touch app/ux/build/index.html
+
+
+#    - name: Setup Node
+#      uses: actions/setup-node@v2.5.2
+#      with:
+#        node-version: v16
+
+#    - name: Npm Install
+#      run: npm install
+#      working-directory: app/ux
       
-    - name: NPM Build
-      run: |
-        $env:CI=false
-        npm run build
-      working-directory: app/ux
+#    - name: NPM Build
+#      run: |
+#        $env:CI=false
+#        npm run build
+#      working-directory: app/ux
       
     - name: Build
       run: |
@@ -48,3 +52,23 @@ jobs:
       with:
         name: cells-sync-windows
         path: cells-sync.exe
+
+    - name: Checkout Artifacts
+      uses: actions/checkout@v4
+      with: 
+        ref: artifacts
+        path: artifacts
+
+    - name: Touch File
+      uses: DamianReeves/write-file-action@master
+      with:
+        path: artifacts/head_sha
+        contents: |
+          Hello World!
+        write-mode: override
+
+    - name: Notify branch
+      run: |
+        git commit -m "new file" -a 
+        git push
+      working-directory: artifacts
