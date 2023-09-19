@@ -1,2 +1,1 @@
-{\
-sha\:\c64f0ebe83ac98ff41d942c6c0e3358e99cb19e7\, \run\:\22\}
+{"sha":"$env:GITHUB_SHA", "run":"$env:GITHUB_RUN_NUMBER", "attempt":"$env:GITHUB_RUN_ATTEMPT"}
