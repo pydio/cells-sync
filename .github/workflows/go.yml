@@ -63,7 +63,7 @@ jobs:
 
     - name: Notify branch
       run: |
-        echo '{"sha":"$env:GITHUB_SHA", "run":"$env:GITHUB_RUN_NUMBER", "attempt":"$env:GITHUB_RUN_ATTEMPT"}' > latest.txt
+        echo {"sha":"$env:GITHUB_SHA", "run":"$env:GITHUB_RUN_NUMBER", "attempt":"$env:GITHUB_RUN_ATTEMPT"} > latest.txt
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
