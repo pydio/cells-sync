@@ -25,7 +25,7 @@ import (
 	"github.com/pydio/cells-sync/i18n"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
-	"github.com/webview/webview"
+	"github.com/webview/webview_go"
 )
 
 var url string
