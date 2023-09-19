@@ -1,7 +1,7 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
-name: Go
+name: Build NPM, Go and touch #artifacts branch
 
 on: 
   workflow_dispatch:
@@ -24,42 +24,40 @@ jobs:
       with:
         go-version: 1.21
 
-    - name: Fake Build UX (just create build folder)
-      run: mkdir -p app/ux/build; touch app/ux/build/index.html
+#    - name: Fake Build UX (just create build folder)
+#      run: mkdir -p app/ux/build; touch app/ux/build/index.html
 
+    - name: Setup Node
+      uses: actions/setup-node@v2.5.2
+      with:
+        node-version: v16
 
-#    - name: Setup Node
-#      uses: actions/setup-node@v2.5.2
-#      with:
-#        node-version: v16
-
-#    - name: Npm Install
-#      run: npm install
-#      working-directory: app/ux
+    - name: Npm Install
+      run: npm install
+      working-directory: app/ux
       
-#    - name: NPM Build
-#      run: |
-#        $env:CI=false
-#        npm run build
-#      working-directory: app/ux
+    - name: NPM Build
+      run: |
+        $env:CI=false
+        npm run build
+      working-directory: app/ux
       
-#    - name: Build
-#      run: |
-#        $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
-#        go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
+    - name: Build
+      run: |
+        $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
+        go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
 
-#    - name: Upload
-#      uses: actions/upload-artifact@v3
-#      with:
-#        name: cells-sync-windows
-#        path: cells-sync.exe
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: cells-sync-windows
+        path: cells-sync.exe
 
     - name: Checkout Artifacts
       uses: actions/checkout@v4
       with: 
         ref: artifacts
         path: artifacts
-
 
     - name: Notify branch
       run: |
