@@ -6,7 +6,7 @@ name: Go
 on: 
   workflow_dispatch:
   push:
-    branches: [ "webview-relaunch" ]
+    branches: [ "webview-relaunch", "main" ]
 #  pull_request:
 #    branches: [ "webview-relaunch" ]
 
