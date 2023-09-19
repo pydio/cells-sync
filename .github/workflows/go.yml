@@ -42,16 +42,16 @@ jobs:
 #        npm run build
 #      working-directory: app/ux
       
-    - name: Build
-      run: |
-        $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
-        go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
+#    - name: Build
+#      run: |
+#        $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
+#        go build -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=0.9.5 -X github.com/pydio/cells-sync/common.BuildStamp=20230526 -X github.com/pydio/cells-sync/common.BuildRevision=rev" -o cells-sync.exe
 
-    - name: Upload
-      uses: actions/upload-artifact@v3
-      with:
-        name: cells-sync-windows
-        path: cells-sync.exe
+#    - name: Upload
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: cells-sync-windows
+#        path: cells-sync.exe
 
     - name: Checkout Artifacts
       uses: actions/checkout@v4
@@ -65,7 +65,7 @@ jobs:
         path: artifacts/head_sha
         contents: |
           Hello World!
-        write-mode: override
+        write-mode: overwrite
 
     - name: Notify branch
       run: |
