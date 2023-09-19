@@ -62,10 +62,10 @@ jobs:
 
     - name: Notify branch
       run: |
-        date > latest.txt
+        echo "{\"sha\":\"$env:GITHUB_SHA\", \"run\":\"$env:GITHUB_RUN_NUMBER\"}" > latest.txt
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        git commit -m "generated"
+        git commit -m "regenerated latest file"
         git push
       working-directory: artifacts
