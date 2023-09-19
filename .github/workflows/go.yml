@@ -26,7 +26,7 @@ jobs:
     - name: Setup Node
       uses: actions/setup-node@v2.5.2
       with:
-        node-version: v16
+        node-version: v14
 
     - name: Npm Install
       run: npm install
