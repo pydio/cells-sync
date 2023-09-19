@@ -23,13 +23,18 @@ jobs:
       with:
         go-version: 1.21
         
-#    - name: Setup Node
-#      uses: actions/setup-node@v2.5.2
-#      with:
-#        node-version: v16
+    - name: Setup Node
+      uses: actions/setup-node@v2.5.2
+      with:
+        node-version: v16
 
-    - name: Fake Build UX (just create build folder)
-      run: mkdir -p app/ux/build; touch app/ux/build/index.html
+    - name: Npm Install
+      run: npm install
+      working-directory: app/ux
+      
+    - name: NPM Build
+      run: npm run build
+      working-directory: app/ux
       
     - name: Build
       run: |
