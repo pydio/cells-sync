@@ -1,1 +1,0 @@
-{"sha":"$env:GITHUB_SHA", "run":"$env:GITHUB_RUN_NUMBER", "attempt":"$env:GITHUB_RUN_ATTEMPT"}
