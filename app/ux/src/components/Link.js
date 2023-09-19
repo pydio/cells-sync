@@ -19,7 +19,7 @@
 import React from 'react'
 import {Link} from 'office-ui-fabric-react'
 
-export default function ({href, label}) {
+function makeLink({href, label}) {
     const lab = label || href;
     if (window.linkOpen){
         return(<Link href={href} onClick={()=>{window.linkOpen(href)}} target={"_blank"}>{lab}</Link>);
@@ -27,3 +27,5 @@ export default function ({href, label}) {
         return(<Link href={href} target={"_blank"}>{lab}</Link>);
     }
 }
+
+export default makeLink

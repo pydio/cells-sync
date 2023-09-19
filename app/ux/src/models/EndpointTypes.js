@@ -19,13 +19,15 @@
 
 import parse from 'url-parse'
 
-export default [
+const types = [
     { key: 'http', icon: 'Server'},
     { key: 'fs', icon : 'SyncFolder'},
     { key: 's3', icon: 'SplitObject'}/*,
     /* Disabled as we removed the dependency to router in the service
     { key: 'router', icon: 'ServerEnviroment'}*/
 ];
+
+export default types
 
 export function parseUri(uri, location, parser) {
     if(uri.indexOf('fs:///') === 0) {
