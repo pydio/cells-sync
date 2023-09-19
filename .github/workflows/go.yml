@@ -3,9 +3,10 @@
 
 name: Go
 
-on: workflow_dispatch
-#  push:
-#    branches: [ "webview-relaunch" ]
+on: 
+  workflow_dispatch:
+  push:
+    branches: [ "webview-relaunch" ]
 #  pull_request:
 #    branches: [ "webview-relaunch" ]
 
