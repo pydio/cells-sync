@@ -234,7 +234,6 @@ func VcsInfo() (string, time.Time) {
 	ts := time.Now()
 	if info, ok := debug.ReadBuildInfo(); ok {
 		for _, s := range info.Settings {
-			fmt.Println(s.Key, s.Value)
 			switch s.Key {
 			case "vcs.revision":
 				rev = s.Value
