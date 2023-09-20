@@ -50,7 +50,7 @@ jobs:
       run: |
         $env:DEV_VERSION = ((Get-Content .\Makefile -TotalCount 1) -split '=')[1].Trim()
         $env:CGO_ENABLED=0
-        go build -a -trimpath --tags pure -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=$env:DEV_VERSION" -o cells-sync-noui.exe
+        go build -a -trimpath --tags pure -ldflags "-X github.com/pydio/cells-sync/common.Version=$env:DEV_VERSION" -o cells-sync-noui.exe
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
