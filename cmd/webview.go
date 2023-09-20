@@ -23,9 +23,9 @@ package cmd
 
 import (
 	"github.com/pydio/cells-sync/i18n"
-	"github.com/pydio/webview"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
+	"github.com/webview/webview_go"
 )
 
 var url string
@@ -35,7 +35,7 @@ type LinkOpener struct{}
 
 // Open opens an url (http or file) using OS stuff.
 func (w *LinkOpener) Open(url string) {
-	open.Run(url)
+	_ = open.Run(url)
 }
 
 // WebviewCmd opens a webview pointing to the http server URL.
@@ -47,26 +47,31 @@ var WebviewCmd = &cobra.Command{
 		if lang != "" {
 			url += "?lang=" + lang
 		}
-		w := webview.New(webview.Settings{
-			Width:     900,
-			Height:    600,
-			Resizable: true,
-			Title:     i18n.T("application.title"),
-			URL:       url,
-			Debug:     true, // Enable JS Debugger
-			ExternalInvokeCallback: func(w webview.WebView, data string) {
-				switch data {
-				case "DOMContentLoaded":
-					w.Bind("linkOpener", &LinkOpener{})
-					break
-				}
-			},
+		w := webview.New(true)
+		w.SetTitle(i18n.T("application.title"))
+		w.SetSize(900, 600, webview.HintNone)
+		_ = w.Bind("linkOpen", func(url string) {
+			_ = open.Run(url)
 		})
+		w.Navigate(url)
 		/*
-			w.Dispatch(func() {
-				w.Bind("linkOpener", &LinkOpener{})
-			})
+			webview.Settings{
+						Width:     900,
+						Height:    600,
+						Resizable: true,
+						Title:     i18n.T("application.title"),
+						URL:       url,
+						Debug:     true, // Enable JS Debugger
+						ExternalInvokeCallback: func(w webview.WebView, data string) {
+							switch data {
+							case "DOMContentLoaded":
+								w.Bind("linkOpener", &LinkOpener{})
+								break
+							}
+						},
+					}
 		*/
+
 		w.Run()
 	},
 }

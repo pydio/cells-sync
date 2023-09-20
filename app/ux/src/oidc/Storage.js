@@ -44,11 +44,11 @@ class Storage
     static signin(url, currentEditState = undefined){
         // TMP DEBUG
         // window.linkOpener = window;
-        const externalOpen = !!window.linkOpener;
+        const externalOpen = !!window.linkOpen;
         const manager = Storage.newManager(url, currentEditState);
         const href = 'http://localhost:' + window.location.port + '/servers/external?manager=' + encodeURI(url);
         if (externalOpen){
-            window.linkOpener.open(href);
+            window.linkOpen(href);
             return Promise.resolve(true);
         } else {
             return manager.signinRedirect();

@@ -31,12 +31,11 @@ import {load} from '../models/Patch'
 import {Page} from "./Page";
 import PatchNode from "../task/PatchNode";
 import {openPath} from "../models/Open";
+import {computeLabel} from "../models/Config";
 import {debounce} from 'lodash'
 import Colors from "./Colors";
 import {makeCompound} from "./PageTasks";
 import moment from "moment";
-import parse from "url-parse";
-import basename from "basename";
 
 class PageActivities extends Component {
 
@@ -69,37 +68,16 @@ class PageActivities extends Component {
                     sorting.push({key:keys[i], patch:r[0]})
                 }
             })
-            console.log(sorting);
+            //console.log(sorting);
             sorting.sort((a,b)=>{
                 const stampA = a.patch.Root.Stamp;
                 const stampB = b.patch.Root.Stamp;
                 return (stampA === stampB?0:(stampA>stampB?-1:1))
             })
-            console.log(sorting);
+            //console.log(sorting);
             sorting.forEach((s) => {data[s.key] = s.patch});
             this.setState({data})
         })
-    }
-
-    syncLabel(task){
-        const label = (uri) => {
-            const parsed = parse(uri, {}, true);
-            if(parsed.protocol.indexOf('http') === 0) {
-                return parsed.host;
-            } else {
-                return basename(parsed.pathname);
-            }
-        }
-        return (
-            <React.Fragment>
-                {label(task.Config.LeftURI)}
-                <Icon
-                    iconName={"Sort" + (task.Config.Direction === 'Bi' ? '' : (task.Config.Direction === 'Right' ? 'Down' : 'Up'))}
-                    styles={{root:{height:15, margin:'0 5px', transform: 'rotate(-90deg)', width: 16}}}
-                />
-                {label(task.Config.RightURI)}
-            </React.Fragment>
-        );
     }
 
     render() {
@@ -157,7 +135,7 @@ class PageActivities extends Component {
                                                     <div style={{backgroundColor: Colors.tint90, color:Colors.tint30, fontFamily: 'Roboto Medium', display:'flex', alignItems:'center', padding:'12px 0'}}>
                                                         <span style={{flex: 1, paddingLeft: 8, display:'flex', alignItems:'center'}}>
                                                             <Icon iconName={"Activities"} styles={{root:{fontSize:'1.3em', height:18, marginRight: 5}}}/>
-                                                            {this.syncLabel(task)}&nbsp;
+                                                            {computeLabel(task.Config)}&nbsp;
                                                             {patch && <span style={{opacity:.5}}>{moment(patch.Root.Stamp).fromNow()}</span>}
                                                             {!patch && <span style={{marginLeft: 10}}><Spinner size={SpinnerSize.small} /></span>}
                                                         </span>

@@ -167,24 +167,24 @@ func (h *HttpServer) ls(c *gin.Context) {
 			response.Children = append(response.Children, v)
 		}
 	} else if node, err := request.endpoint.LoadNode(h.ctx, request.Path); err == nil {
-		response.Node = node.WithoutReservedMetas()
+		response.Node = node.AsProto().WithoutReservedMetas()
 		if !node.IsLeaf() {
 			if source, ok := model.AsPathSyncSource(request.endpoint); ok {
-				er := source.Walk(h.ctx, func(p string, node *tree.Node, err error) error {
+				er := source.Walk(h.ctx, func(p string, node tree.N, err error) error {
 					if err != nil {
 						log.Logger(h.ctx).Warn("Ignoring error " + err.Error() + " on path " + p)
 						return nil
 					}
 					if request.windowsDrive != "" {
 						p = path.Join(request.windowsDrive, p)
-						node.Path = p
+						node.UpdatePath(p)
 					}
 					// Small fix for router case at level 0
-					if strings.HasPrefix(node.Uuid, "DATASOURCE:") {
-						node.Type = tree.NodeType_COLLECTION
+					if strings.HasPrefix(node.GetUuid(), "DATASOURCE:") {
+						node.SetType(tree.NodeType_COLLECTION)
 					}
 					if path.Base(p) != common.PydioSyncHiddenFile && !strings.HasPrefix(path.Base(p), ".") {
-						response.Children = append(response.Children, node.WithoutReservedMetas())
+						response.Children = append(response.Children, node.AsProto().WithoutReservedMetas())
 					}
 					return nil
 				}, request.Path, false)
@@ -254,8 +254,8 @@ func (h *HttpServer) defaultDir(c *gin.Context) {
 		epDir = request.Path
 	}
 	if node, err := request.endpoint.LoadNode(context.Background(), epDir); err == nil {
-		node.Path = outputDir
-		c.JSON(http.StatusOK, &TreeResponse{Node: node})
+		node.UpdatePath(outputDir)
+		c.JSON(http.StatusOK, &TreeResponse{Node: node.AsProto()})
 		return
 	}
 

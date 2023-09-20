@@ -173,24 +173,22 @@ Create or edit an existing account by manually setting a user token instead of g
 	Run: func(cmd *cobra.Command, args []string) {
 		aa := config.Default().Authorities
 		var auth *config.Authority
-		if len(aa) > 0 {
-			var items []string
-			for _, a := range aa {
-				items = append(items, a.URI)
-			}
-			items = append(items, "Create a new one")
-			tS := promptui.Select{Label: "Select an account to edit or create a new one", Items: items}
-			i, _, e := tS.Run()
-			if e != nil {
-				log.Fatal(e.Error())
-			}
-			if i <= len(aa)-1 {
-				auth = aa[i]
-			} else {
-				auth = &config.Authority{}
-			}
+		var items []string
+		for _, a := range aa {
+			items = append(items, a.URI)
 		}
-		if auth.Id == "" {
+		items = append(items, "Create a new one")
+		tS := promptui.Select{Label: "Select an account to edit or create a new one", Items: items}
+		i, _, e := tS.Run()
+		if e != nil {
+			log.Fatal(e.Error())
+		}
+		if i <= len(aa)-1 {
+			auth = aa[i]
+		} else {
+			auth = &config.Authority{}
+		}
+		if auth != nil && auth.Id == "" {
 			// Prompt for account data
 			if ur, e := (&promptui.Prompt{Label: "Server URL (including https://)", Validate: func(s string) error {
 				if s == "" {

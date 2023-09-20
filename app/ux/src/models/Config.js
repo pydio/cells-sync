@@ -18,6 +18,10 @@
  */
 
 import buildUrl from './Url'
+import parse from "url-parse";
+import basename from "basename";
+import React from "react";
+import {Icon} from "office-ui-fabric-react";
 
 const Config = {
     UUID:"",
@@ -107,4 +111,26 @@ class DefaultDirLoader {
     }
 }
 
-export {Config, DefaultDirLoader}
+function computeLabel(config){
+    const label = (uri) => {
+        const parsed = parse(uri, {}, true);
+        if(parsed.protocol.indexOf('http') === 0) {
+            return parsed.host;
+        } else {
+            return basename(parsed.pathname);
+        }
+    }
+    return (
+        <React.Fragment>
+            {label(config.LeftURI)}
+            <Icon
+                iconName={"Sort" + (config.Direction === 'Bi' ? '' : (config.Direction === 'Right' ? 'Down' : 'Up'))}
+                styles={{root:{height:15, margin:'0 5px', transform: 'rotate(-90deg)', width: 16}}}
+            />
+            {label(config.RightURI)}
+        </React.Fragment>
+    );
+}
+
+
+export {Config, DefaultDirLoader, computeLabel}
