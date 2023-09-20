@@ -1,0 +1,77 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Build NPM, Go and touch @artifacts branch
+
+on: 
+  workflow_dispatch:
+  push:
+    branches: [ "prepare-*" ]
+
+jobs:
+
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: main
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.21
+
+#    - name: Fake Build UX (just create build folder)
+#      run: mkdir -p app/ux/build; touch app/ux/build/index.html
+
+    - name: Setup Node
+      uses: actions/setup-node@v2.5.2
+      with:
+        node-version: v16
+
+    - name: Npm Install
+      run: npm install
+      working-directory: app/ux
+      
+    - name: NPM Build
+      run: |
+        $env:CI=false
+        npm run build
+      working-directory: app/ux
+      
+    - name: Build Main
+      run: |
+        $env:RELEASE_VERSION = $version = ((git symbolic-ref --short HEAD).Trim()).Substring(8)
+        $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
+        go build -a -trimpath -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=$env:RELEASE_VERSION" -o cells-sync.exe
+
+    - name: Build No-UI Version
+      run: |
+        $env:RELEASE_VERSION = $version = ((git symbolic-ref --short HEAD).Trim()).Substring(8)
+        $env:CGO_ENABLED=0
+        go build -a -trimpath --tags pure -ldflags "-X github.com/pydio/cells-sync/common.Version=$env:RELEASE_VERSION" -o cells-sync-noui.exe
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: cells-sync-windows
+        path: cells-sync*.exe
+
+    - name: Checkout Artifacts
+      uses: actions/checkout@v4
+      with: 
+        ref: artifacts-prepare
+        path: artifacts
+
+    - name: Notify branch
+      run: |
+        $env:RELEASE_VERSION = $version = ((git symbolic-ref --short HEAD).Trim()).Substring(8)
+        echo $env:RELEASE_VERSION > release-version
+        echo '{"run_id":"${{ github.run_id }}", "run_number":"${{ github.run_number }}", "run_attempt":"${{ github.run_attempt }}", "sha":"${{ github.sha }}"}' > latest.json
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add .
+        git commit -m "regenerated latest file"
+        git push
+      working-directory: artifacts
