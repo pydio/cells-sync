@@ -46,23 +46,17 @@ jobs:
         $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
         go build -a -trimpath -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=$env:DEV_VERSION" -o cells-sync.exe
 
-    - name: Upload
-      uses: actions/upload-artifact@v3
-      with:
-        name: cells-sync-windows
-        path: cells-sync.exe
-
     - name: Build No-UI Version
       run: |
         $env:DEV_VERSION = ((Get-Content .\Makefile -TotalCount 1) -split '=')[1].Trim()
         $env:CGO_ENABLED=0
         go build -a -trimpath --tags pure -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=$env:DEV_VERSION" -o cells-sync-noui.exe
 
-    - name: Upload No-UI Version
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: cells-sync-noui-windows
-        path: cells-sync-noui.exe
+        name: cells-sync-windows
+        path: cells-sync*.exe
 
     - name: Checkout Artifacts
       uses: actions/checkout@v4
