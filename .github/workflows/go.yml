@@ -6,9 +6,7 @@ name: Build NPM, Go and touch @artifacts branch
 on: 
   workflow_dispatch:
   push:
-    branches: [ "webview-relaunch", "main" ]
-#  pull_request:
-#    branches: [ "webview-relaunch" ]
+    branches: [ "main" ]
 
 jobs:
 
@@ -17,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: webview-relaunch
+        ref: main
 
     - name: Set up Go
       uses: actions/setup-go@v3
