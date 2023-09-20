@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/pydio/cells/v4/common/log"
@@ -34,11 +35,9 @@ import (
 )
 
 var (
-	Version       = "0.1.0"
-	BuildStamp    = ""
-	BuildRevision = ""
-	PackageType   = "CellsSync"
-	PackageLabel  = "Cells Sync Client"
+	Version      = "0.1.0"
+	PackageType  = "CellsSync"
+	PackageLabel = "Cells Sync Client"
 )
 
 // EndpointInfo provides information about a connection to an endpoint
@@ -219,17 +218,33 @@ func MessageFromData(d []byte) *Message {
 // PrintVersion prints information about the current build
 func PrintVersion() {
 
-	var t time.Time
-	if BuildStamp != "" {
-		t, _ = time.Parse("2006-01-02T15:04:05", BuildStamp)
-	} else {
-		t = time.Now()
-	}
+	rev, ts := VcsInfo()
 
 	fmt.Println("")
 	fmt.Println("    " + fmt.Sprintf("%s (%s)", PackageLabel, Version))
-	fmt.Println("    " + fmt.Sprintf("Published on %s", t.Format(time.RFC822Z)))
-	fmt.Println("    " + fmt.Sprintf("Revision number %s", BuildRevision))
+	fmt.Println("    " + fmt.Sprintf("Revision Commit %s", rev))
+	fmt.Println("    " + fmt.Sprintf("Commit Stamp %s", ts.Format(time.RFC822Z)))
 	fmt.Println("")
 
+}
+
+// VcsInfo returns the vcs.revision and vcs.time debug info
+func VcsInfo() (string, time.Time) {
+	rev := ""
+	ts := time.Now()
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, s := range info.Settings {
+			fmt.Println(s.Key, s.Value)
+			switch s.Key {
+			case "vcs.revision":
+				rev = s.Value
+			case "vcs.time":
+				if s.Value != "" {
+					ts, _ = time.Parse("2006-01-02T15:04:05Z", s.Value)
+				}
+			default:
+			}
+		}
+	}
+	return rev, ts
 }

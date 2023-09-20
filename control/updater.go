@@ -270,10 +270,13 @@ func (u *Updater) ApplyUpdate(ctx context.Context, p *update.Package, dryRun boo
 		}
 
 		dataDir := config.SyncClientDataDir()
-		oldPath := filepath.Join(dataDir, "backups", "revision-"+common.BuildStamp)
+		_, ts := common.VcsInfo()
+		buildStamp := "revision-" + ts.Format(time.RFC3339)
+
+		oldPath := filepath.Join(dataDir, "backups", buildStamp)
 		err := os.MkdirAll(filepath.Join(dataDir, "backups"), 0755)
 		if err != nil {
-			oldPath = filepath.Join(dataDir, "revision-"+common.BuildStamp)
+			oldPath = filepath.Join(dataDir, buildStamp)
 		}
 		reader := net.BodyWithProgressMonitor(resp, pgChan, nil)
 

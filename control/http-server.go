@@ -199,12 +199,13 @@ func (h *HttpServer) InitHandlers() {
 				if req.Check {
 					go GetBus().Pub(req, TopicUpdate)
 				} else if req.Version {
+					rev, ts := common.VcsInfo()
 					// Just publish version back to client
 					message := &common.Message{Type: "UPDATE", Content: &common.UpdateVersion{
 						PackageName: common.PackageType,
 						Version:     common.Version,
-						Revision:    common.BuildRevision,
-						BuildStamp:  common.BuildStamp,
+						Revision:    rev,
+						BuildStamp:  ts.Format(time.RFC822Z),
 					}}
 					session.Write(message.Bytes())
 				}
