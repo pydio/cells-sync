@@ -1,7 +1,66 @@
-# Changes between v0.9.3 and v0.9.4
+# Changes between v0.9.4 and v0.9.5-alpha2
 
-[See Full Changelog](https://github.com/pydio/cells-sync/compare/v0.9.3...v0.9.4)
+[See Full Changelog](https://github.com/pydio/cells-sync/compare/v0.9.4...v0.9.5-alpha2)
 
-- [#c84681d](https://github.com/pydio/cells-sync/commit/c84681d9c73d77c5b946795fae664e8df79fe55b): Mod update
-- [#20a1948](https://github.com/pydio/cells-sync/commit/20a19486020c94bb28bf12858b5e7c8cc4384a2e): Mod-update
-- [#8cf34cb](https://github.com/pydio/cells-sync/commit/8cf34cbff2220a265b82cd15bf389c061799b7c7): Next development cycle
+- [#f554b06](https://github.com/pydio/cells-sync/commit/f554b06fc3f5fdbaf9be4bd66797c6a7fb408727): test-and-learn compute release version
+- [#29db0c6](https://github.com/pydio/cells-sync/commit/29db0c6593037379ce2b064c746794b7ffc04ad4): test-and-learn compute release version
+- [#6758a56](https://github.com/pydio/cells-sync/commit/6758a5666fe21470925ba76a833e557218c0ee5c): test-and-learn compute release version
+- [#6975aff](https://github.com/pydio/cells-sync/commit/6975aff9f95ed0a150aae808a5918d6ac87655dc): Fix expression
+- [#fd5193b](https://github.com/pydio/cells-sync/commit/fd5193b94df907eab4f181d8dd0b6af056210288): Forgotten print
+- [#abcac1e](https://github.com/pydio/cells-sync/commit/abcac1e3e88d4acd0052e7360c56257a61dc73a4): Change job name
+- [#9c9ad21](https://github.com/pydio/cells-sync/commit/9c9ad21840fc9271dff1d0d548bc900d807317f2): First test for release action
+- [#164ae4f](https://github.com/pydio/cells-sync/commit/164ae4ff43543c026e758ed2c0af34b85c0a6e14): remove windowsgui flag for no-ui version
+- [#8b5e8d3](https://github.com/pydio/cells-sync/commit/8b5e8d314972df9f52833f72eada18e6304678bd): use wildcard for artifact
+- [#895d085](https://github.com/pydio/cells-sync/commit/895d085fde8d222af43108025c3ca4fc14018043): Remove BuildStamp and BuildRev variables, re-adapt build commands
+- [#bffbe6e](https://github.com/pydio/cells-sync/commit/bffbe6e8c8bc22a7de334e668f464841fef54045): GH Action : try reading version from Makefile
+- [#aed3559](https://github.com/pydio/cells-sync/commit/aed35594abaec7d2dc7a0dae0fa64c8cc40269eb): Switch action to main branch
+- [#8cdbe93](https://github.com/pydio/cells-sync/commit/8cdbe93d0cf22598aa53f16b2ed71ea77aacaf94): update gin
+- [#dd4037e](https://github.com/pydio/cells-sync/commit/dd4037e3d8b15935b61fcf08eb66635b728fae0d): Update go.yml
+- [#0c95064](https://github.com/pydio/cells-sync/commit/0c95064550a3dea818bdda0b466597f080023bc5): Update go.yml
+- [#58bf311](https://github.com/pydio/cells-sync/commit/58bf311bb59960679cc4c4d2e326bffa35fa5ad2): Build a json with run context
+- [#ed22694](https://github.com/pydio/cells-sync/commit/ed226947a566b60c150ff8c09dec26d6f62cdd23): Update go.yml
+- [#7ed7e66](https://github.com/pydio/cells-sync/commit/7ed7e6620b88de8157d07eb4f8c2bed2299a153c): Update go.yml
+- [#a5c7e16](https://github.com/pydio/cells-sync/commit/a5c7e1693ac2b9177363114e82054dec727264ef): try again
+- [#813c9ad](https://github.com/pydio/cells-sync/commit/813c9ad7793c9129d7c18b38ca360658350c92bb): Update go.yml
+- [#454fa72](https://github.com/pydio/cells-sync/commit/454fa722dc1f65a40337ade9553eb07605d49aad): Update go.yml
+- [#b6289f0](https://github.com/pydio/cells-sync/commit/b6289f0c2116eed06a72806fad1bc22424b8df11): Update go.yml
+- [#d8ade54](https://github.com/pydio/cells-sync/commit/d8ade54bf3a6cb77c5615b1d4ddfed1c60d3f5af): Update go.yml
+- [#78c6f94](https://github.com/pydio/cells-sync/commit/78c6f942a76e9dc69afd31d70c01cd4bb5aa14ce): Update go.yml
+- [#b573a6c](https://github.com/pydio/cells-sync/commit/b573a6c20f8ae9a50aff914b3527aa0d3e792eaf): Update go.yml
+- [#c64f0eb](https://github.com/pydio/cells-sync/commit/c64f0ebe83ac98ff41d942c6c0e3358e99cb19e7): Update go.yml
+- [#9060bb4](https://github.com/pydio/cells-sync/commit/9060bb49154b3f9955b4236fac4266f5e5988a09): Update go.yml
+- [#0474021](https://github.com/pydio/cells-sync/commit/04740212a4ddf17c0cbb54ea86123eda092a6fa1): Update go.yml
+- [#c17f711](https://github.com/pydio/cells-sync/commit/c17f711006cb7dd58d155d653f9b065c3bed7add): Additional steps at the end
+- [#1d2b98f](https://github.com/pydio/cells-sync/commit/1d2b98f142384f9b8f691ace6e5098135b6ebf7e): Try to remove last warning
+- [#b3d978e](https://github.com/pydio/cells-sync/commit/b3d978ede63a34a28190c77f4594ecf867da9fa6): fix default export warnings
+- [#975af30](https://github.com/pydio/cells-sync/commit/975af3037e0fabd8ec20d73204f6444e7f7fc598): Update go.yml
+- [#9aae471](https://github.com/pydio/cells-sync/commit/9aae47173bbc3f5406bc30fa3c7c0dbd161b9217): Switch node version
+- [#4d0e9b1](https://github.com/pydio/cells-sync/commit/4d0e9b1f7851eba60267ad037bb2a0b6f1d287dc): Enable real build
+- [#6eb1b0d](https://github.com/pydio/cells-sync/commit/6eb1b0d0318b4c9dba900b4510c18f9920b31ddf): Update go.yml to use go21
+- [#78440ba](https://github.com/pydio/cells-sync/commit/78440bad3cbfdf19d35df9027f48f8beaba1b664): add yaml action
+- [#dccc71f](https://github.com/pydio/cells-sync/commit/dccc71faa8a68f0cd11e7314b8753eefac79ee02): add yaml action
+- [#01e004e](https://github.com/pydio/cells-sync/commit/01e004ed5270f2bf1ea4e76e69c23e7ffb6e7ebe): Switch to go20/21 and update webview dependency (moved to webview_go)
+- [#d41132a](https://github.com/pydio/cells-sync/commit/d41132a20aac2b94a59a1af71b66e2d60bd9b171): Replace native confirm/alert with Dialog
+- [#8012930](https://github.com/pydio/cells-sync/commit/80129300b87234433f7f7065f8d2d1851eb8b5b3): Update code to Cells latest
+- [#b220e9b](https://github.com/pydio/cells-sync/commit/b220e9b8a1aac0a9aa2acbcb150c21dbf2c0e092): Fix config account command
+- [#7eb1689](https://github.com/pydio/cells-sync/commit/7eb16896adb7e854e0058d9e229c1cb65523bfe4): Update kardianos/service to fix darwin issue
+- [#5778079](https://github.com/pydio/cells-sync/commit/5778079f6c3d3072b8ac7594c34dc1dbd438d6e7): Update go.yml - add upload artifact
+- [#cc5d202](https://github.com/pydio/cells-sync/commit/cc5d20261ef162bfcb90c59c3d46c00ade2b02bd): Fix linkOpen binding for new webview
+- [#21009db](https://github.com/pydio/cells-sync/commit/21009db2a88d465f920f81a58fd2b6ebb5a0ea45): Update go.yml
+- [#3763f44](https://github.com/pydio/cells-sync/commit/3763f4478d23399e732121c4146320ea55d4a3fb): Update go.yml
+- [#a5f9013](https://github.com/pydio/cells-sync/commit/a5f9013f1d61450eded49150326335a2613659aa): Update go.yml
+- [#5dd4ac0](https://github.com/pydio/cells-sync/commit/5dd4ac0d864fbb206f8df1e3a0fbcc15cc28745d): Update go.yml
+- [#0f4bb8d](https://github.com/pydio/cells-sync/commit/0f4bb8dc39a0ef4b35003b4b38b6da0e2d467c09): Update go.yml
+- [#078085c](https://github.com/pydio/cells-sync/commit/078085c88bc7d396a4fc91222ea19bea969ff4d3): Try commiting the runtime for workflow
+- [#bb35da0](https://github.com/pydio/cells-sync/commit/bb35da037929f9df18cfc73101cab01593be6f11): Update go.yml
+- [#e0c29f4](https://github.com/pydio/cells-sync/commit/e0c29f4868fb9b573dab7f594913b00005f23b59): Workflow - skip ux build for now
+- [#9cb7ef4](https://github.com/pydio/cells-sync/commit/9cb7ef4e4f762f57f6be4a229fc8f7ffc6714d8d): Update go.yml
+- [#15f7485](https://github.com/pydio/cells-sync/commit/15f748591df49926e8b14ca856133c4722e9ce80): Update go.yml
+- [#540f881](https://github.com/pydio/cells-sync/commit/540f881b9080eb0d7889be1a850c15d262dfcfa6): Test using GH actions for buidling on windows
+- [#c09626f](https://github.com/pydio/cells-sync/commit/c09626f42987038235b0772616d5bf81ebe84661): Update react-scripts to 5.0.1
+- [#717744c](https://github.com/pydio/cells-sync/commit/717744cc34b016bc60ea8ae020da174c4a74cce2): New silicon target
+- [#3dca27c](https://github.com/pydio/cells-sync/commit/3dca27c2ee51968f445999b381b471e85c1bb418): Use latest webview version
+- [#ac4d8f2](https://github.com/pydio/cells-sync/commit/ac4d8f2a3b8bf03ea717515bb44f7f6c7d92f2b3): Update gin
+- [#2041b5d](https://github.com/pydio/cells-sync/commit/2041b5dfceeb6746d117c5b25d74cf2ced19cad3): Manually configure an account using a PAT. Set local http host/port via ENV variables. Update dependencies, new build target ignoring all ui dependencies
+- [#0fdb8a0](https://github.com/pydio/cells-sync/commit/0fdb8a0df1a205e35096133e5972584cc224200c): mod update
+- [#3d06489](https://github.com/pydio/cells-sync/commit/3d064898f7b13c5175435ccf424032515dff2d72): Next development cycle
