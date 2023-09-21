@@ -13,6 +13,10 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+    - name: Compute Release Version
+      run: |
+        $env:RELEASE_VERSION = ((${{ github.ref_name }}).Trim()).Substring(8)
+
     - uses: actions/checkout@v4
       with:
         ref: main
@@ -42,7 +46,7 @@ jobs:
       
     - name: Build Main
       run: |
-        $env:RELEASE_VERSION = ((git symbolic-ref --short HEAD).Trim()).Substring(8)
+        $env:RELEASE_VERSION = ((${{ github.ref_name }}).Trim()).Substring(8)
         $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
         go build -a -trimpath -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=$env:RELEASE_VERSION" -o cells-sync.exe
 
