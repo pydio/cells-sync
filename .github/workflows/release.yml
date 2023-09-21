@@ -6,7 +6,7 @@ name: Build Release version based on prepare-XXX branch
 on: 
   workflow_dispatch:
   push:
-    branches: [ "prepare-*" ]
+    branches: [ "pre-release-*" ]
 
 jobs:
 
@@ -16,7 +16,7 @@ jobs:
     - name: Compute Release Version
       id: compute-version
       run: |
-        $env:RELEASE_VERSION = '${{ github.ref_name }}'.Trim().Replace('prepare-', '')
+        $env:RELEASE_VERSION = '${{ github.ref_name }}'.Trim().Replace('pre-release-', '')
         echo "CELLS_RELEASE=$env:RELEASE_VERSION" >> $env:GITHUB_OUTPUT
 
     - uses: actions/checkout@v4
