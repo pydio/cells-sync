@@ -14,8 +14,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Compute Release Version
+      id: compute-version
       run: |
-        $env:RELEASE_VERSION = ((${{ github.ref_name }}).Trim()).Substring(8)
+        $env:RELEASE_VERSION = '${{ github.ref_name }}'.Trim().Replace('prepare-', '')
+        echo "CELLS_RELEASE=$env:RELEASE_VERSION" >> $env:GITHUB_OUTPUT
 
     - uses: actions/checkout@v4
       with:
@@ -46,15 +48,13 @@ jobs:
       
     - name: Build Main
       run: |
-        $env:RELEASE_VERSION = ((${{ github.ref_name }}).Trim()).Substring(8)
         $env:CGO_CXXFLAGS="-I${{github.workspace}}\libs\webview2\build\native\include"
-        go build -a -trimpath -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=$env:RELEASE_VERSION" -o cells-sync.exe
+        go build -a -trimpath -ldflags "-H=windowsgui -X github.com/pydio/cells-sync/common.Version=${{ steps.compute-version.outputs.CELLS_RELEASE }}" -o cells-sync.exe
 
     - name: Build No-UI Version
       run: |
-        $env:RELEASE_VERSION = ((git symbolic-ref --short HEAD).Trim()).Substring(8)
         $env:CGO_ENABLED=0
-        go build -a -trimpath --tags pure -ldflags "-X github.com/pydio/cells-sync/common.Version=$env:RELEASE_VERSION" -o cells-sync-noui.exe
+        go build -a -trimpath --tags pure -ldflags "-X github.com/pydio/cells-sync/common.Version=${{ steps.compute-version.outputs.CELLS_RELEASE }}" -o cells-sync-noui.exe
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
@@ -70,8 +70,7 @@ jobs:
 
     - name: Notify branch
       run: |
-        $env:RELEASE_VERSION = ((git symbolic-ref --short HEAD).Trim()).Substring(8)
-        echo $env:RELEASE_VERSION > release-version
+        echo ${{ steps.compute-version.outputs.CELLS_RELEASE }} > release-version
         echo '{"run_id":"${{ github.run_id }}", "run_number":"${{ github.run_number }}", "run_attempt":"${{ github.run_attempt }}", "sha":"${{ github.sha }}"}' > latest.json
         git config user.name github-actions
         git config user.email github-actions@github.com
