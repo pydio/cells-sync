@@ -11,7 +11,7 @@ XGO_BIN?=${GOPATH}/bin/xgo
 
 .PHONY: all dev win xgo
 
-all: clean cli
+all: clean dev
 
 dep:
 	go install github.com/akavel/rsrc@latest
