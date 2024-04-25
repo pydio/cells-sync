@@ -88,3 +88,6 @@ xgowinnoui:
 clean:
 	rm -f cells-sync*
 	rm -f rsrc.syso
+
+licenses:
+	go-licenses report . --template ${GOPATH}/src/github.com/google/go-licenses/testdata/modules/hello01/licenses.tpl > DEPENDENCIES
