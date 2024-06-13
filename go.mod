@@ -12,6 +12,7 @@ require (
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/gin-gonic/gin v1.9.1
+	github.com/go-jose/go-jose/v4 v4.0.2
 	github.com/go-ole/go-ole v1.2.6
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/go-version v1.6.0
@@ -35,7 +36,6 @@ require (
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
-	gopkg.in/square/go-jose.v2 v2.6.0
 )
 
 require (

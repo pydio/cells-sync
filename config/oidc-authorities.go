@@ -31,7 +31,9 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/square/go-jose.v2/jwt"
+	jose "github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
+	"go.uber.org/zap"
 
 	"github.com/pydio/cells/v4/common/log"
 	servicecontext "github.com/pydio/cells/v4/common/service/context"
@@ -165,16 +167,54 @@ func (a *Authority) LoadInfo() {
 		}
 	}
 	// decode JWT token without verifying the signature
-	if a.IdToken != "" {
-		token, _ := jwt.ParseSigned(a.IdToken)
-		var claims map[string]interface{} // generic map to store parsed token
-		_ = token.UnsafeClaimsWithoutVerification(&claims)
-		if name, ok := claims["name"]; ok {
-			a.Username = name.(string)
-		}
-		parsed, _ := url.Parse(a.URI)
-		parsed.User = url.User(a.Username)
-		a.Id = parsed.String()
+	if a.IdToken == "" {
+		return
+	}
+
+	parsed, _ := url.Parse(a.URI)
+	parsed.User = url.User(a.Username)
+	a.Id = parsed.String()
+
+	if username, er := a.TokenToUsername(a.IdToken); er != nil {
+		log.Logger(oidcContext).Error("Cannot parse JWT token to extract current user id", zap.Error(er))
+		a.Username = "username-not-found"
+	} else {
+		a.Username = username
+	}
+}
+
+func (a *Authority) TokenToUsername(idToken string) (string, error) {
+
+	allSignatureAlgorithms := []jose.SignatureAlgorithm{
+		jose.EdDSA,
+		jose.HS256,
+		jose.HS384,
+		jose.HS512,
+		jose.RS256,
+		jose.RS384,
+		jose.RS512,
+		jose.ES256,
+		jose.ES384,
+		jose.ES512,
+		jose.PS256,
+		jose.PS384,
+		jose.PS512,
+	}
+
+	token, er := jwt.ParseSigned(idToken, allSignatureAlgorithms)
+	if er != nil {
+		return "", fmt.Errorf("cannot parse JWT token to extract current user id: %v", er)
+	}
+
+	var claims map[string]interface{} // generic map to store parsed token
+	if er := token.UnsafeClaimsWithoutVerification(&claims); er != nil {
+		return "", fmt.Errorf("cannot parse JWT token to extract current user id: %v", er)
+	}
+
+	if name, ok := claims["name"]; ok {
+		return name.(string), nil
+	} else {
+		return "", fmt.Errorf("cannot find name in claims")
 	}
 }
 
