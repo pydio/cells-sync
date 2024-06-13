@@ -12,6 +12,7 @@ require (
 	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/contrib v0.0.0-20240508051311-c1c6bf0061b0
 	github.com/gin-gonic/gin v1.10.0
+	github.com/go-jose/go-jose/v4 v4.0.2
 	github.com/go-ole/go-ole v1.3.0
 	github.com/gorilla/websocket v1.5.2
 	github.com/hashicorp/go-version v1.7.0
