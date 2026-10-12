@@ -25,10 +25,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 
-	"github.com/pydio/cells/v4/common/sync/endpoints/snapshot"
-	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v5/common/sync/endpoints/snapshot"
+	"github.com/pydio/cells/v5/common/sync/model"
 )
 
 // SnapshotFactory implements model.SnapshotProvider interface for persisting snapshots in a BoltDB.
@@ -61,7 +61,7 @@ func (f *SnapshotFactory) Load(source model.PathSyncSource) (model.Snapshoter, e
 		return s, nil
 	}
 
-	s, e := snapshot.NewBoltSnapshot(f.configPath, name)
+	s, e := snapshot.NewBoltSnapshot(context.Background(), f.configPath, name)
 	if e != nil {
 		return nil, e
 	}

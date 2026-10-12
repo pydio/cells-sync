@@ -25,7 +25,7 @@ import (
 
 	"github.com/zalando/go-keyring"
 
-	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 var (

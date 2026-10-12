@@ -23,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 var monitors map[string]*tokenMonitor

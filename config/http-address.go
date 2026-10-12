@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/pydio/cells/v4/common/utils/net"
+	"github.com/pydio/cells/v5/common/utils/net"
 )
 
 var (

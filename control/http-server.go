@@ -35,10 +35,11 @@ import (
 
 	"github.com/pydio/cells-sync/app/ux"
 	"github.com/pydio/cells-sync/common"
+	"github.com/pydio/cells-sync/common/logsink"
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/v4/common/log"
-	servicecontext "github.com/pydio/cells/v4/common/service/context"
-	"github.com/pydio/cells/v4/common/sync/model"
+	servicecontext "github.com/pydio/cells/v5/common/runtime"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 type HttpServer struct {
@@ -62,7 +63,7 @@ func NewHttpServer() *HttpServer {
 		ctx:       httpServerCtx,
 		logWriter: w,
 	}
-	log.RegisterWriteSyncer(h)
+	logsink.RegisterWriter("ws", h)
 	go func() {
 		scanner := bufio.NewScanner(r)
 		for scanner.Scan() {

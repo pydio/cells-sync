@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/pydio/cells-sync/config"
-	servicecontext "github.com/pydio/cells/v4/common/service/context"
+	servicecontext "github.com/pydio/cells/v5/common/runtime"
 
-	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 // SpawnedService is a supervisor service for launching a command and automatically restarting if it fails.

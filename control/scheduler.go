@@ -23,9 +23,9 @@ import (
 	"context"
 
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/v4/common/log"
-	servicecontext "github.com/pydio/cells/v4/common/service/context"
-	"github.com/pydio/cells/v4/common/utils/schedule"
+	servicecontext "github.com/pydio/cells/v5/common/runtime"
+	"github.com/pydio/cells/v5/common/telemetry/log"
+	"github.com/pydio/cells/v5/common/utils/schedule"
 )
 
 // Scheduler is a supervisor service emitting various commands on a timely manner.

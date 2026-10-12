@@ -31,9 +31,9 @@ import (
 
 	"go.etcd.io/bbolt"
 
-	"github.com/pydio/cells/v4/common/log"
-	"github.com/pydio/cells/v4/common/sync/merger"
-	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v5/common/sync/merger"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 var (
@@ -164,7 +164,7 @@ func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 			patchBucket := bucket.Bucket(k)
 			if errValue := patchBucket.Get(patchErrKey); errValue != nil {
 				// Do this before unmarshalling tStamp otherwise it overwrites internal mtime
-				patch.SetPatchError(fmt.Errorf(string(errValue)))
+				patch.SetPatchError(fmt.Errorf("%s", string(errValue)))
 			}
 			if src := patchBucket.Get(patchSourceKey); src != nil && string(src) != p.source.GetEndpointInfo().URI {
 				// Invert target and source
@@ -180,14 +180,18 @@ func (p *PatchStore) Load(offset, limit int) (patches []merger.Patch, e error) {
 			oc := opsBucket.Cursor()
 			for _, v := oc.First(); v != nil; _, v = oc.Next() {
 				operation := merger.NewOpForUnmarshall()
-				if err := json.Unmarshal(v, &operation); err == nil {
-					if operation, err = p.unmarshalConflict(v, operation); err != nil {
-						log.Logger(context.Background()).Error("Cannot unmarshall conflict operation:" + err.Error())
-					}
-					patch.Enqueue(operation)
-				} else {
+				if err := json.Unmarshal(v, &operation); err != nil {
 					log.Logger(context.Background()).Error("Cannot unmarshall operation:" + err.Error())
+					continue
 				}
+				if conflict, err := p.unmarshalConflict(v, operation); err != nil {
+					// Conflicts stored by versions built on Cells v4 have no details (type, left/right
+					// operations): keep the plain conflict operation instead of enqueuing nil.
+					log.Logger(context.Background()).Warn("Cannot unmarshall conflict details, keeping conflict without details: " + err.Error())
+				} else if conflict != nil {
+					operation = conflict
+				}
+				patch.Enqueue(operation)
 			}
 			stamps = append(stamps, patch)
 		}

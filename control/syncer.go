@@ -32,11 +32,11 @@ import (
 
 	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells-sync/endpoint"
-	"github.com/pydio/cells/v4/common/log"
-	"github.com/pydio/cells/v4/common/service/context"
-	"github.com/pydio/cells/v4/common/sync/merger"
-	"github.com/pydio/cells/v4/common/sync/model"
-	"github.com/pydio/cells/v4/common/sync/task"
+	servicecontext "github.com/pydio/cells/v5/common/runtime"
+	"github.com/pydio/cells/v5/common/sync/merger"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/sync/task"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 // Syncer is a supervisor service wrapping a sync task.

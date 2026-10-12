@@ -31,7 +31,7 @@ import (
 
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v5/common/sync/model"
 )
 
 func compareURI(status, config string) bool {
