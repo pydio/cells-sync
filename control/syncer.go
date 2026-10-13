@@ -449,7 +449,7 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 					if updateConnection {
 						state := s.stateStore.UpdateConnection(connected, status.EndpointInfo)
 						newConnState := s.stateStore.BothConnected()
-						if state.Status == model.TaskStatusIdle && newConnState && newConnState != initialConnState {
+						if runOnConnect(state.Status) && newConnState && newConnState != initialConnState {
 							if s.dirtyStopped {
 								s.dirtyStopped = false
 								log.Logger(ctx).Info("Both sides are connected, now launching a full resync")
@@ -474,6 +474,12 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 		}
 	}
 
+}
+
+// runOnConnect tells if a run starts when both endpoints get connected: also after a failed run, otherwise a restart
+// after an error never syncs, even when a full resync is required (CS-N1).
+func runOnConnect(status model.TaskStatus) bool {
+	return status == model.TaskStatusIdle || status == model.TaskStatusError
 }
 
 // Serve implements supervisor interface.
