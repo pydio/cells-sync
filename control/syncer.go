@@ -382,13 +382,10 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Dry-running sync"), model.TaskStatusProcessing)
 				s.task.Run(ctx, true, true)
 			case MessageSyncLoop:
-				if s.lastPatch != nil {
-					if _, b := s.lastPatch.HasErrors(); b {
-						// Trigger the loop
-						s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Re-applying last patch that had errors"), model.TaskStatusProcessing)
-						s.task.ReApplyPatch(ctx, s.lastPatch)
-						break
-					}
+				if reApplyLastPatch(s.lastPatch) {
+					s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Re-applying last patch that had errors"), model.TaskStatusProcessing)
+					s.task.ReApplyPatch(ctx, s.lastPatch)
+					break
 				}
 				s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Starting sync loop"), model.TaskStatusProcessing)
 				s.task.Run(ctx, false, false)
@@ -480,6 +477,27 @@ func (s *Syncer) dispatchBus(ctx context.Context, done chan bool) {
 // after an error never syncs, even when a full resync is required (CS-N1).
 func runOnConnect(status model.TaskStatus) bool {
 	return status == model.TaskStatusIdle || status == model.TaskStatusError
+}
+
+// reApplyLastPatch tells if the sync loop retries the last patch instead of computing a new one: only when some of its
+// operations failed. A patch with conflicts or a failed diff is stale: re-applying it replays conflicts forever, even
+// after the user resolved them (CS-N2).
+func reApplyLastPatch(last merger.Patch) bool {
+	if last == nil {
+		return false
+	}
+	if _, has := last.HasErrors(); !has {
+		return false
+	}
+	if len(last.OperationsByType([]merger.OperationType{merger.OpConflict})) > 0 {
+		return false
+	}
+	for _, op := range last.OperationsByType(nil) {
+		if op.Error() != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // Serve implements supervisor interface.

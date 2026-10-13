@@ -20,8 +20,12 @@
 package control
 
 import (
+	"errors"
 	"testing"
 
+	"github.com/pydio/cells/v5/common/proto/tree"
+	"github.com/pydio/cells/v5/common/sync/endpoints/memory"
+	"github.com/pydio/cells/v5/common/sync/merger"
 	"github.com/pydio/cells/v5/common/sync/model"
 )
 
@@ -36,6 +40,47 @@ func TestRunOnConnect(t *testing.T) {
 	} {
 		if got := runOnConnect(status); got != want {
 			t.Errorf("runOnConnect(%v) = %v, want %v", status, got, want)
+		}
+	}
+}
+
+// CS-N2: the loop re-applies the last patch only when some of its operations failed. A patch with conflicts, or
+// whose diff failed, is stale: re-applying it replays conflicts the user may have resolved since.
+func TestReApplyLastPatch(t *testing.T) {
+	node := func(p string) *tree.Node { return &tree.Node{Path: p, Type: tree.NodeType_LEAF} }
+	create := func(p string) merger.Operation {
+		return merger.NewOperation(merger.OpCreateFile, model.EventInfo{Path: p}, node(p))
+	}
+	newPatch := func(ops ...merger.Operation) merger.Patch {
+		patch := merger.NewPatch(memory.NewMemDB(), memory.NewMemDB(), merger.PatchOptions{})
+		for _, o := range ops {
+			patch.Enqueue(o)
+		}
+		return patch
+	}
+
+	failed := create("a")
+	failedPatch := newPatch(failed)
+	failed.Status(model.NewProcessingStatus("transfer failed").SetError(errors.New("connection reset")))
+
+	conflictPatch := newPatch(create("b"), merger.NewConflictOperation(node("c"), merger.ConflictFileContent, create("c"), create("c")))
+	_ = conflictPatch.SetPatchError(errors.New("diff has conflicts"))
+
+	diffErrorPatch := newPatch()
+	_ = diffErrorPatch.SetPatchError(errors.New("error happened during diff.Compute"))
+
+	for name, tc := range map[string]struct {
+		patch merger.Patch
+		want  bool
+	}{
+		"no previous patch":  {nil, false},
+		"successful patch":   {newPatch(create("d")), false},
+		"failed operations":  {failedPatch, true},
+		"conflicts":          {conflictPatch, false},
+		"diff error, no ops": {diffErrorPatch, false},
+	} {
+		if got := reApplyLastPatch(tc.patch); got != tc.want {
+			t.Errorf("%s: reApplyLastPatch = %v, want %v", name, got, tc.want)
 		}
 	}
 }
