@@ -23,6 +23,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells/v5/common/proto/tree"
 	"github.com/pydio/cells/v5/common/sync/endpoints/memory"
 	"github.com/pydio/cells/v5/common/sync/merger"
@@ -82,5 +83,34 @@ func TestReApplyLastPatch(t *testing.T) {
 		if got := reApplyLastPatch(tc.patch); got != tc.want {
 			t.Errorf("%s: reApplyLastPatch = %v, want %v", name, got, tc.want)
 		}
+	}
+}
+
+// CS-N3: the "Idle" status set a few seconds after a patch must not overwrite a pause (or a run) that happened since.
+func TestResetToIdleKeepsLaterStatus(t *testing.T) {
+	s := &Syncer{stateStore: NewMemoryStateStore(&config.Task{})}
+	s.stateStore.UpdateProcessStatus(model.NewProcessingStatus("Finished Processing 7 files and folders"), model.TaskStatusIdle)
+
+	// Paused after the patch finished
+	s.taskPaused.Store(true)
+	s.stateStore.UpdateSyncStatus(model.TaskStatusPaused)
+	s.resetToIdle()
+	if st := s.stateStore.LastState().Status; st != model.TaskStatusPaused {
+		t.Fatalf("pause overwritten by the deferred idle status: %v", st)
+	}
+
+	// Resumed, and a new patch is processing
+	s.taskPaused.Store(false)
+	s.stateStore.UpdateSyncStatus(model.TaskStatusProcessing)
+	s.resetToIdle()
+	if st := s.stateStore.LastState().Status; st != model.TaskStatusProcessing {
+		t.Fatalf("running patch overwritten by the deferred idle status: %v", st)
+	}
+
+	// Nothing happened since
+	s.stateStore.UpdateSyncStatus(model.TaskStatusIdle)
+	s.resetToIdle()
+	if st := s.stateStore.LastState().Status; st != model.TaskStatusIdle {
+		t.Fatalf("expected idle, got %v", st)
 	}
 }
