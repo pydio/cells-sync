@@ -50,7 +50,6 @@ Launching without command is the same as './cells-sync start' on Mac and Windows
 		log.RegisterConsoleNamedColor("scheduler", log.ConsoleColorRest)
 		log.RegisterConsoleNamedColor("update.service", log.ConsoleColorRest)
 		log.RegisterConsoleNamedColor("sync-task", log.ConsoleColorGrpc)
-		// [v5] log.SetSkipServerSync() now panics in v5 -- removed
 		logDir, e := config.GetLogsDir()
 		if e != nil {
 			fmt.Println("Cannot create log dir, sending logs to current folder")

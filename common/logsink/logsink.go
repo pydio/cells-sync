@@ -1,6 +1,6 @@
 // Package logsink adapts cells-sync custom log writers to the Cells v5 URL-based logger configuration.
-// [v5-upgrade scratch] v4 log.RegisterWriteSyncer(zapcore.WriteSyncer) became RegisterWriteSyncer(LoggerConfig),
-// where outputs are URLs resolved through log.DefaultURLMux(). We register one private scheme per writer.
+// Cells v5 loggers write to URL outputs resolved through log.DefaultURLMux(): each writer is registered under its
+// own private scheme.
 package logsink
 
 import (
