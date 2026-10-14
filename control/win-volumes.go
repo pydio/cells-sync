@@ -31,8 +31,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/pydio/cells/v4/common/log"
-	"github.com/pydio/cells/v4/common/proto/tree"
+	"github.com/pydio/cells/v5/common/proto/tree"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 func browseWinVolumes(ctx context.Context) (children []*tree.Node) {

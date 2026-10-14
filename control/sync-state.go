@@ -31,7 +31,7 @@ import (
 
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v5/common/sync/model"
 )
 
 func compareURI(status, config string) bool {
@@ -204,11 +204,13 @@ type FileStateStore struct {
 func NewFileStateStore(config *config.Task, folderPath string) *FileStateStore {
 	m := NewMemoryStateStore(config)
 	f := &FileStateStore{
-		MemoryStateStore: *m,
-		filePath:         filepath.Join(folderPath, "state"),
-		fileState:        make(chan model.TaskStatus, 1),
-		done:             make(chan bool, 1),
+		filePath:  filepath.Join(folderPath, "state"),
+		fileState: make(chan model.TaskStatus, 1),
+		done:      make(chan bool, 1),
 	}
+	// Copy initial values only: MemoryStateStore embeds a mutex that must not be copied
+	f.config = m.config
+	f.state = m.state
 	f.PreviousState = f.readLastState()
 	if file, e := os.OpenFile(f.filePath, os.O_CREATE|os.O_WRONLY, 0755); e == nil {
 		go f.listenToState(file)

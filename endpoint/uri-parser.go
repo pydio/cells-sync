@@ -32,13 +32,13 @@ import (
 	"github.com/pydio/cells-sync/common"
 	"github.com/pydio/cells-sync/config"
 
-	"github.com/pydio/cells/v4/common/nodes"
-	"github.com/pydio/cells/v4/common/sync/endpoints/cells"
-	"github.com/pydio/cells/v4/common/sync/endpoints/filesystem"
-	"github.com/pydio/cells/v4/common/sync/endpoints/memory"
-	"github.com/pydio/cells/v4/common/sync/endpoints/s3"
-	"github.com/pydio/cells/v4/common/sync/model"
-	"github.com/pydio/cells/v4/common/utils/configx"
+	"github.com/pydio/cells/v5/common/nodes"
+	"github.com/pydio/cells/v5/common/sync/endpoints/cells"
+	"github.com/pydio/cells/v5/common/sync/endpoints/filesystem"
+	"github.com/pydio/cells/v5/common/sync/endpoints/memory"
+	"github.com/pydio/cells/v5/common/sync/endpoints/s3"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/utils/configx"
 )
 
 // EndpointFromURI parse an URI string to instantiate a proper Endpoint
@@ -161,7 +161,7 @@ func EndpointFromURI(uri string, otherUri string, browseOnly ...bool) (ep model.
 		return client, nil
 
 	default:
-		return nil, fmt.Errorf("unsupported scheme " + u.Scheme)
+		return nil, fmt.Errorf("unsupported scheme %s", u.Scheme)
 	}
 
 }

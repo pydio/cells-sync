@@ -12,8 +12,8 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/pydio/cells-sync/common"
-	"github.com/pydio/cells/v4/common/log"
-	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 // StatusMessage provides an int representation of Connected/Disconnected status

@@ -28,8 +28,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/pydio/cells-sync/common/logsink"
 	"github.com/pydio/cells-sync/config"
-	"github.com/pydio/cells/v4/common/log"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 // RootCmd is the Cobra root command
@@ -49,13 +50,12 @@ Launching without command is the same as './cells-sync start' on Mac and Windows
 		log.RegisterConsoleNamedColor("scheduler", log.ConsoleColorRest)
 		log.RegisterConsoleNamedColor("update.service", log.ConsoleColorRest)
 		log.RegisterConsoleNamedColor("sync-task", log.ConsoleColorGrpc)
-		log.SetSkipServerSync()
 		logDir, e := config.GetLogsDir()
 		if e != nil {
 			fmt.Println("Cannot create log dir, sending logs to current folder")
 			logDir = "./"
 		}
-		log.Init(logDir)
+		logsink.Init(logDir)
 
 		handleSignals()
 	},

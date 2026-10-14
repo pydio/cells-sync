@@ -35,8 +35,8 @@ import (
 	"github.com/go-jose/go-jose/v4/jwt"
 	"go.uber.org/zap"
 
-	"github.com/pydio/cells/v4/common/log"
-	servicecontext "github.com/pydio/cells/v4/common/service/context"
+	servicecontext "github.com/pydio/cells/v5/common/runtime"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 func init() {

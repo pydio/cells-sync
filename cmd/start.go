@@ -30,9 +30,9 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 
+	"github.com/pydio/cells-sync/common/logsink"
 	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells-sync/control"
-	"github.com/pydio/cells/v4/common/log"
 )
 
 var (
@@ -52,7 +52,7 @@ var StartCmd = &cobra.Command{
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logs := config.Default().Logs
 		os.MkdirAll(logs.Folder, 0755)
-		log.RegisterWriteSyncer(zapcore.AddSync(&lumberjack.Logger{
+		logsink.RegisterWriter("file", zapcore.AddSync(&lumberjack.Logger{
 			Filename:   filepath.Join(logs.Folder, "sync.log"),
 			MaxAge:     logs.MaxAgeDays,   // days
 			MaxSize:    logs.MaxFilesSize, // megabytes

@@ -30,12 +30,12 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/pydio/cells-sync/endpoint"
-	"github.com/pydio/cells/v4/common/proto/tree"
-	"github.com/pydio/cells/v4/common/sync/endpoints/filesystem"
-	"github.com/pydio/cells/v4/common/sync/endpoints/index"
-	"github.com/pydio/cells/v4/common/sync/merger"
-	"github.com/pydio/cells/v4/common/sync/model"
-	"github.com/pydio/cells/v4/common/sync/task"
+	"github.com/pydio/cells/v5/common/proto/tree"
+	"github.com/pydio/cells/v5/common/sync/endpoints/filesystem"
+	"github.com/pydio/cells/v5/common/sync/endpoints/index"
+	"github.com/pydio/cells/v5/common/sync/merger"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/sync/task"
 )
 
 func TestMergeWithBigDataStructure(t *testing.T) {
@@ -47,7 +47,7 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 
 		nodes := make(map[string]tree.Node)
 
-		target := index.NewClient("test", &tree.NodeProviderMock{nodes}, &tree.NodeReceiverMock{nodes}, &tree.SessionIndexerMock{})
+		target := index.NewClient("test", &tree.NodeProviderMock{Nodes: nodes}, &tree.NodeReceiverMock{Nodes: nodes}, &tree.SessionIndexerMock{})
 		target.CreateNode(context.Background(), &tree.Node{
 			Uuid: "ROOT",
 			Path: "/",
@@ -68,7 +68,7 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 			snap, err := snapshotFactory.Load(target)
 			So(err, ShouldBeNil)
 
-			snap.Capture(context.Background(), target)
+			So(snap.Capture(context.Background(), target), ShouldBeNil)
 			capture, ok := snap.(model.PathSyncSource)
 			So(ok, ShouldBeTrue)
 
@@ -81,6 +81,7 @@ func TestMergeWithBigDataStructure(t *testing.T) {
 
 			diffErrors := merger.NewTreeDiff(target, capture)
 			Convey("Test computing diff with no changes but errors", func() {
+				defer tree.PredefineError(func(string, string, ...interface{}) error { return nil })
 				tree.PredefineError(func(objType, fnType string, params ...interface{}) error {
 					switch o := objType + "." + fnType; o {
 					case "*tree.StreamerMock.Recv":

@@ -37,9 +37,9 @@ import (
 	"github.com/pydio/cells-sync/config"
 	"github.com/pydio/cells-sync/control"
 	"github.com/pydio/cells-sync/i18n"
-	"github.com/pydio/cells/v4/common/log"
-	servicecontext "github.com/pydio/cells/v4/common/service/context"
-	"github.com/pydio/cells/v4/common/sync/model"
+	servicecontext "github.com/pydio/cells/v5/common/runtime"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 var (

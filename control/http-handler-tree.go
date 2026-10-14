@@ -34,10 +34,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/pydio/cells-sync/endpoint"
-	"github.com/pydio/cells/v4/common"
-	"github.com/pydio/cells/v4/common/log"
-	"github.com/pydio/cells/v4/common/proto/tree"
-	"github.com/pydio/cells/v4/common/sync/model"
+	"github.com/pydio/cells/v5/common"
+	"github.com/pydio/cells/v5/common/proto/tree"
+	"github.com/pydio/cells/v5/common/sync/model"
+	"github.com/pydio/cells/v5/common/telemetry/log"
 )
 
 type TreeRequest struct {
@@ -177,7 +177,7 @@ func (h *HttpServer) ls(c *gin.Context) {
 					}
 					if request.windowsDrive != "" {
 						p = path.Join(request.windowsDrive, p)
-						node.UpdatePath(p)
+						node.SetPath(p)
 					}
 					// Small fix for router case at level 0
 					if strings.HasPrefix(node.GetUuid(), "DATASOURCE:") {
@@ -254,7 +254,7 @@ func (h *HttpServer) defaultDir(c *gin.Context) {
 		epDir = request.Path
 	}
 	if node, err := request.endpoint.LoadNode(context.Background(), epDir); err == nil {
-		node.UpdatePath(outputDir)
+		node.SetPath(outputDir)
 		c.JSON(http.StatusOK, &TreeResponse{Node: node.AsProto()})
 		return
 	}
